@@ -116,11 +116,11 @@ function mkImg(id,cardEl){
   const img=document.createElement('img');
   const b=base(id);
   const encoded=encodeURIComponent(b);
-  img.src=GH+encoded+'.png';
+  img.src=GH+encoded+'.webp';
   img.alt='';
   img.onerror=function(){
-    if(this.src.endsWith('.png')){
-      this.src=GH+encoded+'.jpg';
+    if(this.src.endsWith('.webp')){
+      this.src=GH+encoded+'.png';
     }else{
       this.style.display='none';
       const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
