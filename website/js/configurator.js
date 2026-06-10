@@ -395,27 +395,42 @@ window.addEventListener('load',()=>{
   });
 });
 
-fetch(LOCATION_SHEET)
-  .then(r=>r.json())
-  .then(settings=>{
-    if(settings.workshop_lat) LOC=settings;
-    console.log('✅ Location settings loaded');
+// تحميل الإعدادات (مع مانع الكاش)
+fetch(LOCATION_SHEET + '&t=' + new Date().getTime())
+  .then(r => r.json())
+  .then(settings => {
+    if (settings.workshop_lat) {
+      LOC = settings;
+      console.log('✅ Location settings loaded');
+      upd(); // تحديث الحسابات فوراً بعد تحميل الإعدادات
+    }
   })
-  .catch(()=>{console.log('Using default location settings');});
+  .catch(() => {
+    console.log('Using default location settings');
+  });
 
-fetch(SHEET)
-  .then(r=>r.json())
-  .then(rows=>{
-    if(rows.length>5){
-      D=build(rows);
-      dataLoaded=true;
-      rDes();rSz();rDiv();rHnd();upd();
+// تحميل بيانات المنتجات (مع مانع الكاش)
+fetch(SHEET + '&t=' + new Date().getTime())
+  .then(r => r.json())
+  .then(rows => {
+    if (rows && rows.length > 5) {
+      D = build(rows);
+      dataLoaded = true;
+      rDes(); rSz(); rDiv(); rHnd(); upd();
       console.log('✅ Loaded fresh data from Apps Script');
     }
   })
-  .catch(e=>{
+  .catch(e => {
     console.error('❌ Failed to load data:', e.message);
   });
+
+function isLocked() {
+  if (!dataLoaded) {
+    showToast('جاري تحميل الأسعار، يرجى الانتظار ثانية...');
+    return true;
+  }
+  return false;
+}
 
 // Render cards immediately with placeholder data
 rDes();rSz();rDiv();rHnd();upd();
