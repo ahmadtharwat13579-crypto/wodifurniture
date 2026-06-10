@@ -2,7 +2,7 @@ const WA='201556840368';
 const LOCATION_SHEET='https://script.google.com/macros/s/AKfycbzK8n0uZcXlq2Ux2FwW1DSi8W4RNF3wAB3OCJy_ECO8oCM3bHIaApbUAWJ7sr57CEnj/exec?pwd=double-protection-password';
 let LOC={workshop_lat:30.061113,workshop_lng:31.394701,correction_factor:1.3,price_per_km:30,base_install_price:300};
 let userLat=null,userLng=null,installCost=null;
-const GH='https://raw.githubusercontent.com/ahmadtharwat13579-crypto/wodi-furniture/main/';
+const GH='https://github.com/ahmadtharwat13579-crypto/wodifurniture/tree/main/website/images/';
 const SHEET='https://script.google.com/macros/s/AKfycbz3xuCuZ6sU9QVo2nTRaItWFLplEhG7bKuzeZSQpk4DseShYrzycpRhyO2u2kuwPVkY/exec?pwd=double-protection-password';
 
 const r5=n=>Math.round(n/5)*5;
