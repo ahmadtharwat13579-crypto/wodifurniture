@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WODI Furniture | صمم وحدة حوضك</title>
+  <link rel="icon" type="image/png" href="images/favicon-v1.png">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <nav class="navbar" id="navbar">
+    <div class="nav-left">
+      <a href="index.html" class="logo-link">
+        <img src="images/logo-v1.png" alt="WODI" class="nav-logo">
+      </a>
+    </div>
+    <div class="nav-right">
+      <a href="configurator.html" class="active">وحدات الحوض</a>
+      <a href="index.html">الرئيسية</a>
+    </div>
+  </nav>
+
+  <div class="conf-page">
+    <div class="conf">
+
+<div class="main-header">صمّم وحدة الحوض الخاصة بك</div>
+
+<ol class="intro-para" style="padding-right:18px;list-style:decimal">
+  <li>اختر تصميم وحدة الحوض المناسب لك.</li>
+  <li>حدد مقاس الحوض الخاص بك من بين المقاسات المتاحة للتصميم.</li>
+  <li>اختر التقسيمة الداخلية.</li>
+  <li>اختر نوع المقبض.</li>
+  <li>سيتم تحديث السعر النهائي تلقائيًا مع كل اختيار.</li>
+  <li>بعد تحديد المواصفات، اضغط على "اطلب الآن" ليتم توجيهك للواتساب.</li>
+  <li>سيتم معاينة الموقع وأخذ المقاسات للتأكد من إمكانية تنفيذ التصميم.</li>
+  <li>سيتم عرض تصميم 3D دقيق للوحدة واعتماده معك بالكامل قبل بدء التنفيذ.</li>
+</ol>
+
+<div class="notes-box" id="notes-box">
+  <div class="notes-header" onclick="toggleNotes()">
+    <div class="notes-header-left">
+      <div class="notes-icon">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+      </div>
+      <div class="notes-title">ملاحظات مهمة</div>
+    </div>
+    <div class="notes-toggle">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+  </div>
+  <div class="notes-content">
+    <ul class="notes-list">
+      <li>الصور المعروضة لأغراض توضيحية وقد تختلف النسب قليلا حسب المقاس المختار.</li>
+      <li>المقاسات المعروضة تمثل عرض الحوض بالسنتيمتر.</li>
+      <li>جميع المفصلات ومجاري الأدراج المستخدمة Soft-Close.</li>
+      <li>السعر الإجمالي المعروض شامل المعاينة والتركيب والتنفيذ بالكامل بدون أي رسوم إضافية.</li>
+      <li>يتم تنفيذ وتسليم الوحدة خلال 3-7 ايام من تأكيد الطلب.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-header">
+    <span class="step-title">1. التصميم</span>
+  </div>
+  <div class="scroll-wrap">
+    <div class="scroll-arrow arr-end hidden" id="dc-start" onclick="scrollCards('dc',-1)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+    </div>
+    <div class="cards-row" id="dc"></div>
+    <div class="scroll-arrow arr-start hidden" id="dc-end" onclick="scrollCards('dc',1)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+    </div>
+  </div>
+  <div class="step-title" style="margin-top:14px">المقاس</div>
+  <div class="sizes-row" id="sb"><span class="miss">يجب اختيار التصميم أولاً</span></div>
+</div>
+
+<div class="step">
+  <div class="step-header">
+    <span class="step-title">2. التقسيمة الداخلية</span>
+  </div>
+  <div class="scroll-wrap">
+    <div class="scroll-arrow arr-end hidden" id="vc-start" onclick="scrollCards('vc',-1)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+    </div>
+    <div class="cards-row" id="vc"></div>
+    <div class="scroll-arrow arr-start hidden" id="vc-end" onclick="scrollCards('vc',1)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+    </div>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-header">
+    <span class="step-title">3. نوع المقبض</span>
+  </div>
+  <div class="scroll-wrap">
+    <div class="scroll-arrow arr-end hidden" id="hc-start" onclick="scrollCards('hc',-1)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+    </div>
+    <div class="cards-row" id="hc"></div>
+    <div class="scroll-arrow arr-start hidden" id="hc-end" onclick="scrollCards('hc',1)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+    </div>
+  </div>
+</div>
+
+<!-- Section 4: Location -->
+<div class="loc-section">
+  <div class="loc-header">
+    <span class="step-title" style="margin-bottom:0">٤. المعاينة والتركيب</span>
+    <button class="loc-hint" onclick="openTooltip()">؟</button>
+  </div>
+  <div class="loc-desc">نحتاج تحديد موقعك لتقدير تكلفة المعاينة والتركيب بدقة.</div>
+  
+  <button class="btn-locate" id="btn-locate" onclick="requestLocation()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="9" stroke-dasharray="4 2"/></svg>
+    تحديد موقعي الحالي
+  </button>
+
+<div id="mapContainer" style="display: none; margin-top: 20px;">
+  <iframe id="staticMap" src="" width="100%" height="200" style="border:1px solid #ccc; border-radius:8px;"></iframe>
+</div>
+
+  <div class="loc-result" id="loc-result"></div>
+</div>
+
+<div class="sbar">
+  <div class="price-row">
+    <span class="price-lbl">الإجمالي</span>
+    <span class="price-val" id="total-price">— EGP</span>
+  </div>
+  <div class="price-warning" id="price-warning">* لا تنسَ اختيار المقاس لإظهار السعر</div>
+  <div class="price-divider-bottom"></div>
+
+  <div class="sum-title">تفاصيل السعر</div>
+  <div class="sum-rows">
+    <div class="srow">
+      <span class="slbl">التصميم</span>
+      <span class="sval" id="sd">—</span>
+      <span class="sval-price" id="sd-price">—</span>
+    </div>
+    <div class="srow">
+      <span class="slbl">المقاس</span>
+      <span class="sval" id="ss">—</span>
+      <span class="sval-price" id="ss-price">—</span>
+    </div>
+    <div class="srow">
+      <span class="slbl">التقسيمة</span>
+      <span class="sval" id="sv">—</span>
+      <span class="sval-price" id="sv-price">—</span>
+    </div>
+    <div class="srow">
+      <span class="slbl">المقبض</span>
+      <span class="sval" id="sh">—</span>
+      <span class="sval-price" id="sh-price">—</span>
+    </div>
+    <div class="srow">
+      <span class="slbl">المعاينة والتركيب</span>
+      <span class="sval" id="si-label">—</span>
+      <span class="sval-price" id="si-price">—</span>
+    </div>
+    <div class="install-warning" id="install-warning">* السعر يشمل الوحدة فقط — تكلفة المعاينة والتركيب لم تُحسب بعد</div>
+  </div>
+  <div class="actions">
+    <button class="btn-reset" onclick="resetAll()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+      إعادة
+    </button>
+    <button class="btn-order" onclick="orderWA()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.533 5.858L.054 23.25a.75.75 0 0 0 .916.916l5.392-1.479A11.954 11.954 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.933 0-3.742-.524-5.287-1.437l-.378-.225-3.924 1.077 1.077-3.924-.225-.378A9.953 9.953 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+      اطلب الآن
+    </button>
+  </div>
+
+  <div class="custom-box">
+    <div class="custom-title">لديك تصميم مختلف؟</div>
+    <div class="custom-desc">إذا كان لديك تصميم خاص أو فكرة مختلفة غير موجودة ضمن الخيارات الحالية، يمكنك إرسالها لنا مباشرة عبر واتساب وسنساعدك في تنفيذها.</div>
+    <button class="btn-wa" onclick="customWA()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.533 5.858L.054 23.25a.75.75 0 0 0 .916.916l5.392-1.479A11.954 11.954 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.933 0-3.742-.524-5.287-1.437l-.378-.225-3.924 1.077 1.077-3.924-.225-.378A9.953 9.953 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+      إرسال التصميم عبر واتساب
+    </button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="lb" id="lb" onclick="closeLB()">
+  <button class="lb-close" onclick="closeLB()">x</button>
+  <img id="lb-img" src="" alt="">
+</div>
+
+</div>
+  </div>
+
+  <!-- Lightbox -->
+  <div class="lb" id="lb" onclick="closeLB()">
+    <button class="lb-close" onclick="closeLB()">×</button>
+    <img id="lb-img" src="" alt="">
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <footer>
+    <div class="footer-social">
+      <a href="https://wa.me/201556840368" target="_blank" aria-label="واتساب">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.533 5.858L.054 23.25a.75.75 0 0 0 .916.916l5.392-1.479A11.954 11.954 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.933 0-3.742-.524-5.287-1.437l-.378-.225-3.924 1.077 1.077-3.924-.225-.378A9.953 9.953 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+      </a>
+      <a href="https://www.instagram.com/wodi.furniture" target="_blank" aria-label="إنستاجرام">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+      </a>
+    </div>
+    <p>© 2025 WODI Furniture — جميع الحقوق محفوظة</p>
+  </footer>
+
+  <script>
+    // Navbar scroll effect
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 60);
+    });
+  </script>
+  <script src="js/configurator.js"></script>
+
+</body>
+</html>
