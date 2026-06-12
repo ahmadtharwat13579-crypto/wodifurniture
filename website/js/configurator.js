@@ -1,6 +1,6 @@
 const WA='201556840368';
 const LOCATION_SHEET='https://script.google.com/macros/s/AKfycbz1Dj9QB3rlz_sZoLwC-kdfZiMUBsHheGT62dIgajmzqffFm7Z_XiQ9sH558XW9sgDZ/exec?pwd=double-protection-password';
-let LOC={workshop_lat:30.061113,workshop_lng:31.394701,correction_factor:1.4,price_per_km:5,base_install_price:100};
+let LOC={workshop_lat:30.061113,workshop_lng:31.394701,correction_factor:0,price_per_km:0,base_install_price:0};
 let userLat=null,userLng=null,installCost=null;
 const GH = 'https://raw.githubusercontent.com/ahmadtharwat13579-crypto/wodifurniture/main/website/images/';
 const SHEET='https://script.google.com/macros/s/AKfycbz3xuCuZ6sU9QVo2nTRaItWFLplEhG7bKuzeZSQpk4DseShYrzycpRhyO2u2kuwPVkY/exec?pwd=double-protection-password';
@@ -222,10 +222,25 @@ function haversine(lat1,lng1,lat2,lng2){
   return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
 }
 
-function calcInstall(lat,lng){
-  const dist=haversine(LOC.workshop_lat,LOC.workshop_lng,lat,lng);
-  const adjusted=dist*LOC.correction_factor;
-  return r5(4*adjusted*LOC.price_per_km+LOC.base_install_price);
+function calcInstall(lat, lng) {
+  const dist = haversine(LOC.workshop_lat, LOC.workshop_lng, lat, lng);
+  
+  // لو المسافة أكبر من الحد الأقصى
+  if (dist > LOC.max_distance_km) {
+  res.innerHTML = `خارج نطاق الخدمة الحالي —
+    <button onclick="outOfRangeWA()" 
+    style="background:none;border:none;color:#9caf88;
+    cursor:pointer;font-family:'Cairo',sans-serif;
+    font-size:12px;text-decoration:underline;">
+    تواصل معنا</button>`;
+  res.className = 'loc-result show out-of-range';
+  btn.disabled = false;
+  btn.innerHTML = '📍 تحديد موقعي الحالي';
+  return;
+}
+  
+  const adjusted = dist * LOC.correction_factor;
+  return r5(4*adjusted * LOC.price_per_km + LOC.base_install_price);
 }
 
 function calc(){
@@ -390,6 +405,10 @@ function orderWA(){
 }
 
 function customWA(){window.open('https://wa.me/'+WA+'?text='+encodeURIComponent('السلام عليكم، عندي فكرة تصميم وحدة حوض خاص وعايز أستفسر عنه.'),'_blank');}
+function outOfRangeWA(){ 
+  window.open('https://wa.me/'+WA+'?text='+
+  encodeURIComponent('السلام عليكم، أنا خارج نطاق الخدمة الحالي وعايز أستفسر عن إمكانية التنفيذ في منطقتي.'),'_blank');
+}
 function openLB(s){document.getElementById('lb-img').src=s;document.getElementById('lb').classList.add('open');}
 function closeLB(){document.getElementById('lb').classList.remove('open');}
 
