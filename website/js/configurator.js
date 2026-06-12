@@ -367,7 +367,7 @@ function getLocation(btn, res, mapContainer, mapIframe) {
 
         // 4. التحقق من النطاق (سواء بالمسافة أو بالكلمات المحظورة)
         if (installCost === null || isForbidden) {
-            res.innerHTML = `نعتذر، خدمتنا حالياً متاحة في القاهرة والجيزة فقط. <button onclick="outOfRangeWA()" style="background:none;border:none;color:#9caf88;cursor:pointer;font-family:'Cairo',sans-serif;font-size:12px;text-decoration:underline;">تواصل معنا</button>`;
+            res.innerHTML = `نعتذر, موقعك خارج نطاق خدمتنا. <button onclick="outOfRangeWA()" style="background:none;border:none;color:#9caf88;cursor:pointer;font-family:'Cairo',sans-serif;font-size:12px;text-decoration:underline;">هل يمكن التنفيذ في منطقتي؟</button>`;
             res.className = 'loc-result show out-of-range';
             btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="9" stroke-dasharray="4 2"/></svg> تحديد موقعي الحالي';
             btn.disabled = false;
@@ -431,7 +431,7 @@ function orderWA(){
 function customWA(){window.open('https://wa.me/'+WA+'?text='+encodeURIComponent('السلام عليكم، عندي فكرة تصميم وحدة حوض خاص وعايز أستفسر عنه.'),'_blank');}
 function outOfRangeWA(){ 
   window.open('https://wa.me/'+WA+'?text='+
-  encodeURIComponent('السلام عليكم، أنا خارج نطاق الخدمة الحالي وعايز أستفسر عن إمكانية التنفيذ في منطقتي.'),'_blank');
+  encodeURIComponent('السلام عليكم، موقعي خارج نطاق الخدمة الحالي، وأرغب في معرفة إمكانية التنفيذ في منطقتي.'),'_blank');
 }
 function openLB(s){document.getElementById('lb-img').src=s;document.getElementById('lb').classList.add('open');}
 function closeLB(){document.getElementById('lb').classList.remove('open');}
