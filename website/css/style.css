@@ -260,6 +260,7 @@ footer {
   .handle-card { flex: 0 0 160px; }
 }
 
+
 /* ── Configurator CSS ── */
 .main-header{font-size:18px;font-weight:700;line-height:1.6;margin-bottom:14px;color:#ffffff;text-align:right}
 .intro-para{font-size:12px;line-height:1.8;color:rgba(255,255,255,0.7);margin-bottom:18px;text-align:right}
@@ -359,7 +360,17 @@ footer {
 /* ── Tooltip ── */
 .tooltip-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:8000;align-items:center;justify-content:center;padding:20px}
 .tooltip-overlay.open{display:flex}
-.tooltip-box{background:#2a2820;border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:20px;max-width:320px;width:100%;position:relative}
+.tooltip-box {
+    background: #2a2820;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 20px;
+    max-width: 500px;  /* زيادة المساحة القصوى */
+    min-width: 300px;  /* ضمان حد أدنى للعرض */
+    width: 70%;        /* ليكون مرناً على الموبايل */
+    height: auto;      /* أهم خطوة: تجعل الصندوق يطول تلقائياً ليحتوي كل النص */
+    position: relative;
+}
 .tooltip-close{position:absolute;top:12px;left:12px;background:none;border:none;color:rgba(255,255,255,0.6);font-size:20px;cursor:pointer;line-height:1}
 .tooltip-text{font-size:13px;color:rgba(255,255,255,0.85);line-height:1.7;font-family:'Cairo',sans-serif}
 .install-warning{display:none;font-size:11px;color:rgba(255,200,100,0.8);margin-top:6px;text-align:center}

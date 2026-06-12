@@ -62,6 +62,8 @@
   </div>
 </div>
 
+
+
 <div class="step">
   <div class="step-header">
     <span class="step-title">1. التصميم</span>
@@ -113,8 +115,16 @@
 <div class="loc-section">
   <div class="loc-header">
     <span class="step-title" style="margin-bottom:0">٤. المعاينة والتركيب</span>
-    <button class="loc-hint" onclick="openTooltip()">؟</button>
+    
+    <button class="loc-hint" onclick="openTooltip()" style="background:none; border:none; cursor:pointer; padding:5px;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9caf88" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="16" x2="12" y2="12"></line>
+        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+      </svg>
+    </button>
   </div>
+  
   <div class="loc-desc">نحتاج تحديد موقعك لتقدير تكلفة المعاينة والتركيب بدقة.</div>
   
   <button class="btn-locate" id="btn-locate" onclick="requestLocation()">
@@ -122,9 +132,9 @@
     تحديد موقعي الحالي
   </button>
 
-<div id="mapContainer" style="display: none; margin-top: 20px;">
-  <iframe id="staticMap" src="" width="100%" height="200" style="border:1px solid #ccc; border-radius:8px;"></iframe>
-</div>
+  <div id="mapContainer" style="display: none; margin-top: 20px;">
+    <iframe id="staticMap" src="" width="100%" height="200" style="border:1px solid #ccc; border-radius:8px;"></iframe>
+  </div>
 
   <div class="loc-result" id="loc-result"></div>
 </div>
@@ -242,7 +252,11 @@
   <div class="tooltip-overlay" id="tooltip-overlay" onclick="closeTooltip()">
     <div class="tooltip-box" onclick="event.stopPropagation()">
       <button class="tooltip-close" onclick="closeTooltip()">×</button>
-      <div class="tooltip-text">نستخدم موقعك فقط لحساب المسافة بيننا وتحديد تكلفة التنقل للمعاينة والتركيب...</div>
+      <div class="tooltip-text">
+  نستخدم موقعك لحساب المسافة وتوفير أفضل سعر للمعاينة والتركيب. لا يتم حفظ موقعك، ولا يُستخدم إِلا لهذا الغرض.
+  <br><br>
+  إذا كنت تفضل عدم مشاركته، يمكنك التواصل معنا عبر واتساب لتحديد التكلفة يدوياً.
+</div>
     </div>
   </div>
 

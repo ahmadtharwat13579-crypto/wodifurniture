@@ -10,6 +10,7 @@ const toAr=n=>String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g,',').replace
 const cur='ج.م.';
 const base=id=>id.replace(/_\d+[\-\.]?\d*cm$/i,'');
 
+
 function toggleNotes(){
   document.getElementById('notes-box').classList.toggle('open');
 }
@@ -443,6 +444,8 @@ window.addEventListener('load',()=>{
   });
 });
 
+const container = document.getElementById('selection-container');
+
 fetch(LOCATION_SHEET)
   .then(r=>r.json())
   .then(settings=>{
@@ -454,16 +457,26 @@ fetch(LOCATION_SHEET)
 fetch(SHEET)
   .then(r=>r.json())
   .then(rows=>{
-    if(rows.length>5){
-      D=build(rows);
-      dataLoaded=true;
-      rDes();rSz();rDiv();rHnd();upd();
-      console.log('✅ Loaded fresh data from Apps Script');
-    }
-  })
-  .catch(e=>{
-    console.error('❌ Failed to load data:', e.message);
-  });
+  if(rows.length>5){
+    // حفظ الاختيارات القديمة
+    const oldDesignId = S.design?.id;
+    const oldSizeId = S.size?.id;
+    const oldDivId = S.div?.id;
+    const oldHandleId = S.handle?.id;
+
+    D = build(rows);
+    dataLoaded = true;
+
+    // ريستور الاختيارات من الـ data الجديدة
+    if(oldDesignId) S.design = D.designs.find(d=>d.id===oldDesignId)||null;
+    if(oldSizeId && S.design) S.size = S.design.sizes.find(s=>s.id===oldSizeId)||null;
+    if(oldDivId) S.div = D.divisions.find(d=>d.id===oldDivId)||null;
+    if(oldHandleId) S.handle = D.handles.find(h=>h.id===oldHandleId)||null;
+
+    rDes();rSz();rDiv();rHnd();upd();
+    console.log('✅ Loaded fresh data from Apps Script');
+  }
+})
 
 // Render cards immediately with placeholder data
 rDes();rSz();rDiv();rHnd();upd();
@@ -501,7 +514,15 @@ function showSlide(index) {
 }
 
 function moveSlide(step) { showSlide(currentIndex + step); resetAutoplay(); }
-function startAutoplay() { autoplayTimer = setInterval(() => showSlide(currentIndex - 1), 2500); }
+function startAutoplay() {
+    // التأكد أننا نبدأ من أول عنصر
+    currentIndex = 0; 
+    autoplayTimer = setInterval(() => {
+        // الاتجاه الطبيعي هو +1
+        currentIndex = (currentIndex + 1) % images.length;
+        showSlide(currentIndex);
+    }, 2500);
+}
 function resetAutoplay() { clearInterval(autoplayTimer); startAutoplay(); }
 // تشغيل عند التحميل
 window.addEventListener('load', initCarousel);
