@@ -419,3 +419,44 @@ fetch(SHEET)
 
 // Render cards immediately with placeholder data
 rDes();rSz();rDiv();rHnd();upd();
+
+const images = ['ic-01.webp', 'ic-02.webp', 'ic-03.webp']; // أضف أسماء كل صورك هنا
+let currentIndex = 0;
+
+function initCarousel() {
+    const track = document.getElementById('carousel-track');
+    const dotsContainer = document.getElementById('carousel-dots');
+    
+    images.forEach((img, index) => {
+        // إنشاء السلايد
+        const slide = document.createElement('div');
+        slide.className = 'carousel-slide';
+        slide.innerHTML = `<img src="${GH}${img}" alt="عمل منفذ ${index+1}">`;
+        track.appendChild(slide);
+        
+        // إنشاء النقطة
+        const dot = document.createElement('button');
+        dot.className = 'carousel-dot' + (index === 0 ? ' active' : '');
+        dot.onclick = () => showSlide(index);
+        dotsContainer.appendChild(dot);
+    });
+
+    // التقليب التلقائي كل 3 ثواني
+    setInterval(() => moveSlide(1), 3000);
+}
+
+function showSlide(index) {
+    currentIndex = (index + images.length) % images.length;
+    const track = document.getElementById('carousel-track');
+    track.style.transform = `translateX(-${currentIndex * 100}%)`;
+    
+    // تحديث النقط
+    document.querySelectorAll('.carousel-dot').forEach((dot, i) => {
+        dot.classList.toggle('active', i === currentIndex);
+    });
+}
+
+function moveSlide(step) { showSlide(currentIndex + step); }
+
+// تشغيل عند التحميل
+window.addEventListener('load', initCarousel);
