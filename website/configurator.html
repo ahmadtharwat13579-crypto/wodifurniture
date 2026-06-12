@@ -187,6 +187,22 @@
   </div>
 </div>
 
+<section class="portfolio-section">
+    <h2 class="section-title">أعمال منفذة لعملائنا</h2>
+    <div class="carousel-wrap">
+        <div class="carousel-track" id="carousel-track">
+            </div>
+        <div class="carousel-dots" id="carousel-dots"></div>
+        <div class="carousel-arrows">
+          <button class="carousel-arrow" onclick="moveSlide(-1)">
+            <svg viewBox="0 0 24 24"...><path d="M9 18l6-6-6-6"/></svg>
+          </button>
+          <button class="carousel-arrow" onclick="moveSlide(1)">
+           <svg viewBox="0 0 24 24"...><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+        </div>
+    </div>
+
 <div class="toast" id="toast"></div>
 <div class="lb" id="lb" onclick="closeLB()">
   <button class="lb-close" onclick="closeLB()">x</button>
@@ -232,22 +248,14 @@
   </script>
   <script src="js/configurator.js"></script>
 
-<section class="portfolio-section">
-    <h2 class="section-title">أعمال منفذة لعملائنا</h2>
-    <div class="carousel-wrap">
-        <div class="carousel-track" id="carousel-track">
-            </div>
-        <div class="carousel-dots" id="carousel-dots"></div>
-        <div class="carousel-arrows">
-            <button class="carousel-arrow" onclick="moveSlide(-1)">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
-            </button>
-            <button class="carousel-arrow" onclick="moveSlide(1)">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-            </button>
-        </div>
-    </div>
 </section>
+
+<div class="tooltip-overlay" id="tooltip-overlay" onclick="closeTooltip()">
+  <div class="tooltip-box" onclick="event.stopPropagation()">
+    <button class="tooltip-close" onclick="closeTooltip()">×</button>
+    <div class="tooltip-text">نستخدم موقعك فقط لحساب المسافة بيننا وتحديد تكلفة التنقل للمعاينة والتركيب. لن يتم حفظ موقعك أو استخدامه لأي غرض آخر.<br><br>إذا كنت غير مرتاح لمشاركة موقعك، يمكنك التواصل معنا مباشرة عبر واتساب وسنحدد لك التكلفة بناءً على حيّك.</div>
+  </div>
+</div>
 
 </body>
 </html>

@@ -1,6 +1,6 @@
 const WA='201556840368';
-const LOCATION_SHEET='https://script.google.com/macros/s/AKfycbzK8n0uZcXlq2Ux2FwW1DSi8W4RNF3wAB3OCJy_ECO8oCM3bHIaApbUAWJ7sr57CEnj/exec?pwd=double-protection-password';
-let LOC={workshop_lat:30.061113,workshop_lng:31.394701,correction_factor:1.3,price_per_km:30,base_install_price:300};
+const LOCATION_SHEET='https://script.google.com/macros/s/AKfycbz1Dj9QB3rlz_sZoLwC-kdfZiMUBsHheGT62dIgajmzqffFm7Z_XiQ9sH558XW9sgDZ/exec?pwd=double-protection-password';
+let LOC={workshop_lat:30.061113,workshop_lng:31.394701,correction_factor:1.4,price_per_km:5,base_install_price:100};
 let userLat=null,userLng=null,installCost=null;
 const GH = 'https://raw.githubusercontent.com/ahmadtharwat13579-crypto/wodifurniture/main/website/images/';
 const SHEET='https://script.google.com/macros/s/AKfycbz3xuCuZ6sU9QVo2nTRaItWFLplEhG7bKuzeZSQpk4DseShYrzycpRhyO2u2kuwPVkY/exec?pwd=double-protection-password';
@@ -286,10 +286,16 @@ async function getAddress(lat, lon, resElement) {
   try {
     const response = await fetch(url);
     const data = await response.json();
-    if (data.display_name) {
-      // عرض العنوان (بناخد أول 3 أجزاء من العنوان للاختصار)
-      const address = data.display_name.split(',').slice(0, 3).join(', ');
-      resElement.innerHTML += `<br><small style="color:#666;">العنوان: ${address}</small>`;
+    if (data.address) {
+      const a = data.address;
+      // ناخد الحي والمدينة فقط
+      const neighbourhood = a.neighbourhood || a.suburb || a.quarter || '';
+      const city = a.city || a.town || a.state_district || a.state || a.county || '';
+      const parts = [neighbourhood, city].filter(Boolean);
+      const address = parts.join('، ');
+      if (address) {
+        resElement.innerHTML += `<br><small>الموقع: ${address}</small>`;
+      }
     }
   } catch (e) {
     console.error("تعذر جلب العنوان", e);
@@ -420,43 +426,40 @@ fetch(SHEET)
 // Render cards immediately with placeholder data
 rDes();rSz();rDiv();rHnd();upd();
 
-const images = ['ic-01.webp', 'ic-02.webp', 'ic-03.webp']; // أضف أسماء كل صورك هنا
+const images = ['ic-01.webp', 'ic-02.webp', 'ic-03.webp', 'ic-04.webp'];
 let currentIndex = 0;
+let autoplayTimer;
 
 function initCarousel() {
-    const track = document.getElementById('carousel-track');
-    const dotsContainer = document.getElementById('carousel-dots');
-    
-    images.forEach((img, index) => {
-        // إنشاء السلايد
-        const slide = document.createElement('div');
-        slide.className = 'carousel-slide';
-        slide.innerHTML = `<img src="${GH}${img}" alt="عمل منفذ ${index+1}">`;
-        track.appendChild(slide);
-        
-        // إنشاء النقطة
-        const dot = document.createElement('button');
-        dot.className = 'carousel-dot' + (index === 0 ? ' active' : '');
-        dot.onclick = () => showSlide(index);
-        dotsContainer.appendChild(dot);
-    });
+  const track = document.getElementById('carousel-track');
+  const dotsContainer = document.getElementById('carousel-dots');
 
-    // التقليب التلقائي كل 3 ثواني
-    setInterval(() => moveSlide(1), 3000);
+  images.forEach((img, index) => {
+    const slide = document.createElement('div');
+    slide.className = 'carousel-slide';
+    slide.innerHTML = `<img src="${GH}${img}" alt="عمل منفذ ${index+1}">`;
+    track.appendChild(slide);
+
+    const dot = document.createElement('button');
+    dot.className = 'carousel-dot' + (index === 0 ? ' active' : '');
+    dot.onclick = () => { showSlide(index); resetAutoplay(); };
+    dotsContainer.appendChild(dot);
+  });
+
+  startAutoplay();
 }
 
 function showSlide(index) {
-    currentIndex = (index + images.length) % images.length;
-    const track = document.getElementById('carousel-track');
-    track.style.transform = `translateX(-${currentIndex * 100}%)`;
-    
-    // تحديث النقط
-    document.querySelectorAll('.carousel-dot').forEach((dot, i) => {
-        dot.classList.toggle('active', i === currentIndex);
-    });
+  currentIndex = (index + images.length) % images.length;
+  const track = document.getElementById('carousel-track');
+  track.style.transform = `translateX(${currentIndex * 100}%)`;
+  document.querySelectorAll('.carousel-dot').forEach((dot, i) => {
+    dot.classList.toggle('active', i === currentIndex);
+  });
 }
 
-function moveSlide(step) { showSlide(currentIndex + step); }
-
+function moveSlide(step) { showSlide(currentIndex + step); resetAutoplay(); }
+function startAutoplay() { autoplayTimer = setInterval(() => showSlide(currentIndex - 1), 2500); }
+function resetAutoplay() { clearInterval(autoplayTimer); startAutoplay(); }
 // تشغيل عند التحميل
 window.addEventListener('load', initCarousel);

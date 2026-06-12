@@ -362,10 +362,10 @@ footer {
 /* ── Portfolio Carousel ── */
 .portfolio-section{padding:40px 16px 32px;max-width:580px;margin:0 auto}
 .portfolio-section .section-title{margin:0 0 24px;font-size:18px;text-align:right}
-.carousel-wrap{position:relative}
-.carousel-track{display:flex;overflow:hidden;border-radius:12px}
-.carousel-slide{flex:0 0 100%;transition:transform 0.4s ease}
-.carousel-slide img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block}
+.carousel-wrap { overflow: hidden; position: relative; border-radius: 6px; }
+.carousel-track { display: flex; transition: transform 0.4s ease; }
+.carousel-slide { flex: 0 0 100%; }
+.carousel-slide img { width: 100%; aspect-ratio: 980/1325; object-fit: cover; display: block; }
 .carousel-dots{display:flex;justify-content:center;gap:6px;margin-top:12px}
 .carousel-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.25);cursor:pointer;transition:background 0.2s;border:none;padding:0}
 .carousel-dot.active{background:#9caf88}
