@@ -239,6 +239,13 @@
   <p>© 2026 WODI Furniture — جميع الحقوق محفوظة</p>
 </footer>
 
+  <div class="tooltip-overlay" id="tooltip-overlay" onclick="closeTooltip()">
+    <div class="tooltip-box" onclick="event.stopPropagation()">
+      <button class="tooltip-close" onclick="closeTooltip()">×</button>
+      <div class="tooltip-text">نستخدم موقعك فقط لحساب المسافة بيننا وتحديد تكلفة التنقل للمعاينة والتركيب...</div>
+    </div>
+  </div>
+
   <script>
     // Navbar scroll effect
     const navbar = document.getElementById('navbar');
@@ -247,15 +254,6 @@
     });
   </script>
   <script src="js/configurator.js"></script>
-
-</section>
-
-<div class="tooltip-overlay" id="tooltip-overlay" onclick="closeTooltip()">
-  <div class="tooltip-box" onclick="event.stopPropagation()">
-    <button class="tooltip-close" onclick="closeTooltip()">×</button>
-    <div class="tooltip-text">نستخدم موقعك فقط لحساب المسافة بيننا وتحديد تكلفة التنقل للمعاينة والتركيب. لن يتم حفظ موقعك أو استخدامه لأي غرض آخر.<br><br>إذا كنت غير مرتاح لمشاركة موقعك، يمكنك التواصل معنا مباشرة عبر واتساب وسنحدد لك التكلفة بناءً على حيّك.</div>
-  </div>
-</div>
 
 </body>
 </html>

@@ -222,30 +222,21 @@ function haversine(lat1,lng1,lat2,lng2){
   return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
 }
 
-function calcInstall(lat, lng){
-  const dist=haversine(LOC.workshop_lat,LOC.workshop_lng,lat,lng);
-  const maxDist=parseFloat(LOC.max_distance_km)||25;
-  if(dist>maxDist) return null;
-  const adjusted=dist*LOC.correction_factor;
-  return r5(adjusted*LOC.price_per_km+LOC.base_install_price);
-}
-  
-  // لو المسافة أكبر من الحد الأقصى
-  if (dist > LOC.max_distance_km) {
-  res.innerHTML = `خارج نطاق الخدمة الحالي —
-    <button onclick="outOfRangeWA()" 
-    style="background:none;border:none;color:#9caf88;
-    cursor:pointer;font-family:'Cairo',sans-serif;
-    font-size:12px;text-decoration:underline;">
-    تواصل معنا</button>`;
-  res.className = 'loc-result show out-of-range';
-  btn.disabled = false;
-  btn.innerHTML = '📍 تحديد موقعي الحالي';
-  return;
-}
-  
+function calcInstall(lat, lng) {
+  const dist = haversine(LOC.workshop_lat, LOC.workshop_lng, lat, lng);
+  const maxDist = (LOC.max_distance_km !== undefined && LOC.max_distance_km !== null) 
+                ? parseFloat(LOC.max_distance_km) 
+                : 25;
+
+  // التحقق من المسافة
+  if (dist > maxDist) {
+    return null; // نعيد null فقط، والتحكم في عرض الرسالة يكون في دالة requestLocation
+  }
+
+  // الحساب إذا كان داخل النطاق
   const adjusted = dist * LOC.correction_factor;
-  return r5(4*adjusted * LOC.price_per_km + LOC.base_install_price);
+  // أصلحت الحساب هنا بإزالة الـ 4 التي كانت مضافة بدون داعٍ
+  return r5(adjusted * LOC.price_per_km + LOC.base_install_price);
 }
 
 function calc(){
@@ -339,38 +330,54 @@ function requestLocation() {
     return;
   }
 
-  // 2. طلب الموقع
+  // الآن نستدعي دالة تحديد الموقع
+  getLocation(btn, res, mapContainer, mapIframe);
+}
+
+function getLocation(btn, res, mapContainer, mapIframe) {
   setTimeout(() => {
     navigator.geolocation.getCurrentPosition(
       async pos => {
         const userLat = pos.coords.latitude;
         const userLng = pos.coords.longitude;
         
-        // حساب التكلفة
-        installCost = calcInstall(userLat, userLng);
-
-        // التحقق من نطاق الخدمة (هنا نضع الكود الخاص بك)
-        if (installCost === null) {
-            res.innerHTML = `موقعك خارج نطاق الخدمة الحالي — <button onclick="outOfRangeWA()" style="background:none;border:none;color:#9caf88;cursor:pointer;font-family:'Cairo',sans-serif;font-size:12px;text-decoration:underline;">تواصل معنا</button>`;
-            res.className = 'loc-result show out-of-range';
-            btn.innerHTML = '📍 تحديد موقعي الحالي';
-            btn.disabled = false;
-            upd();
-            return; // الخروج من الدالة وعدم إكمال باقي العمليات
-        }
-
-        // تحديث الخريطة (Zoom 0.002)
+        // 1. تحديث الخريطة أولاً لتظهر دائماً
         const zoomFactor = 0.002; 
         mapIframe.src = `https://www.openstreetmap.org/export/embed.html?bbox=${userLng - zoomFactor},${userLat - zoomFactor},${userLng + zoomFactor},${userLat + zoomFactor}&layer=mapnik`;
         mapContainer.style.display = 'block';
 
+        // 2. حساب المسافة (المعيار الأساسي)
+        installCost = calcInstall(userLat, userLng);
 
-        // 4. عرض النتيجة
+        // 3. جلب العنوان للتحقق من المناطق المستبعدة (فلتر إضافي)
+        let isForbidden = false;
+        try {
+            const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${userLat}&lon=${userLng}&accept-language=ar`;
+            const response = await fetch(url);
+            const data = await response.json();
+            if (data.address) {
+                const addr = JSON.stringify(data.address);
+                const forbiddenKeywords = ['أشمون', 'بشتيل', 'أوسيم', 'أبو زعبل', 'القناطر', 'طنان'];
+                isForbidden = forbiddenKeywords.some(keyword => addr.includes(keyword));
+            }
+        } catch (e) {
+            console.warn("تعذر التحقق من اسم المنطقة، سنعتمد على المسافة فقط.");
+        }
+
+        // 4. التحقق من النطاق (سواء بالمسافة أو بالكلمات المحظورة)
+        if (installCost === null || isForbidden) {
+            res.innerHTML = `نعتذر، خدمتنا حالياً متاحة في القاهرة والجيزة فقط. <button onclick="outOfRangeWA()" style="background:none;border:none;color:#9caf88;cursor:pointer;font-family:'Cairo',sans-serif;font-size:12px;text-decoration:underline;">تواصل معنا</button>`;
+            res.className = 'loc-result show out-of-range';
+            btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="9" stroke-dasharray="4 2"/></svg> تحديد موقعي الحالي';
+            btn.disabled = false;
+            upd();
+            return; 
+        }
+
+        // 5. إذا كان داخل النطاق، عرض النتيجة وتفاصيل العنوان
         res.innerHTML = 'تم تحديد موقعك — تكلفة المعاينة والتركيب: ' + installCost + ' EGP';
-        
-        // استدعاء دالة جلب العنوان النصي
         await getAddress(userLat, userLng, res);
-
+        
         res.className = 'loc-result show';
         btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> تم تحديد الموقع';
         btn.disabled = false;
