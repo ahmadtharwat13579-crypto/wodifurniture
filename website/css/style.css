@@ -17,48 +17,47 @@ body {
 
 /* ── Navbar ── */
 .navbar {
-  position: absolute;
+  position: fixed;
   top: 0;
   width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 40px;
+  padding: 12px 40px;
   background: transparent;
   z-index: 100;
   box-sizing: border-box;
+  transition: background 0.4s ease, backdrop-filter 0.4s ease;
 }
 
 .navbar.scrolled {
-  position: fixed;
-  background: rgba(51, 48, 40, 0.95);
-  backdrop-filter: blur(8px);
-  box-shadow: 0 2px 12px rgba(0,0,0,0.3);
-  transition: background 0.3s;
+  background: rgba(51, 48, 40, 0.96);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.35);
 }
 
 .nav-left { display: flex; align-items: center; gap: 20px; }
-.nav-logo { width: 50px; }
+.nav-logo { width: 42px; }
 .logo-link { display: flex; align-items: center; }
 
-.nav-right { display: flex; gap: 30px; align-items: center; }
+.nav-right { display: flex; gap: 28px; align-items: center; }
 
 .nav-right a {
   color: white;
   text-decoration: none;
-  font-size: 15px;
+  font-size: 14px;
   transition: opacity 0.2s;
   position: relative;
 }
 
 .nav-right a:hover { opacity: 0.7; }
-
 .nav-right a.active { font-weight: 700; }
 
 .nav-right a.active::after {
   content: '';
   position: absolute;
-  bottom: -6px;
+  bottom: -5px;
   right: 0;
   width: 100%;
   height: 2px;
@@ -68,8 +67,7 @@ body {
 
 /* ── Hero Section ── */
 .hero {
-  
-  min-height: 90vh;
+  min-height: 60vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -80,8 +78,8 @@ body {
     linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)),
     url('../images/cover-v1.webp') center/cover no-repeat;
   background-attachment: fixed;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.6);
   animation: heroFadeIn 1s ease-out forwards;
+  will-change: transform;
 }
 
 @keyframes heroFadeIn {
@@ -90,18 +88,20 @@ body {
 }
 
 .hero h1 {
-  font-size: clamp(28px, 5vw, 52px);
+  font-size: clamp(32px, 5vw, 56px);
   font-weight: 800;
-  line-height: 1.4;
+  line-height: 1.3;
   margin-bottom: 16px;
   color: #fff;
+  text-shadow: none;
 }
 
 .hero p {
-  font-size: clamp(14px, 2vw, 18px);
+  font-size: clamp(14px, 2vw, 17px);
   color: rgba(255,255,255,0.85);
   margin-bottom: 28px;
   max-width: 480px;
+  text-shadow: none;
 }
 
 /* ── Buttons ── */
@@ -119,11 +119,7 @@ body {
   font-weight: 600;
   transition: background 0.25s, color 0.25s;
 }
-
-.btn-outline:hover {
-  background: #ffffff;
-  color: #333028;
-}
+.btn-outline:hover { background: #ffffff; color: #333028; }
 
 .btn-primary {
   display: inline-block;
@@ -139,14 +135,7 @@ body {
   font-weight: 600;
   transition: background 0.2s;
 }
-
 .btn-primary:hover { background: #8a9e78; }
-
-.design-card:hover, .div-card:hover, .handle-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 16px rgba(0,0,0,0.15);
-  transition: all 0.3s ease;
-}
 
 /* ── Section Titles ── */
 .section-title {
@@ -161,7 +150,7 @@ body {
 .products-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
+  gap: 20px;
   padding: 0 40px 60px;
   max-width: 1100px;
   margin: 0 auto;
@@ -174,40 +163,46 @@ body {
   overflow: hidden;
   transition: transform 0.2s, border-color 0.2s;
 }
-
 .product-card:hover {
   transform: translateY(-4px);
   border-color: rgba(156,175,136,0.4);
 }
-
 .product-card img {
   width: 100%;
-  aspect-ratio: 4/5;
+  aspect-ratio: 5/4;
   object-fit: cover;
   display: block;
 }
+.product-card-body { padding: 16px; }
+.product-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 6px; color: #fff; }
+.product-card p { font-size: 13px; color: rgba(255,255,255,0.6); margin-bottom: 14px; }
 
-.product-card-body {
-  padding: 16px;
+/* ── Why WODI Section ── */
+.why-section {
+  padding: 20px 40px 60px;
+  max-width: 800px;
+  margin: 0 auto;
 }
-
-.product-card h3 {
-  font-size: 16px;
+.why-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.why-list li {
+  font-size: 15px;
+  color: rgba(255,255,255,0.85);
+  line-height: 1.6;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.why-list li::before {
+  content: '–';
+  color: #9caf88;
   font-weight: 700;
-  margin-bottom: 6px;
-  color: #fff;
-}
-
-.product-card p {
-  font-size: 13px;
-  color: rgba(255,255,255,0.6);
-  margin-bottom: 14px;
-}
-
-#mapContainer img {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
+  flex-shrink: 0;
+  margin-top: 1px;
 }
 
 /* ── Footer ── */
@@ -219,30 +214,12 @@ footer {
   color: rgba(255,255,255,0.6);
   font-size: 13px;
 }
-
-.footer-links {
-  display: flex;
-  justify-content: center;
-  gap: 24px;
-  margin-bottom: 16px;
-}
-
-.footer-links a {
-  color: rgba(255,255,255,0.7);
-  text-decoration: none;
-  font-size: 13px;
-  transition: color 0.2s;
-}
-
-.footer-links a:hover { color: #9caf88; }
-
 .footer-social {
   display: flex;
   justify-content: center;
   gap: 16px;
   margin-bottom: 16px;
 }
-
 .footer-social a {
   width: 38px;
   height: 38px;
@@ -255,14 +232,10 @@ footer {
   text-decoration: none;
   transition: border-color 0.2s, color 0.2s;
 }
-
 .footer-social a:hover { border-color: #9caf88; color: #9caf88; }
 
 /* ── Configurator Page ── */
-.conf-page {
-  padding-top: 80px;
-  min-height: 100vh;
-}
+.conf-page { padding-top: 70px; min-height: 100vh; }
 
 .conf {
   padding: 16px;
@@ -273,23 +246,15 @@ footer {
   color: #ffffff;
 }
 
-#loc-result small {
-  display: block;
-  font-size: 11px;      /* تكبير الخط */
-  font-weight: 500;     /* جعله عريض */
-  color: #f4f4f4 !important; /* لون غامق للوضوح */
-  margin-top: 5px;
-  line-height: 1.4;
+/* Desktop: wider conf */
+@media (min-width: 769px) {
+  .conf { max-width: 580px; padding: 20px 24px; }
+  .design-card { flex: 0 0 200px; }
+  .div-card { flex: 0 0 160px; }
+  .handle-card { flex: 0 0 160px; }
 }
 
-/* هذا الكود يجعل الكروت تبدو باهتة قليلاً حتى يتم التحميل */
-.design-card.loading, .div-card.loading, .handle-card.loading {
-  pointer-events: none;
-  opacity: 0.6;
-  cursor: wait;
-}
-
-/* ── Configurator CSS (from v18) ── */
+/* ── Configurator CSS ── */
 .main-header{font-size:18px;font-weight:700;line-height:1.6;margin-bottom:14px;color:#ffffff;text-align:right}
 .intro-para{font-size:12px;line-height:1.8;color:rgba(255,255,255,0.7);margin-bottom:18px;text-align:right}
 .notes-box{border:2px solid rgba(255,255,255,0.12);border-radius:8px;background:rgba(0,0,0,0.2);margin-bottom:20px;overflow:hidden}
@@ -302,7 +267,7 @@ footer {
 .notes-toggle svg{width:14px;height:14px;stroke:#1a1a2a;opacity:0.9}
 .notes-box.open .notes-toggle{transform:rotate(180deg)}
 .notes-content{max-height:0;overflow:hidden;transition:max-height 0.4s cubic-bezier(0.4,0,0.2,1)}
-.notes-box.open .notes-content{max-height:350px}
+.notes-box.open .notes-content{max-height:400px}
 .notes-list{list-style:none;padding:12px}
 .notes-list li{font-size:11px;line-height:1.7;color:rgba(255,255,255,0.7);padding:2px 0;display:flex;gap:6px}
 .notes-list li::before{content:"";width:6px;height:6px;border:1.5px solid rgba(255,255,255,0.5);border-radius:50%;flex-shrink:0;margin-top:6px}
@@ -320,11 +285,14 @@ footer {
 .cards-row::-webkit-scrollbar{display:none}
 .design-card{flex:0 0 190px;border:2px solid rgba(255,255,255,0.12);border-radius:10px;overflow:hidden;cursor:pointer;background:rgba(255,255,255,0.05);transition:border-color 0.15s}
 .design-card.selected{border:2px solid #9caf88;box-shadow:0 0 0 3px rgba(156,175,136,0.25)}
+.design-card.loading-lock{opacity:0.5;cursor:not-allowed;pointer-events:none;filter:grayscale(0.4)}
 .div-card{flex:0 0 145px;border:2px solid rgba(255,255,255,0.12);border-radius:10px;overflow:hidden;cursor:pointer;background:rgba(255,255,255,0.05);transition:border-color 0.15s}
 .div-card.selected{border:2px solid #9caf88;box-shadow:0 0 0 3px rgba(156,175,136,0.25)}
+.div-card.loading-lock{opacity:0.5;cursor:not-allowed;pointer-events:none;filter:grayscale(0.4)}
 .handle-card{flex:0 0 145px;border:2px solid rgba(255,255,255,0.12);border-radius:10px;overflow:hidden;cursor:pointer;background:rgba(255,255,255,0.05);transition:border-color 0.15s}
 .handle-card.selected{border:2px solid #9caf88;box-shadow:0 0 0 3px rgba(156,175,136,0.25)}
 .handle-card.dis{opacity:0.35;cursor:not-allowed;pointer-events:none}
+.handle-card.loading-lock{opacity:0.5;cursor:not-allowed;pointer-events:none;filter:grayscale(0.4)}
 .cimg{width:100%;padding-top:100%;overflow:hidden;background:rgba(255,255,255,0.08);position:relative}
 .cimg img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover}
 .cimg svg.placeholder{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:36px;height:36px;opacity:0.35;stroke:#ffffff}
@@ -366,10 +334,12 @@ footer {
 .lb.open{display:flex}
 .lb img{max-width:90vw;max-height:85vh;border-radius:8px;object-fit:contain}
 .lb-close{position:absolute;top:16px;right:16px;color:#fff;font-size:32px;cursor:pointer;background:none;border:none;line-height:1;font-weight:300}
-/* Location */
+
+/* ── Location ── */
 .loc-section{padding:0;margin-bottom:22px}
 .loc-header{display:flex;align-items:center;gap:6px;margin-bottom:10px}
-.loc-hint{width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,0.15);border:none;color:rgba(255,255,255,0.7);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.loc-hint{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,0.15);border:1.5px solid rgba(255,255,255,0.3);color:rgba(255,255,255,0.9);font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'Cairo',sans-serif;transition:background 0.2s}
+.loc-hint:hover{background:rgba(255,255,255,0.25)}
 .loc-desc{font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:12px;line-height:1.6}
 .btn-locate{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:11px;background:#9caf88;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Cairo',sans-serif;transition:background 0.2s}
 .btn-locate:hover{background:#8a9e78}
@@ -377,6 +347,10 @@ footer {
 .loc-result{display:none;margin-top:10px;padding:8px 12px;background:rgba(156,175,136,0.15);border:1px solid rgba(156,175,136,0.3);border-radius:8px;font-size:12px;color:#9caf88;text-align:center;line-height:1.5}
 .loc-result.show{display:block}
 .loc-result.error{background:rgba(255,100,100,0.1);border-color:rgba(255,100,100,0.3);color:#ff9999}
+.map-wrap{display:none;margin-top:12px;border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,0.12)}
+.map-wrap.show{display:block}
+
+/* ── Tooltip ── */
 .tooltip-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:8000;align-items:center;justify-content:center;padding:20px}
 .tooltip-overlay.open{display:flex}
 .tooltip-box{background:#2a2820;border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:20px;max-width:320px;width:100%;position:relative}
@@ -384,7 +358,23 @@ footer {
 .tooltip-text{font-size:13px;color:rgba(255,255,255,0.85);line-height:1.7;font-family:'Cairo',sans-serif}
 .install-warning{display:none;font-size:11px;color:rgba(255,200,100,0.8);margin-top:6px;text-align:center}
 .install-warning.show{display:block}
-/* Toast */
+
+/* ── Portfolio Carousel ── */
+.portfolio-section{padding:40px 16px 32px;max-width:580px;margin:0 auto}
+.portfolio-section .section-title{margin:0 0 24px;font-size:18px;text-align:right}
+.carousel-wrap{position:relative}
+.carousel-track{display:flex;overflow:hidden;border-radius:12px}
+.carousel-slide{flex:0 0 100%;transition:transform 0.4s ease}
+.carousel-slide img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block}
+.carousel-dots{display:flex;justify-content:center;gap:6px;margin-top:12px}
+.carousel-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.25);cursor:pointer;transition:background 0.2s;border:none;padding:0}
+.carousel-dot.active{background:#9caf88}
+.carousel-arrows{position:absolute;top:50%;transform:translateY(-50%);width:100%;display:flex;justify-content:space-between;pointer-events:none;padding:0 8px;box-sizing:border-box}
+.carousel-arrow{width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,0.55);border:1px solid rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;cursor:pointer;pointer-events:auto;transition:background 0.2s}
+.carousel-arrow:hover{background:rgba(0,0,0,0.8)}
+.carousel-arrow svg{width:16px;height:16px;stroke:#fff}
+
+/* ── Toast ── */
 .toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0));left:50%;transform:translateX(-50%);background:rgba(30,25,20,0.95);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-family:'Cairo',sans-serif;z-index:9000;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;border:1px solid rgba(255,255,255,0.15);max-width:90vw;text-align:center;line-height:1.4}
 .toast.show{opacity:1}
 .size-warning{font-size:12px;color:#e8c44a;margin-top:8px;display:none}
@@ -393,25 +383,22 @@ footer {
 .spin{animation:spin 1s linear infinite;display:inline-block}
 
 /* ── Responsive ── */
-@media (max-width:768px){
-  .navbar{ padding:16px 20px; }
-  .hero{ padding:100px 24px 60px; align-items: center; text-align: center; }
-  .hero p{ margin: 0 auto 28px; }
-  .products-grid{ padding:0 20px 48px; gap:16px; }
-  footer{ padding:24px 20px; }
+@media (max-width:900px){
+  .products-grid{ grid-template-columns: repeat(2,1fr); }
 }
 
-@media (max-width: 900px) {
-  .products-grid {
-    grid-template-columns: repeat(2, 1fr);  /* 2×2 على التابلت والموبايل */
-  }
-
 @media (max-width:480px){
+  .navbar{ padding:10px 16px; }
   .nav-right{ gap:16px; }
   .nav-right a{ font-size:13px; }
-  .hero h1{ font-size:26px; }
+  .hero{ padding:90px 20px 50px; align-items:center; text-align:center; min-height:55vh; }
+  .hero p{ margin:0 auto 24px; }
+  .products-grid{ grid-template-columns: 1fr; padding:0 16px 40px; }
+  .why-section{ padding:0 16px 40px; }
+  footer{ padding:24px 16px; }
+  .portfolio-section{ padding:32px 16px; }
 }
 
 @supports(padding:max(0px)){
-  body{ padding-bottom: max(0px, env(safe-area-inset-bottom)); }
+  body{ padding-bottom:max(0px, env(safe-area-inset-bottom)); }
 }
