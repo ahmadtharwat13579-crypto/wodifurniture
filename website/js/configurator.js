@@ -348,15 +348,15 @@ function requestLocation() {
         
         // حساب التكلفة
         installCost = calcInstall(userLat, userLng);
-        
-        // لو خارج النطاق
-        if(installCost === null){
-          res.innerHTML = `موقعك خارج نطاق الخدمة الحالي — <button onclick="outOfRangeWA()" style="background:none;border:none;color:#9caf88;cursor:pointer;font-family:'Cairo',sans-serif;font-size:12px;text-decoration:underline;">تواصل معنا</button>`;
-          res.className = 'loc-result show out-of-range';
-          btn.innerHTML = '📍 تحديد موقعي الحالي';
-          btn.disabled = false;
-          upd();
-          return;
+
+        // التحقق من نطاق الخدمة (هنا نضع الكود الخاص بك)
+        if (installCost === null) {
+            res.innerHTML = `موقعك خارج نطاق الخدمة الحالي — <button onclick="outOfRangeWA()" style="background:none;border:none;color:#9caf88;cursor:pointer;font-family:'Cairo',sans-serif;font-size:12px;text-decoration:underline;">تواصل معنا</button>`;
+            res.className = 'loc-result show out-of-range';
+            btn.innerHTML = '📍 تحديد موقعي الحالي';
+            btn.disabled = false;
+            upd();
+            return; // الخروج من الدالة وعدم إكمال باقي العمليات
         }
 
         // تحديث الخريطة (Zoom 0.002)
@@ -364,7 +364,6 @@ function requestLocation() {
         mapIframe.src = `https://www.openstreetmap.org/export/embed.html?bbox=${userLng - zoomFactor},${userLat - zoomFactor},${userLng + zoomFactor},${userLat + zoomFactor}&layer=mapnik`;
         mapContainer.style.display = 'block';
 
-        
 
         // 4. عرض النتيجة
         res.innerHTML = 'تم تحديد موقعك — تكلفة المعاينة والتركيب: ' + installCost + ' EGP';
