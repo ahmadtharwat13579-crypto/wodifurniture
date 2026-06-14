@@ -237,7 +237,7 @@ function calcInstall(lat, lng) {
   // الحساب إذا كان داخل النطاق
   const adjusted = dist * LOC.correction_factor;
   // أصلحت الحساب هنا بإزالة الـ 4 التي كانت مضافة بدون داعٍ
-  return r5(adjusted * LOC.price_per_km + LOC.base_install_price);
+  return r5(4*adjusted * LOC.price_per_km + LOC.base_install_price);
 }
 
 function calc(){
