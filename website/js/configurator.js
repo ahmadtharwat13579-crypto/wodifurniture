@@ -1,6 +1,6 @@
 const WA='201556840368';
 const LOCATION_SHEET='https://script.google.com/macros/s/AKfycbz1Dj9QB3rlz_sZoLwC-kdfZiMUBsHheGT62dIgajmzqffFm7Z_XiQ9sH558XW9sgDZ/exec?pwd=double-protection-password';
-let LOC={workshop_lat:30.061113,workshop_lng:31.394701,correction_factor:0,price_per_km:0,base_install_price:0};
+let LOC={workshop_lat:30.061113,workshop_lng:31.394701,correction_factor:0,price_per_km:0,fixed_cost:0};
 let userLat=null,userLng=null,installCost=null;
 const GH = 'https://raw.githubusercontent.com/ahmadtharwat13579-crypto/wodifurniture/main/website/images/';
 const SHEET='https://script.google.com/macros/s/AKfycbz3xuCuZ6sU9QVo2nTRaItWFLplEhG7bKuzeZSQpk4DseShYrzycpRhyO2u2kuwPVkY/exec?pwd=double-protection-password';
@@ -237,17 +237,23 @@ function calcInstall(lat, lng) {
   // الحساب إذا كان داخل النطاق
   const adjusted = dist * LOC.correction_factor;
   // أصلحت الحساب هنا بإزالة الـ 4 التي كانت مضافة بدون داعٍ
-  return r5(4*adjusted * LOC.price_per_km + LOC.base_install_price);
+  return r5(4*adjusted * LOC.price_per_km + LOC.fixed_cost);
 }
 
 function calc(){
   if(!S.design||!S.size||!S.div)return null;
   const noH=S.design.hc===0;
   if(!noH&&!S.handle)return null;
+  
   const sg=sgr(S.size.size);
-  const unitPrice=r5(S.size.price+dvp(S.div,sg)+(noH?0:S.handle.price*S.design.hc));
-  if(installCost===null) return unitPrice;
-  return r5(unitPrice+installCost);
+  const installationFee = 200; // البند الثابت للمعاينة والتركيب
+  const unitPrice = r5(S.size.price + dvp(S.div, sg) + (noH ? 0 : S.handle.price * S.design.hc));
+  
+  // إذا كان العميل لم يحدد موقعه بعد، نعيد سعر الوحدة + التركيب الثابت فقط
+  if(installCost === null) return unitPrice + installationFee;
+  
+  // إذا حدد موقعه، نضيف سعر التوصيل أيضاً
+  return unitPrice + installationFee + installCost;
 }
 
 function upd(){
@@ -257,25 +263,27 @@ function upd(){
     const noH=S.design&&S.design.hc===0;
     const sg=S.size?sgr(S.size.size):'85';
 
+    // 1. تحديث السعر الإجمالي
     document.getElementById('total-price').textContent=t!==null?t+' EGP':'— EGP';
 
+    // 2. تحديث التحذيرات
     const warn=document.getElementById('price-warning');
     if(warn){
       const needsWarn=S.design&&S.div&&S.handle&&!S.size;
       warn.classList.toggle('show',needsWarn);
     }
 
-    // Install warning - show when all selected except location
     const allSelected=S.design&&S.size&&S.div&&(S.design.hc===0||S.handle);
     const instWarn=document.getElementById('install-warning');
     if(instWarn) instWarn.classList.toggle('show',allSelected&&installCost===null);
 
-    // Install price in summary
+    // 3. تحديث بند التوصيل فقط (بما أن المعاينة والتركيب ثابتة في الـ HTML)
     const siLabel=document.getElementById('si-label');
     const siPrice=document.getElementById('si-price');
     if(siLabel) siLabel.textContent=installCost!==null?'محسوبة':'—';
     if(siPrice) siPrice.textContent=installCost!==null?installCost+' EGP':'—';
 
+    // 4. تحديث تفاصيل السعر
     document.getElementById('sd').textContent=S.design?S.design.name:'—';
     document.getElementById('sd-price').textContent=S.size?r5(S.size.price)+' EGP':'—';
 
@@ -289,6 +297,7 @@ function upd(){
     document.getElementById('sh').textContent=S.handle?S.handle.name:(noH?'بدون مقبض':'—');
     const handlePrice=S.handle&&!noH?S.handle.price*S.design.hc:0;
     document.getElementById('sh-price').textContent=S.handle?(handlePrice>0?'+'+handlePrice+' EGP':'+0 EGP'):(noH?'—':'—');
+    
   },300);
 }
 
@@ -376,7 +385,7 @@ function getLocation(btn, res, mapContainer, mapIframe) {
         }
 
         // 5. إذا كان داخل النطاق، عرض النتيجة وتفاصيل العنوان
-        res.innerHTML = 'تم تحديد موقعك — تكلفة المعاينة والتركيب: ' + installCost + ' EGP';
+        res.innerHTML = 'تم تحديد موقعك — تكلفة التوصيل: ' + installCost + ' EGP';
         await getAddress(userLat, userLng, res);
         
         res.className = 'loc-result show';
@@ -420,12 +429,22 @@ function showToast(msg){
 }
 
 function orderWA(){
-  const t=calc();
+  const t = calc();
   if(!t){showToast('الطلب غير مكتمل، يرجى إكمال جميع الخيارات');return;}
-  const noH=S.design.hc===0;
-  const installNote=installCost!==null?'\nتكلفة المعاينة والتركيب: '+installCost+' EGP':'\nتكلفة المعاينة والتركيب: سيتم تحديدها عند التواصل';
-  const msg='السلام عليكم، أرغب في طلب وحدة حوض بالمواصفات التالية:\n\nالتصميم: '+S.design.name+'\nالمقاس: '+S.size.size+'\nالتقسيمة الداخلية: '+S.div.name+'\nنوع المقبض: '+(noH?'بدون مقبض':S.handle.name)+installNote+'\n\nالسعر الإجمالي: '+t+' EGP\n\nبرجاء تأكيد الطلب.';
-  window.open('https://wa.me/'+WA+'?text='+encodeURIComponent(msg),'_blank');
+  const noH = S.design.hc===0;
+  const deliveryNote = installCost !== null ? '\nتكلفة التوصيل: ' + installCost + ' EGP' : '\nتكلفة التوصيل: سيتم تحديدها عند التواصل';
+  
+  const msg = 'السلام عليكم، أرغب في طلب وحدة حوض بالمواصفات التالية:\n\n' +
+              'التصميم: ' + S.design.name + '\n' +
+              'المقاس: ' + S.size.size + '\n' +
+              'التقسيمة الداخلية: ' + S.div.name + '\n' +
+              'نوع المقبض: ' + (noH ? 'بدون مقبض' : S.handle.name) + '\n' +
+              'تكلفة المعاينة والتركيب: 200 EGP' + 
+              deliveryNote + '\n\n' +
+              'السعر الإجمالي: ' + t + ' EGP\n\n' +
+              'برجاء تأكيد الطلب.';
+              
+  window.open('https://wa.me/' + WA + '?text=' + encodeURIComponent(msg), '_blank');
 }
 
 function customWA(){window.open('https://wa.me/'+WA+'?text='+encodeURIComponent('السلام عليكم، عندي فكرة تصميم وحدة حوض خاص وعايز أستفسر عنه.'),'_blank');}

@@ -32,7 +32,7 @@
   <li>حدد مقاس الحوض الخاص بك من بين المقاسات المتاحة للتصميم.</li>
   <li>اختر التقسيمة الداخلية.</li>
   <li>اختر نوع المقبض.</li>
-  <li>قم بتحديد موقعك لحساب تكلفة المعاينة والتركيب.</li>
+  <li>قم بتحديد موقعك لحساب تكلفة التوصيل.</li>
   <li>سيتم تحديث السعر النهائي تلقائيًا مع كل اختيار.</li>
   <li>بعد تحديد المواصفات، اضغط على "اطلب الآن" ليتم توجيهك للواتساب.</li>
   <li>سيتم معاينة الموقع وأخذ المقاسات للتأكد من إمكانية تنفيذ التصميم.</li>
@@ -56,7 +56,7 @@
       <li>الصور المعروضة لأغراض توضيحية وقد تختلف النسب قليلا حسب المقاس المختار.</li>
       <li>المقاسات المعروضة تمثل عرض الحوض بالسنتيمتر.</li>
       <li>جميع المفصلات ومجاري الأدراج المستخدمة Soft-Close.</li>
-      <li>السعر الإجمالي المعروض شامل المعاينة والتركيب والتنفيذ بالكامل بدون أي رسوم إضافية.</li>
+      <li>السعر الإجمالي المعروض شامل المعاينة, التركيب, التنفيذ والتوصيل بالكامل بدون أي رسوم إضافية.</li>
       <li>يتم تنفيذ وتسليم الوحدة خلال 3-7 ايام من تأكيد الطلب.</li>
     </ul>
   </div>
@@ -114,7 +114,7 @@
 <!-- Section 4: Location -->
 <div class="loc-section">
   <div class="loc-header">
-    <span class="step-title" style="margin-bottom:0">٤. المعاينة والتركيب</span>
+    <span class="step-title" style="margin-bottom:0">٤. التوصيل</span>
     
     <button class="loc-hint" onclick="openTooltip()" style="background:none; border:none; cursor:pointer; padding:5px;">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9caf88" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -125,7 +125,7 @@
     </button>
   </div>
   
-  <div class="loc-desc">نحتاج تحديد موقعك لتقدير تكلفة المعاينة والتركيب بدقة.</div>
+  <div class="loc-desc">نحتاج تحديد موقعك لتقدير تكلفة التوصيل بدقة.</div>
   
   <button class="btn-locate" id="btn-locate" onclick="requestLocation()">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="9" stroke-dasharray="4 2"/></svg>
@@ -169,12 +169,20 @@
       <span class="sval" id="sh">—</span>
       <span class="sval-price" id="sh-price">—</span>
     </div>
-    <div class="srow">
-      <span class="slbl">المعاينة والتركيب</span>
-      <span class="sval" id="si-label">—</span>
-      <span class="sval-price" id="si-price">—</span>
+    <div class="sum-rows">
+        <div class="srow" id="si-install-row">
+            <span class="slbl">المعاينة والتركيب</span>
+            <span class="sval" id="si-install-label">تكلفة ثابتة</span>
+            <span class="sval-price" id="si-install-price">200 EGP</span>
+        </div>
+        
+        <div class="srow">
+          <span class="slbl">التوصيل</span>
+          <span class="sval" id="si-label">—</span>
+          <span class="sval-price" id="si-price">—</span>
+        </div>
     </div>
-    <div class="install-warning" id="install-warning">* السعر يشمل الوحدة فقط — تكلفة المعاينة والتركيب لم تُحسب بعد</div>
+    <div class="install-warning" id="install-warning">* السعر يشمل الوحدة فقط — تكلفة التوصيل لم تُحسب بعد</div>
   </div>
   <div class="actions">
     <button class="btn-reset" onclick="resetAll()">
