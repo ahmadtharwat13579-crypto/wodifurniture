@@ -239,13 +239,14 @@ summary {
   cursor: pointer;
   list-style: none; /* إخفاء السهم الافتراضي */
   position: relative;
+  padding-left: 30px;
 }
 
 /* إضافة سهم خاص */
 summary::after {
   content: '+';
   position: absolute;
-  left: 0;
+  left: 15px;
 }
 
 details[open] summary::after {
