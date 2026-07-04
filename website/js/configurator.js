@@ -49,18 +49,18 @@ function build(rows){
     if(cat==='sink_cabinets'){
       const b=base(id);
       if(!des[b]) {
-        // تحديد النوع بناءً على الكود
+        // تحديد النوع: fp للرجل الكاملة، أي شيء آخر يعتبر معلق
         const type = id.includes('_fp_') ? 'floor-standing' : 'wall-hung';
         des[b]={id:b, name:nm, hc:parseInt(r.handle_count)||0, sizes:[], type:type};
       }
       else if(nm) des[b].name=nm;
       des[b].sizes.push({id,size:sz,price:p});
-    } else if(cat==='cabinet_inside_config'){
+    }else if(cat==='cabinet_inside_config'){
       const b=base(id);
       let g=divs.find(d=>d.id===b);
       if(!g){g={id:b,name:nm,sizes:[]};divs.push(g);}
       g.sizes.push({id,size:sz||'any',price:p});
-    } else if(cat==='handles_&_knobs'){
+    }else if(cat==='handles_&_knobs'){
       hnd.push({id,name:nm,price:p});
     }
   });
@@ -153,30 +153,70 @@ function mkImg(id,cardEl){
 }
 
 function rDes() {
-  // 1. البحث عن الحاويات أو إنشائها تلقائياً
-  let cWh = document.getElementById('dc-wh');
-  let cFp = document.getElementById('dc-fp');
+  const wall = document.getElementById('dc-wall');
+  const floor = document.getElementById('dc-floor');
 
-  if (!cWh) {
-    cWh = document.createElement('div'); cWh.id = 'dc-wh';
-    cWh.className = 'cards-container';
-    // نضعها قبل منطقة المقاسات (بافتراض أن لديها id='sb')
-    const sb = document.getElementById('sb');
-    sb.parentNode.insertBefore(cWh, sb);
-    sb.parentNode.insertBefore(document.createElement('h3'), sb).textContent = 'أحواض معلقة / سقط رخام';
-  }
-  if (!cFp) {
-    cFp = document.createElement('div'); cFp.id = 'dc-fp';
-    cFp.className = 'cards-container';
-    const sb = document.getElementById('sb');
-    sb.parentNode.insertBefore(cFp, sb);
-    sb.parentNode.insertBefore(document.createElement('h3'), sb).textContent = 'أحواض برجل كاملة (FP)';
-  }
+  if (!wall || !floor) return;
 
-  cWh.innerHTML = '';
-  cFp.innerHTML = '';
+  wall.innerHTML = '';
+  floor.innerHTML = '';
 
-  D.designs.forEach(d => {
+  D.designs
+    .filter(d => d.type !== 'floor-standing')
+    .forEach(d => wall.appendChild(createDesignCard(d)));
+
+  D.designs
+    .filter(d => d.type === 'floor-standing')
+    .forEach(d => floor.appendChild(createDesignCard(d)));
+
+  updateArrows('dc-wall');
+  updateArrows('dc-floor');
+}
+
+// دالة مساعدة لإنشاء الكارت (بنفس تنسيق الموقع الأصلي)
+function createDesignCard(d) {
+  const validPrices = d.sizes.map(s => s.price).filter(p => p !== null);
+  const minP = validPrices.length ? Math.min(...validPrices) : null;
+  
+  const el = document.createElement('div');
+  el.className = 'design-card' + (S.design && S.design.id === d.id ? ' selected' : '');
+  el.appendChild(mkImg(d.id, el));
+  
+  const info = document.createElement('div'); info.className = 'cinfo';
+  info.innerHTML = '<div class="cname">'+d.name+'</div><div class="cprice">يبدأ من: '+(minP!==null?r5(minP)+' EGP':'—')+'</div>';
+  el.appendChild(info);
+
+  el.onclick = () => {
+    if (S.design && S.design.type !== d.type) { S.size = null; S.div = null; S.handle = null; }
+    S.design = d; 
+    rDes(); rSz(); rDiv(); rHnd(); upd();
+  };
+  return el;
+}
+
+// دالة إنشاء الكارت (نفس التي استخدمناها سابقاً)
+function createDesignCard(d) {
+  const validPrices = d.sizes.map(s => s.price).filter(p => p !== null);
+  const minP = validPrices.length ? Math.min(...validPrices) : null;
+  
+  const el = document.createElement('div');
+  el.className = 'design-card' + (S.design && S.design.id === d.id ? ' selected' : '');
+  el.appendChild(mkImg(d.id, el));
+  
+  const info = document.createElement('div'); info.className = 'cinfo';
+  info.innerHTML = `<div class="cname">${d.name}</div><div class="cprice">يبدأ من: ${minP !== null ? r5(minP) : '—'} EGP</div>`;
+  el.appendChild(info);
+
+  el.onclick = () => {
+    if (S.design && S.design.type !== d.type) { S.size = null; S.div = null; S.handle = null; }
+    S.design = d; 
+    rDes(); rSz(); rDiv(); rHnd(); upd();
+  };
+  return el;
+}
+
+// دالة مساعدة لإنشاء الكارت بنفس تنسيقك القديم
+function createDesignCard(d) {
     const validPrices = d.sizes.map(s => s.price).filter(p => p !== null);
     const minP = validPrices.length ? Math.min(...validPrices) : null;
     
@@ -189,22 +229,11 @@ function rDes() {
     el.appendChild(info);
 
     el.onclick = () => {
-      // إذا غير نوع الحوض، نقوم بعمل Reset
-      if (S.design && S.design.type !== d.type) {
-        S.size = null; S.div = null; S.handle = null;
-      }
-      S.design = d; 
-      rDes(); rSz(); rDiv(); rHnd(); upd();
+        if (S.design && S.design.type !== d.type) { S.size = null; S.div = null; S.handle = null; }
+        S.design = d; 
+        rDes(); rSz(); rDiv(); rHnd(); upd();
     };
-
-    if (d.type === 'floor-standing') {
-      cFp.appendChild(el);
-    } else {
-      cWh.appendChild(el);
-    }
-  });
-  
-  setTimeout(() => { updateArrows('dc-wh'); updateArrows('dc-fp'); }, 50);
+    return el;
 }
 
 function rSz(){
@@ -220,22 +249,32 @@ function rSz(){
 }
 
 function rDiv() {
-    const c = document.getElementById('vc'); c.innerHTML = '';
-    if (!S.design) return;
+  const c = document.getElementById('vc');
+  c.innerHTML = '';
+  if (!S.design) return;
 
-    const isFp = S.design.id.includes('_fp_');
-    const sg = S.size ? sgr(S.size.size) : null;
+  const isFp = S.design.type === 'floor-standing';
+  const sg = S.size ? sgr(S.size.size) : null;
 
-    D.divisions.forEach(d => {
-        // قيد التقسيمات: الـ FP لا يرى إلا "بدون تقسيمة" (cic00) أو "رف كامل" (cic01)
-        if (isFp && !['4b_cic00', '4b_cic01'].includes(d.id)) return;
+  D.divisions.forEach(d => {
+    // قيد الـ FP للتقسيمات (السماح فقط بـ 00 و 01)
+    if (isFp && !['4b_cic00', '4b_cic01'].includes(d.id)) return;
 
-        const el = document.createElement('div');
-        // ... (باقي كود إنشاء الكارت كما هو في كودك الأصلي)
-        c.appendChild(el);
-    });
+    const el = document.createElement('div');
+    el.className = 'div-card' + (S.div && S.div.id === d.id ? ' selected' : '');
+    el.appendChild(mkImg(d.id, el));
+    
+    const info = document.createElement('div'); info.className = 'cinfo';
+    const divP = sg ? dvp(d, sg) : null;
+    const priceText = (divP !== null && divP !== undefined) ? '+' + divP + ' EGP' : '—';
+    info.innerHTML = '<div class="cname">' + d.name + '</div><div class="cprice">' + priceText + '</div>';
+    el.appendChild(info);
+    
+    el.onclick = () => { S.div = d; rDiv(); upd(); };
+    c.appendChild(el);
+  });
+  setTimeout(() => updateArrows('vc'), 100);
 }
-
 function rHnd(){
   const c=document.getElementById('hc');c.innerHTML='';
   const noH=S.design&&S.design.hc===0;
@@ -323,17 +362,24 @@ function upd() {
     if (siLabel) siLabel.textContent = installCost !== null ? 'محسوبة' : '—';
     if (siPrice) siPrice.textContent = installCost !== null ? installCost + ' EGP' : '—';
 
-    // 4. تحديث تفاصيل السعر (هنا تم دمج النوع مع الاسم)
-    const sdEl = document.getElementById('sd');
-    if (sdEl) {
-      if (S.design) {
-        // ندمج النوع مع الاسم في سطر واحد
-        const typeStr = S.design.type === 'floor-standing' ? ' [رجل كاملة]' : ' [معلق]';
-        sdEl.textContent = S.design.name + typeStr;
-      } else {
-        sdEl.textContent = '—';
-      }
-    }
+  // تحديث النوع
+const sdTypeEl = document.getElementById('sd-type');
+if (sdTypeEl) {
+  if (S.design) {
+    sdTypeEl.textContent =
+      S.design.type === 'floor-standing'
+        ? 'حوض رجل كاملة'
+        : 'حوض معلق / سقط رخام';
+  } else {
+    sdTypeEl.textContent = '—';
+  }
+}
+
+// تحديث اسم التصميم
+const sdEl = document.getElementById('sd');
+if (sdEl) {
+  sdEl.textContent = S.design ? S.design.name : '—';
+}
 
     document.getElementById('sd-price').textContent = S.size ? r5(S.size.price) + ' EGP' : '—';
     document.getElementById('ss').textContent = S.size ? S.size.size : '—';

@@ -158,6 +158,18 @@ body {
   margin: 0 auto;
 }
 
+.design-section{
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+    margin-bottom:32px;
+}
+
+.design-section h3{
+    flex:0 0 100%;
+    margin:0 0 12px;
+}
+
 /* على الشاشات الكبيرة (الأجهزة اللوحية والكمبيوتر) */
 @media (min-width: 768px) {
   .products-grid {
@@ -328,7 +340,7 @@ footer {
 .notes-list li::before{content:"";width:6px;height:6px;border:1.5px solid rgba(255,255,255,0.5);border-radius:50%;flex-shrink:0;margin-top:6px}
 .step{margin-bottom:22px}
 .step-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.step-title{font-size:13px;font-weight:600;color:#ffffff}
+.step-title{font-size:14px;font-weight:600;color:#ffffff}
 .scroll-wrap{position:relative}
 .scroll-arrow{position:absolute;top:50%;transform:translateY(-60%);width:28px;height:28px;background:rgba(0,0,0,0.65);border:1px solid rgba(255,255,255,0.25);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:10;transition:opacity 0.2s}
 .scroll-arrow:hover{background:rgba(0,0,0,0.85)}
@@ -336,6 +348,7 @@ footer {
 .scroll-arrow svg{width:14px;height:14px;stroke:#ffffff}
 .scroll-arrow.arr-start{left:2px}
 .scroll-arrow.arr-end{right:2px}
+.cards-container { display: flex; overflow-x: auto; gap: 10px; padding: 10px 0; }
 .cards-row{display:flex;gap:8px;overflow-x:auto;padding:4px 36px 6px 36px;scrollbar-width:none;scroll-behavior:smooth}
 .cards-row::-webkit-scrollbar{display:none}
 .design-card{flex:0 0 190px;border:2px solid rgba(255,255,255,0.12);border-radius:10px;overflow:hidden;cursor:pointer;background:rgba(255,255,255,0.05);transition:border-color 0.15s}
