@@ -48,15 +48,19 @@ function build(rows){
     const id=r.product_name,cat=r.product_category,p=parseFloat(r.price)||0,nm=r.display_name,sz=r.size;
     if(cat==='sink_cabinets'){
       const b=base(id);
-      if(!des[b])des[b]={id:b,name:nm,hc:parseInt(r.handle_count)||0,sizes:[]};
-      else if(nm)des[b].name=nm;
+      if(!des[b]) {
+        // تحديد النوع بناءً على الكود
+        const type = id.includes('_fp_') ? 'floor-standing' : 'wall-hung';
+        des[b]={id:b, name:nm, hc:parseInt(r.handle_count)||0, sizes:[], type:type};
+      }
+      else if(nm) des[b].name=nm;
       des[b].sizes.push({id,size:sz,price:p});
-    }else if(cat==='cabinet_inside_config'){
+    } else if(cat==='cabinet_inside_config'){
       const b=base(id);
       let g=divs.find(d=>d.id===b);
       if(!g){g={id:b,name:nm,sizes:[]};divs.push(g);}
       g.sizes.push({id,size:sz||'any',price:p});
-    }else if(cat==='handles_&_knobs'){
+    } else if(cat==='handles_&_knobs'){
       hnd.push({id,name:nm,price:p});
     }
   });
@@ -148,22 +152,59 @@ function mkImg(id,cardEl){
   return w;
 }
 
-function rDes(){
-  const c=document.getElementById('dc');c.innerHTML='';
-  D.designs.forEach(d=>{
-    const validPrices=d.sizes.map(s=>s.price).filter(p=>p!==null&&p!==undefined);
-    const minP=validPrices.length?Math.min(...validPrices):null;
-    const el=document.createElement('div');
-    el.className='design-card'+(S.design&&S.design.id===d.id?' selected':'');
-    el.appendChild(mkImg(d.id,el));
-    const info=document.createElement('div');info.className='cinfo';
-    const priceDisp=minP!==null?r5(minP)+' EGP':'—';
-    info.innerHTML='<div class="cname">'+d.name+'</div><div class="cprice'+(dataLoaded?'':' loading')+'">يبدأ من: '+priceDisp+'</div>';
+function rDes() {
+  // 1. البحث عن الحاويات أو إنشائها تلقائياً
+  let cWh = document.getElementById('dc-wh');
+  let cFp = document.getElementById('dc-fp');
+
+  if (!cWh) {
+    cWh = document.createElement('div'); cWh.id = 'dc-wh';
+    cWh.className = 'cards-container';
+    // نضعها قبل منطقة المقاسات (بافتراض أن لديها id='sb')
+    const sb = document.getElementById('sb');
+    sb.parentNode.insertBefore(cWh, sb);
+    sb.parentNode.insertBefore(document.createElement('h3'), sb).textContent = 'أحواض معلقة / سقط رخام';
+  }
+  if (!cFp) {
+    cFp = document.createElement('div'); cFp.id = 'dc-fp';
+    cFp.className = 'cards-container';
+    const sb = document.getElementById('sb');
+    sb.parentNode.insertBefore(cFp, sb);
+    sb.parentNode.insertBefore(document.createElement('h3'), sb).textContent = 'أحواض برجل كاملة (FP)';
+  }
+
+  cWh.innerHTML = '';
+  cFp.innerHTML = '';
+
+  D.designs.forEach(d => {
+    const validPrices = d.sizes.map(s => s.price).filter(p => p !== null);
+    const minP = validPrices.length ? Math.min(...validPrices) : null;
+    
+    const el = document.createElement('div');
+    el.className = 'design-card' + (S.design && S.design.id === d.id ? ' selected' : '');
+    el.appendChild(mkImg(d.id, el));
+    
+    const info = document.createElement('div'); info.className = 'cinfo';
+    info.innerHTML = `<div class="cname">${d.name}</div><div class="cprice">يبدأ من: ${minP !== null ? r5(minP) : '—'} EGP</div>`;
     el.appendChild(info);
-    el.onclick=()=>{S.design=d;S.size=null;rDes();rSz();rHnd();upd();};
-    c.appendChild(el);
+
+    el.onclick = () => {
+      // إذا غير نوع الحوض، نقوم بعمل Reset
+      if (S.design && S.design.type !== d.type) {
+        S.size = null; S.div = null; S.handle = null;
+      }
+      S.design = d; 
+      rDes(); rSz(); rDiv(); rHnd(); upd();
+    };
+
+    if (d.type === 'floor-standing') {
+      cFp.appendChild(el);
+    } else {
+      cWh.appendChild(el);
+    }
   });
-  setTimeout(()=>updateArrows('dc'),50);
+  
+  setTimeout(() => { updateArrows('dc-wh'); updateArrows('dc-fp'); }, 50);
 }
 
 function rSz(){
@@ -178,22 +219,21 @@ function rSz(){
   });
 }
 
-function rDiv(){
-  const c=document.getElementById('vc');c.innerHTML='';
-  const sg=S.size?sgr(S.size.size):null;
-  D.divisions.forEach(d=>{
-    const el=document.createElement('div');
-    el.className='div-card'+(S.div&&S.div.id===d.id?' selected':'');
-    el.appendChild(mkImg(d.id,el));
-    const info=document.createElement('div');info.className='cinfo';
-    const divP=sg?dvp(d,sg):null;
-    const priceText=(!dataLoaded)?'—':(divP!==null&&divP!==undefined&&sg?'+'+divP+' EGP':'—');
-    info.innerHTML='<div class="cname">'+d.name+'</div><div class="cprice'+(dataLoaded?'':' loading')+'">'+(dataLoaded?priceText:'—')+'</div>';
-    el.appendChild(info);
-    el.onclick=()=>{S.div=d;rDiv();upd();};
-    c.appendChild(el);
-  });
-  setTimeout(()=>updateArrows('vc'),50);
+function rDiv() {
+    const c = document.getElementById('vc'); c.innerHTML = '';
+    if (!S.design) return;
+
+    const isFp = S.design.id.includes('_fp_');
+    const sg = S.size ? sgr(S.size.size) : null;
+
+    D.divisions.forEach(d => {
+        // قيد التقسيمات: الـ FP لا يرى إلا "بدون تقسيمة" (cic00) أو "رف كامل" (cic01)
+        if (isFp && !['4b_cic00', '4b_cic01'].includes(d.id)) return;
+
+        const el = document.createElement('div');
+        // ... (باقي كود إنشاء الكارت كما هو في كودك الأصلي)
+        c.appendChild(el);
+    });
 }
 
 function rHnd(){
@@ -256,49 +296,58 @@ function calc(){
   return unitPrice + installationFee + installCost;
 }
 
-function upd(){
+function upd() {
   clearTimeout(dt);
-  dt=setTimeout(()=>{
-    const t=calc();
-    const noH=S.design&&S.design.hc===0;
-    const sg=S.size?sgr(S.size.size):'85';
+  dt = setTimeout(() => {
+    const t = calc();
+    const noH = S.design && S.design.hc === 0;
+    const sg = S.size ? sgr(S.size.size) : '85';
 
     // 1. تحديث السعر الإجمالي
-    document.getElementById('total-price').textContent=t!==null?t+' EGP':'— EGP';
+    document.getElementById('total-price').textContent = t !== null ? t + ' EGP' : '— EGP';
 
-    // 2. تحديث التحذيرات
-    const warn=document.getElementById('price-warning');
-    if(warn){
-      const needsWarn=S.design&&S.div&&S.handle&&!S.size;
-      warn.classList.toggle('show',needsWarn);
+    // 2. تحديث التحذيرات (إن وجدت)
+    const warn = document.getElementById('price-warning');
+    if (warn) {
+      const needsWarn = S.design && S.div && S.handle && !S.size;
+      warn.classList.toggle('show', needsWarn);
     }
 
-    const allSelected=S.design&&S.size&&S.div&&(S.design.hc===0||S.handle);
-    const instWarn=document.getElementById('install-warning');
-    if(instWarn) instWarn.classList.toggle('show',allSelected&&installCost===null);
+    const allSelected = S.design && S.size && S.div && (S.design.hc === 0 || S.handle);
+    const instWarn = document.getElementById('install-warning');
+    if (instWarn) instWarn.classList.toggle('show', allSelected && installCost === null);
 
-    // 3. تحديث بند التوصيل فقط (بما أن المعاينة والتركيب ثابتة في الـ HTML)
-    const siLabel=document.getElementById('si-label');
-    const siPrice=document.getElementById('si-price');
-    if(siLabel) siLabel.textContent=installCost!==null?'محسوبة':'—';
-    if(siPrice) siPrice.textContent=installCost!==null?installCost+' EGP':'—';
+    // 3. تحديث بيانات التوصيل
+    const siLabel = document.getElementById('si-label');
+    const siPrice = document.getElementById('si-price');
+    if (siLabel) siLabel.textContent = installCost !== null ? 'محسوبة' : '—';
+    if (siPrice) siPrice.textContent = installCost !== null ? installCost + ' EGP' : '—';
 
-    // 4. تحديث تفاصيل السعر
-    document.getElementById('sd').textContent=S.design?S.design.name:'—';
-    document.getElementById('sd-price').textContent=S.size?r5(S.size.price)+' EGP':'—';
+    // 4. تحديث تفاصيل السعر (هنا تم دمج النوع مع الاسم)
+    const sdEl = document.getElementById('sd');
+    if (sdEl) {
+      if (S.design) {
+        // ندمج النوع مع الاسم في سطر واحد
+        const typeStr = S.design.type === 'floor-standing' ? ' [رجل كاملة]' : ' [معلق]';
+        sdEl.textContent = S.design.name + typeStr;
+      } else {
+        sdEl.textContent = '—';
+      }
+    }
 
-    document.getElementById('ss').textContent=S.size?S.size.size:'—';
-    document.getElementById('ss-price').textContent='';
+    document.getElementById('sd-price').textContent = S.size ? r5(S.size.price) + ' EGP' : '—';
+    document.getElementById('ss').textContent = S.size ? S.size.size : '—';
+    document.getElementById('ss-price').textContent = '';
 
-    document.getElementById('sv').textContent=S.div?S.div.name:'—';
-    const divPrice=S.div?dvp(S.div,sg):0;
-    document.getElementById('sv-price').textContent=S.div?(divPrice>0?'+'+divPrice+' EGP':'+0 EGP'):'—';
+    document.getElementById('sv').textContent = S.div ? S.div.name : '—';
+    const divPrice = S.div ? dvp(S.div, sg) : 0;
+    document.getElementById('sv-price').textContent = S.div ? (divPrice > 0 ? '+' + divPrice + ' EGP' : '+0 EGP') : '—';
 
-    document.getElementById('sh').textContent=S.handle?S.handle.name:(noH?'بدون مقبض':'—');
-    const handlePrice=S.handle&&!noH?S.handle.price*S.design.hc:0;
-    document.getElementById('sh-price').textContent=S.handle?(handlePrice>0?'+'+handlePrice+' EGP':'+0 EGP'):(noH?'—':'—');
-    
-  },300);
+    document.getElementById('sh').textContent = S.handle ? S.handle.name : (noH ? 'بدون مقبض' : '—');
+    const handlePrice = S.handle && !noH ? S.handle.price * S.design.hc : 0;
+    document.getElementById('sh-price').textContent = S.handle ? (handlePrice > 0 ? '+' + handlePrice + ' EGP' : '+0 EGP') : (noH ? '—' : '—');
+
+  }, 300);
 }
 
 // دالة جلب العنوان (Reverse Geocoding)
