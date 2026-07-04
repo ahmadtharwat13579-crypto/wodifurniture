@@ -187,11 +187,24 @@ function createDesignCard(d) {
   el.appendChild(info);
 
   el.onclick = () => {
-    if (S.design && S.design.type !== d.type) { S.size = null; S.div = null; S.handle = null; }
-    S.design = d; 
-    rDes(); rSz(); rDiv(); rHnd(); upd();
-  };
-  return el;
+  // إذا تغير التصميم، صفّر المقاس
+  if (!S.design || S.design.id !== d.id) {
+    S.size = null;
+  }
+
+  // إذا تغير نوع التصميم، صفّر أيضًا التقسيمة والمقبض
+  if (S.design && S.design.type !== d.type) {
+    S.div = null;
+    S.handle = null;
+  }
+
+  S.design = d;
+  rDes();
+  rSz();
+  rDiv();
+  rHnd();
+  upd();
+};
 }
 
 // دالة إنشاء الكارت (نفس التي استخدمناها سابقاً)
@@ -236,14 +249,31 @@ function createDesignCard(d) {
     return el;
 }
 
-function rSz(){
-  const c=document.getElementById('sb');c.innerHTML='';
-  if(!S.design){c.innerHTML='<span class="miss">يجب اختيار التصميم أولاً</span>';return;}
-  S.design.sizes.forEach(s=>{
-    const b=document.createElement('button');
-    b.className='size-btn'+(S.size&&S.size.id===s.id?' selected':'');
-    b.textContent=s.size;
-    b.onclick=()=>{S.size=s;rSz();rDiv();upd();};
+function rSz() {
+  const c = document.getElementById('sb');
+  c.innerHTML = '';
+
+  if (!S.design) {
+    S.size = null;
+    c.innerHTML = '<span class="miss">يجب اختيار التصميم أولاً</span>';
+    return;
+  }
+
+  // إذا كان المقاس الحالي لا ينتمي للتصميم المختار، امسحه
+  if (S.size && !S.design.sizes.some(s => s.id === S.size.id)) {
+    S.size = null;
+  }
+
+  S.design.sizes.forEach(s => {
+    const b = document.createElement('button');
+    b.className = 'size-btn' + (S.size && S.size.id === s.id ? ' selected' : '');
+    b.textContent = s.size;
+    b.onclick = () => {
+      S.size = s;
+      rSz();
+      rDiv();
+      upd();
+    };
     c.appendChild(b);
   });
 }
@@ -343,12 +373,18 @@ function upd() {
     const sg = S.size ? sgr(S.size.size) : '85';
 
     // 1. تحديث السعر الإجمالي
-    document.getElementById('total-price').textContent = t !== null ? t + ' EGP' : '— EGP';
+    const totalEl = document.getElementById('total-price');
+const canShowPrice = S.design && S.size;
+
+totalEl.textContent =
+  canShowPrice && t !== null
+    ? t + ' EGP'
+    : '— EGP';
 
     // 2. تحديث التحذيرات (إن وجدت)
     const warn = document.getElementById('price-warning');
     if (warn) {
-      const needsWarn = S.design && S.div && S.handle && !S.size;
+      const needsWarn = S.design && !S.size;
       warn.classList.toggle('show', needsWarn);
     }
 
