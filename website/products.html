@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WODI Furniture | منتجاتنا</title>
+  <link rel="icon" type="image/png" href="images/favicon-v1.png">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <nav class="navbar" id="navbar">
+        <div class="nav-right">
+      <a href="index.html">الرئيسية</a>
+      <a href="products.html" class="active">منتجاتنا</a>
+      <a href="configurator.html">وحدات الحوض</a>
+    </div>
+    <div class="nav-left">
+      <a href="index.html" class="logo-link">
+        <img src="images/logo-v1.png" alt="WODI" class="nav-logo">
+      </a>
+    </div>
+  </nav>
+
+  <div class="products-page">
+
+    <div class="products-hero">
+      <h1>منتجاتنا</h1>
+    </div>
+
+    <!-- Category Filter -->
+    <div class="cat-scroll" id="cat-scroll">
+
+      <div class="cat-chip active" data-cat="all" onclick="filterCat('all')">
+        <div class="cat-icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        </div>
+        <span class="cat-label">الكل</span>
+      </div>
+
+      <div class="cat-chip" data-cat="mirror" onclick="filterCat('mirror')">
+        <div class="cat-icon">
+          <svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="18" rx="2"/><path d="M9 20h6"/><path d="M12 20v2"/></svg>
+        </div>
+        <span class="cat-label">وحدات المراية</span>
+      </div>
+
+      <div class="cat-chip" data-cat="washer" onclick="filterCat('washer')">
+        <div class="cat-icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="13" r="4"/><circle cx="8" cy="7" r="1" fill="#9caf88" stroke="none"/></svg>
+        </div>
+        <span class="cat-label">وحدات الغسالة</span>
+      </div>
+
+      <div class="cat-chip" data-cat="storage" onclick="filterCat('storage')">
+        <div class="cat-icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="8" rx="1"/><rect x="3" y="13" width="18" height="8" rx="1"/></svg>
+        </div>
+        <span class="cat-label">وحدات تخزين</span>
+      </div>
+
+      <div class="cat-chip" data-cat="toilet" onclick="filterCat('toilet')">
+        <div class="cat-icon">
+          <svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="12" rx="2"/><path d="M4 15h16v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-4z"/></svg>
+        </div>
+        <span class="cat-label">وحدات التواليت</span>
+      </div>
+
+    </div>
+
+    <!-- Product List -->
+    <div class="prod-list" id="prod-list">
+
+  <div class="prod-card" data-cat="mirror">
+    <img class="prod-img" src="images/4e_mc01.webp" alt="وحدة مراية MC01" onerror="this.style.background='rgba(255,255,255,0.08)'">
+    <div class="prod-body">
+      <span class="prod-cat-tag">وحدات المراية</span>
+      <div class="prod-name" id="name-4E_MC01">وحدة مراية MC01</div>
+      <div class="prod-desc">وحدة مراية بتصميم أنيق مع تخزين داخلي.</div>
+      <div class="prod-price" id="price-4E_MC01">— EGP</div>
+      <button class="prod-wa-btn" onclick="contactWA('4E_MC01')">استفسر الآن</button>
+    </div>
+  </div>
+
+  <div class="prod-card" data-cat="mirror">
+    <img class="prod-img" src="images/4e_mc02.webp" alt="وحدة مراية MC02" onerror="this.style.background='rgba(255,255,255,0.08)'">
+    <div class="prod-body">
+      <span class="prod-cat-tag">وحدات المراية</span>
+      <div class="prod-name" id="name-4E_MC02">وحدة مراية MC02</div>
+      <div class="prod-price" id="price-4E_MC02">— EGP</div>
+      <button class="prod-wa-btn" onclick="contactWA('4E_MC02')">استفسر الآن</button>
+    </div>
+  </div>
+
+  <div class="prod-card" data-cat="mirror">
+    <img class="prod-img" src="images/4e_mc03.webp" alt="وحدة مراية MC03" onerror="this.style.background='rgba(255,255,255,0.08)'">
+    <div class="prod-body">
+      <span class="prod-cat-tag">وحدات المراية</span>
+      <div class="prod-name" id="name-4E_MC03">وحدة مراية MC03</div>
+      <div class="prod-price" id="price-4E_MC03">— EGP</div>
+      <button class="prod-wa-btn" onclick="contactWA('4E_MC03')">استفسر الآن</button>
+    </div>
+  </div>
+
+  <div class="prod-card" data-cat="mirror">
+    <img class="prod-img" src="images/4e_mc04.webp" alt="وحدة مراية MC04" onerror="this.style.background='rgba(255,255,255,0.08)'">
+    <div class="prod-body">
+      <span class="prod-cat-tag">وحدات المراية</span>
+      <div class="prod-name" id="name-4E_MC04">وحدة مراية MC04</div>
+      <div class="prod-price" id="price-4E_MC04">— EGP</div>
+      <button class="prod-wa-btn" onclick="contactWA('4E_MC04')">استفسر الآن</button>
+    </div>
+  </div>
+
+  <div class="prod-card" data-cat="washer">
+    <img class="prod-img" src="images/4d_wm01.webp" alt="وحدة غسالة WM01" onerror="this.style.background='rgba(255,255,255,0.08)'">
+    <div class="prod-body">
+      <span class="prod-cat-tag">وحدات الغسالة</span>
+      <div class="prod-name" id="name-4D_WM01">وحدة غسالة WM01</div>
+      <div class="prod-price" id="price-4D_WM01">— EGP</div>
+      <button class="prod-wa-btn" onclick="contactWA('4D_WM01')">استفسر الآن</button>
+    </div>
+  </div>
+
+  <div class="prod-card" data-cat="washer">
+    <img class="prod-img" src="images/4d_wm02.webp" alt="وحدة غسالة WM02" onerror="this.style.background='rgba(255,255,255,0.08)'">
+    <div class="prod-body">
+      <span class="prod-cat-tag">وحدات الغسالة</span>
+      <div class="prod-name" id="name-4D_WM02">وحدة غسالة WM02</div>
+      <div class="prod-price" id="price-4D_WM02">— EGP</div>
+      <button class="prod-wa-btn" onclick="contactWA('4D_WM02')">استفسر الآن</button>
+    </div>
+  </div>
+
+  <div class="prod-card" data-cat="washer">
+    <img class="prod-img" src="images/4d_wm03.webp" alt="وحدة غسالة WM03" onerror="this.style.background='rgba(255,255,255,0.08)'">
+    <div class="prod-body">
+      <span class="prod-cat-tag">وحدات الغسالة</span>
+      <div class="prod-name" id="name-4D_WM03">وحدة غسالة WM03</div>
+      <div class="prod-price" id="price-4D_WM03">— EGP</div>
+      <button class="prod-wa-btn" onclick="contactWA('4D_WM03')">استفسر الآن</button>
+    </div>
+  </div>
+
+  <div class="prod-card" data-cat="toilet">
+    <img class="prod-img" src="images/4g_tc01.webp" alt="وحدة تواليت TC01" onerror="this.style.background='rgba(255,255,255,0.08)'">
+    <div class="prod-body">
+      <span class="prod-cat-tag">وحدات التواليت</span>
+      <div class="prod-name" id="name-4G_TC01">وحدة تواليت TC01</div>
+      <div class="prod-price" id="price-4G_TC01">— EGP</div>
+      <button class="prod-wa-btn" onclick="contactWA('4G_TC01')">استفسر الآن</button>
+    </div>
+  </div>
+
+  <div class="prod-card" data-cat="toilet">
+    <img class="prod-img" src="images/4g_tc02.webp" alt="وحدة تواليت TC02" onerror="this.style.background='rgba(255,255,255,0.08)'">
+    <div class="prod-body">
+      <span class="prod-cat-tag">وحدات التواليت</span>
+      <div class="prod-name" id="name-4G_TC02">وحدة تواليت TC02</div>
+      <div class="prod-price" id="price-4G_TC02">— EGP</div>
+      <button class="prod-wa-btn" onclick="contactWA('4G_TC02')">استفسر الآن</button>
+    </div>
+  </div>
+
+</div>
+
+  <div id="footer-placeholder"></div>
+
+  <script>
+    const WA = '201556840368';
+    const SHEET_PRODUCTS = 'https://script.google.com/macros/s/AKfycbz3xuCuZ6sU9QVo2nTRaItWFLplEhG7bKuzeZSQpk4DseShYrzycpRhyO2u2kuwPVkY/exec?pwd=double-protection-password';
+
+    // Navbar scroll
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 40);
+    });
+
+    // Load footer
+    fetch('footer.html').then(r => r.text()).then(h => {
+      document.getElementById('footer-placeholder').innerHTML = h;
+    });
+
+    // Category filter
+    function filterCat(cat) {
+      document.querySelectorAll('.cat-chip').forEach(c => {
+        c.classList.toggle('active', c.dataset.cat === cat);
+      });
+      document.querySelectorAll('.prod-card').forEach(card => {
+        card.classList.toggle('hidden', cat !== 'all' && card.dataset.cat !== cat);
+      });
+    }
+
+    // WhatsApp contact
+    function contactWA(productId) {
+      const name = document.getElementById('name-' + productId)?.textContent || productId;
+      const price = document.getElementById('price-' + productId)?.textContent || '—';
+      const msg = 'السلام عليكم، أرغب في الاستفسار عن:\n' + name + '\nالسعر: ' + price;
+      window.open('https://wa.me/' + WA + '?text=' + encodeURIComponent(msg), '_blank');
+    }
+
+    // Load prices from sheet
+    fetch(SHEET_PRODUCTS)
+      .then(r => r.json())
+      .then(rows => {
+        rows.forEach(r => {
+          const priceEl = document.getElementById('price-' + r.product_name);
+          const nameEl = document.getElementById('name-' + r.product_name);
+          if (priceEl && r.price) priceEl.textContent = Math.round(r.price) + ' EGP';
+          if (nameEl && r.display_name) nameEl.textContent = r.display_name;
+        });
+      })
+      .catch(() => {});
+  </script>
+
+ <script src="js/products.js"></script>
+
+</body>
+</html>
