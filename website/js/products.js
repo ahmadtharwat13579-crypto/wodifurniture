@@ -69,22 +69,21 @@ function contactWA(productId, name, price) {
 }
 
 function showSkeleton() {
-
     const container = document.getElementById("prod-list");
 
-    let html = `
-        <div class="loading-text">
-            جاري تحميل المنتجات
-            <span class="dots">
-                <span>.</span>
-                <span>.</span>
-                <span>.</span>
-            </span>
+    // 1. هيكل التحميل (منطقة النصوص فقط)
+    let loadingHtml = `
+        <div class="loading-box">
+            <div id="text1" class="loading-text-item">جاري تحميل المنتجات <span class="dots"><span>.</span><span>.</span><span>.</span></span></div>
+            <div id="text2" class="loading-text-item hidden-bottom">نعتذر على التأخير، جاري تجهيز القائمة لك...</div>
+            <div id="text3" class="loading-text-item hidden-bottom">شكراً لصبرك، نحن بصدد عرض أفضل الوحدات لك.</div>
         </div>
     `;
 
+    // 2. هيكل السكليتون (منطقة الكروت)
+    let skeletonHtml = '';
     for (let i = 0; i < 5; i++) {
-        html += `
+        skeletonHtml += `
             <div class="prod-skeleton">
                 <div class="skel-img"></div>
                 <div class="skel-body">
@@ -97,7 +96,35 @@ function showSkeleton() {
         `;
     }
 
-    container.innerHTML = html;
+    // 3. دمجهم معاً وتعيينهم للـ container
+    container.innerHTML = loadingHtml + skeletonHtml;
+
+    // 4. تشغيل اللوب الخاص بالنصوص فقط
+    const texts = ["text1", "text2", "text3"];
+    let currentIndex = 0;
+
+    function loopTexts() {
+        const current = document.getElementById(texts[currentIndex]);
+        const nextIndex = (currentIndex + 1) % texts.length;
+        const next = document.getElementById(texts[nextIndex]);
+
+        if(!current || !next) return; // حماية للكود لو تم مسح العناصر
+
+        current.classList.add("slide-up-out");
+        
+        setTimeout(() => {
+            current.classList.remove("slide-up-out", "slide-up-in");
+            current.classList.add("hidden-bottom");
+
+            next.classList.remove("hidden-bottom");
+            next.classList.add("slide-up-in");
+            
+            currentIndex = nextIndex;
+            setTimeout(loopTexts, 4000);
+        }, 600);
+    }
+
+    setTimeout(loopTexts, 4000);
 }
 
 function getCategoryIcon(id) {
@@ -126,128 +153,60 @@ function renderProducts() {
   let html = '';
 
   products
+      console.log("Products count before filter:", products.length);
+      console.log("Sample product visibility:", products[0]?.visible); // لرؤية هل هي صحيحة أم لا
     .filter(p => p.visible)
-    .forEach(p => {
-    const catId = p.category || '';
-    const imgSrc = GH + p.product_id + '.webp';
-    const catName = categoryMap[catId]?.display_name || '';
-    const finalPrice = p.sale_price && p.sale_price !== ''
-    ? Math.round(p.sale_price)
-    : Math.round(p.base_price);
+    .forEach((p, index) => { // أضفنا index هنا للتحكم في تأخير الأنيميشن
+        const catId = p.category || '';
+        const imgSrc = GH + p.product_id + '.webp';
+        const catName = categoryMap[catId]?.display_name || '';
+        
+        // حساب السعر بأمان
+        const basePrice = Math.round(p.base_price || 0);
+        const salePrice = p.sale_price && p.sale_price !== '' ? Math.round(p.sale_price) : null;
+        const priceText = `${salePrice || basePrice} EGP`;
 
-const priceText = `${finalPrice} EGP`;
-    let priceHtml = '';
+        // منطق عرض السعر
+        let priceHtml = salePrice 
+            ? `<div class="prod-price"><span class="old-price">${basePrice} EGP</span><span class="new-price">${salePrice} EGP</span></div>`
+            : `<div class="prod-price"><span class="new-price">${basePrice} EGP</span></div>`;
 
-    if (p.sale_price && p.sale_price !== '') {
-        priceHtml = `
-            <div class="prod-price">
-                <span class="old-price">${Math.round(p.base_price)} EGP</span>
-                <span class="new-price">${Math.round(p.sale_price)} EGP</span>
+        // مقاسات
+        const hasDims = p.width && p.height && p.depth;
+        const sizeHtml = hasDims ? `<div class="prod-size">${p.width} × ${p.depth} × ${p.height} سم</div>` : '';
+        const descHtml = p.description ? `<div class="prod-desc">${p.description}</div>` : '';
+
+        // البادجات
+        const badges = [];
+        if (p.featured) badges.push(`<span class="prod-badge featured"><svg viewBox="0 0 24 24"><path d="M12 2l2.9 6 6.6.6-5 4.3 1.5 6.5L12 16.8 6 19.4l1.5-6.5-5-4.3 6.6-.6z"/></svg>الأكثر طلبًا</span>`);
+        if (p.new) badges.push(`<span class="prod-badge new"><svg viewBox="0 0 24 24"><path d="M12 2v20"/><path d="M2 12h20"/></svg>جديد</span>`);
+
+        // دمج الكارت مع الأنيميشن
+        html += `
+            <div class="prod-card" data-cat="${catId}" style="animation-delay: ${index * 0.1}s;">
+                <div class="prod-img-wrap">
+                    <img class="prod-img" src="${imgSrc}" alt="${p.display_name}" onerror="this.style.visibility='hidden'">
+                    <button class="prod-zoom-btn" onclick="openLB('${imgSrc}')">
+                        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+                    </button>
+                </div>
+                <div class="prod-body">
+                    <div class="prod-header">
+                        <div class="prod-badges">${badges.join("")}</div>
+                        <div class="prod-name">${p.display_name}</div>
+                    </div>
+                    <span class="prod-cat-tag">${catName}</span>
+                    ${sizeHtml}
+                    ${descHtml}
+                    ${priceHtml}
+                    <button class="prod-wa-btn" onclick="contactWA('${p.product_id}','${p.display_name}','${priceText}')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.533 5.858L.054 23.25a.75.75 0 0 0 .916.916l5.392-1.479A11.954 11.954 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.933 0-3.742-.524-5.287-1.437l-.378-.225-3.924 1.077 1.077-3.924-.225-.378A9.953 9.953 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+                        استفسر الآن
+                    </button>
+                </div>
             </div>
         `;
-    } else {
-        priceHtml = `
-            <div class="prod-price">
-                <span class="new-price">${Math.round(p.base_price)} EGP</span>
-            </div>
-        `;
-    }
-
-    // مقاس — يظهر فقط لو في بيانات
-    const hasDims = p.width && p.height && p.depth;
-    const sizeHtml = hasDims
-      ? `<div class="prod-size">${p.width} × ${p.depth} × ${p.height} سم</div>`
-      : '';
-
-    const descHtml = p.description
-      ? `<div class="prod-desc">${p.description}</div>`
-      : '';
-
-              const badges = [];
-
-        if (p.featured) {
-            badges.push(`
-                <span class="prod-badge featured">
-                    <svg viewBox="0 0 24 24">
-                        <path d="M12 2l2.9 6 6.6.6-5 4.3 1.5 6.5L12 16.8 6 19.4l1.5-6.5-5-4.3 6.6-.6z"/>
-                    </svg>
-                    الأكثر طلبًا
-                </span>
-            `);
-        }
-
-        if (p.new) {
-            badges.push(`
-                <span class="prod-badge new">
-                    <svg viewBox="0 0 24 24">
-                        <path d="M12 2v20"/>
-                        <path d="M2 12h20"/>
-                    </svg>
-                    جديد
-                </span>
-            `);
-        }
-
-
-html += `
-<div class="prod-card" data-cat="${catId}">
-
-    <div class="prod-img-wrap">
-
-        <img
-            class="prod-img"
-            src="${imgSrc}"
-            alt="${p.display_name}"
-            onerror="this.style.visibility='hidden'">
-
-        <button class="prod-zoom-btn" onclick="openLB('${imgSrc}')">
-            <svg viewBox="0 0 24 24">
-                <circle cx="11" cy="11" r="7"/>
-                <path d="M21 21l-4.35-4.35"/>
-            </svg>
-        </button>
-
-    </div>
-
-
-    <div class="prod-body">
-
-        <div class="prod-header">
-            <div class="prod-badges">${badges.join("")}</div>
-            <div class="prod-name">${p.display_name}</div>
-        </div>
-
-
-        <span class="prod-cat-tag">
-            ${catName}
-        </span>
-
-
-        ${sizeHtml}
-
-        ${descHtml}
-
-        ${priceHtml}
-
-
-        <button
-            class="prod-wa-btn"
-            onclick="contactWA('${p.product_id}','${p.display_name}','${priceText}')">
-
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
-                <path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.533 5.858L.054 23.25a.75.75 0 0 0 .916.916l5.392-1.479A11.954 11.954 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.933 0-3.742-.524-5.287-1.437l-.378-.225-3.924 1.077 1.077-3.924-.225-.378A9.953 9.953 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>
-            </svg>
-
-            استفسر الآن
-
-        </button>
-
-    </div>
-
-</div>
-`;
-  });
+    });
 
   container.innerHTML = html;
 }
