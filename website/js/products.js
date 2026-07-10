@@ -155,7 +155,7 @@ function renderProducts() {
   products
       console.log("Products count before filter:", products.length);
       console.log("Sample product visibility:", products[0]?.visible); // لرؤية هل هي صحيحة أم لا
-    .filter(p => p.visible)
+    filter(p => p.visible)
     .forEach((p, index) => { // أضفنا index هنا للتحكم في تأخير الأنيميشن
         const catId = p.category || '';
         const imgSrc = GH + p.product_id + '.webp';
