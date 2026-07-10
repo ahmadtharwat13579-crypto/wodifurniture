@@ -438,6 +438,8 @@ async function getAddress(lat, lon, resElement) {
   try {
     const response = await fetch(url);
     const data = await response.json();
+    console.log(data);
+    console.table(data.configurator);
     if (data.address) {
       const a = data.address;
       // ناخد الحي والمدينة فقط
@@ -604,29 +606,40 @@ fetch(LOCATION_SHEET)
   })
   .catch(()=>{console.log('Using default location settings');});
 
+
 fetch(SHEET)
-  .then(r=>r.json())
-  .then(rows=>{
-  if(rows.length>5){
-    // حفظ الاختيارات القديمة
-    const oldDesignId = S.design?.id;
-    const oldSizeId = S.size?.id;
-    const oldDivId = S.div?.id;
-    const oldHandleId = S.handle?.id;
+  .then(r => r.json())
+  .then(data => {
 
-    D = build(rows);
-    dataLoaded = true;
+    const rows = data.configurator;
 
-    // ريستور الاختيارات من الـ data الجديدة
-    if(oldDesignId) S.design = D.designs.find(d=>d.id===oldDesignId)||null;
-    if(oldSizeId && S.design) S.size = S.design.sizes.find(s=>s.id===oldSizeId)||null;
-    if(oldDivId) S.div = D.divisions.find(d=>d.id===oldDivId)||null;
-    if(oldHandleId) S.handle = D.handles.find(h=>h.id===oldHandleId)||null;
+    if (rows && rows.length > 5) {
 
-    rDes();rSz();rDiv();rHnd();upd();
-    console.log('✅ Loaded fresh data from Apps Script');
-  }
-})
+        // حفظ الاختيارات القديمة
+        const oldDesignId = S.design?.id;
+        const oldSizeId = S.size?.id;
+        const oldDivId = S.div?.id;
+        const oldHandleId = S.handle?.id;
+
+        D = build(rows);
+        dataLoaded = true;
+
+        // ريستور الاختيارات
+        if (oldDesignId) S.design = D.designs.find(d => d.id === oldDesignId) || null;
+        if (oldSizeId && S.design) S.size = S.design.sizes.find(s => s.id === oldSizeId) || null;
+        if (oldDivId) S.div = D.divisions.find(d => d.id === oldDivId) || null;
+        if (oldHandleId) S.handle = D.handles.find(h => h.id === oldHandleId) || null;
+
+        rDes();
+        rSz();
+        rDiv();
+        rHnd();
+        upd();
+
+        console.log("✅ Loaded fresh data from Apps Script");
+    }
+
+});
 
 // Render cards immediately with placeholder data
 rDes();rSz();rDiv();rHnd();upd();
