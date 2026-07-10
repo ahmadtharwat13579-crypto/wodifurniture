@@ -55,12 +55,31 @@ function build(rows){
       }
       else if(nm) des[b].name=nm;
       des[b].sizes.push({id,size:sz,price:p});
-    }else if(cat==='cabinet_inside_config'){
-      const b=base(id);
-      let g=divs.find(d=>d.id===b);
-      if(!g){g={id:b,name:nm,sizes:[]};divs.push(g);}
-      g.sizes.push({id,size:sz||'any',price:p});
-    }else if(cat==='handles_&_knobs'){
+      }else if(cat==='cabinet_inside_config'){
+        const b = base(id);
+
+        // تحديد النوع من كود المنتج
+        const type = id.includes('_fp_') ? 'floor-standing' : 'wall-hung';
+
+        let g = divs.find(d => d.id === b);
+
+        if(!g){
+          g = {
+            id: b,
+            name: nm,
+            type: type,
+            sizes: []
+          };
+          divs.push(g);
+        }
+
+        g.sizes.push({
+          id,
+          size: sz || 'any',
+          price: p
+        });
+      }
+      else if(cat==='handles_&_knobs'){
       hnd.push({id,name:nm,price:p});
     }
   });
@@ -287,8 +306,8 @@ function rDiv() {
   const sg = S.size ? sgr(S.size.size) : null;
 
   D.divisions.forEach(d => {
-    // قيد الـ FP للتقسيمات (السماح فقط بـ 00 و 01)
-    if (isFp && !['4b_cic00', '4b_cic01'].includes(d.id)) return;
+    // إظهار التقسيمات المطابقة فقط لنوع الحوض
+  if (d.type !== S.design.type) return;
 
     const el = document.createElement('div');
     el.className = 'div-card' + (S.div && S.div.id === d.id ? ' selected' : '');
