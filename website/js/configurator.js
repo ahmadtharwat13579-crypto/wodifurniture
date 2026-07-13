@@ -56,10 +56,13 @@ function build(rows){
       else if(nm) des[b].name=nm;
       des[b].sizes.push({id,size:sz,price:p});
       }else if(cat==='cabinet_inside_config'){
-        const b = base(id);
 
-        // تحديد النوع من كود المنتج
-        const type = id.includes('_fp_') ? 'floor-standing' : 'wall-hung';
+        // استخدم الاسم الكامل بدون base()
+        const b = id;
+
+        const type = id.includes('_fp_')
+          ? 'floor-standing'
+          : 'wall-hung';
 
         let g = divs.find(d => d.id === b);
 
@@ -78,6 +81,7 @@ function build(rows){
           size: sz || 'any',
           price: p
         });
+
       }
       else if(cat==='handles_&_knobs'){
       hnd.push({id,name:nm,price:p});
