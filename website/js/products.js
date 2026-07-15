@@ -73,11 +73,30 @@ function showSkeleton() {
 
     // 1. هيكل التحميل (منطقة النصوص فقط)
     let loadingHtml = `
-        <div class="loading-box">
-            <div id="text1" class="loading-text-item">جاري تحميل المنتجات <span class="dots"><span>.</span><span>.</span><span>.</span></span></div>
-            <div id="text2" class="loading-text-item hidden-bottom">نعتذر على التأخير، جاري تجهيز القائمة لك...</div>
-            <div id="text3" class="loading-text-item hidden-bottom">شكراً لصبرك، نحن بصدد عرض أفضل الوحدات لك.</div>
+    <div class="loading-box">
+
+        <div id="text1" class="loading-text-item">
+            جاري تحميل المنتجات
+            <span class="dots">
+                <span>.</span><span>.</span><span>.</span>
+            </span>
         </div>
+
+        <div id="text2" class="loading-text-item hidden-bottom">
+            نعتذر على التأخير، جاري تجهيز القائمة لك
+            <span class="dots">
+                <span>.</span><span>.</span><span>.</span>
+            </span>
+        </div>
+
+        <div id="text3" class="loading-text-item hidden-bottom">
+            شكراً لصبرك، نحن بصدد عرض أفضل الوحدات لك
+            <span class="dots">
+                <span>.</span><span>.</span><span>.</span>
+            </span>
+        </div>
+
+    </div>
     `;
 
     // 2. هيكل السكليتون (منطقة الكروت)
@@ -120,11 +139,11 @@ function showSkeleton() {
             next.classList.add("slide-up-in");
             
             currentIndex = nextIndex;
-            setTimeout(loopTexts, 4000);
-        }, 600);
+            setTimeout(loopTexts, 3000);
+        }, 400);
     }
 
-    setTimeout(loopTexts, 4000);
+    setTimeout(loopTexts, 3000);
 }
 
 function getCategoryIcon(id) {
@@ -152,10 +171,11 @@ function renderProducts() {
   const container = document.getElementById('prod-list');
   let html = '';
 
+console.log("Products count before filter:", products.length);
+console.log("Sample product visibility:", products[0]?.visible); // لرؤية هل هي صحيحة أم لا
   products
-      console.log("Products count before filter:", products.length);
-      console.log("Sample product visibility:", products[0]?.visible); // لرؤية هل هي صحيحة أم لا
-    filter(p => p.visible)
+
+    .filter(p => p.visible)
     .forEach((p, index) => { // أضفنا index هنا للتحكم في تأخير الأنيميشن
         const catId = p.category || '';
         const imgSrc = GH + p.product_id + '.webp';
@@ -173,8 +193,27 @@ function renderProducts() {
 
         // مقاسات
         const hasDims = p.width && p.height && p.depth;
-        const sizeHtml = hasDims ? `<div class="prod-size">${p.width} × ${p.depth} × ${p.height} سم</div>` : '';
+        const sizeHtml = hasDims
+        ? `
+          <div class="prod-size">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2 3 7l9 5 9-5-9-5Z"/>
+              <path d="M3 7v10l9 5 9-5V7"/>
+              <path d="M12 12v10"/>
+            </svg>
+            ${p.width} × ${p.depth} × ${p.height} سم
+          </div>`
+        : '';
         const descHtml = p.description ? `<div class="prod-desc">${p.description}</div>` : '';
+        const materialHtml = `
+          <div class="prod-spec">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3 3 8l9 5 9-5-9-5Z"/>
+              <path d="M3 12l9 5 9-5"/>
+              <path d="M3 16l9 5 9-5"/>
+            </svg>
+              <span>بورديوم مقاوم للرطوبة</span>
+          </div>`;
 
         // البادجات
         const badges = [];
@@ -197,6 +236,7 @@ function renderProducts() {
                     </div>
                     <span class="prod-cat-tag">${catName}</span>
                     ${sizeHtml}
+                    ${materialHtml}
                     ${descHtml}
                     ${priceHtml}
                     <button class="prod-wa-btn" onclick="contactWA('${p.product_id}','${p.display_name}','${priceText}')">
