@@ -16,11 +16,14 @@
       <a href="products.html">منتجاتنا</a>
       <a href="configurator.html">وحدات الحوض</a>
     </div>
-    <div class="nav-left">
+  <div class="nav-left">
       <a href="index.html" class="logo-link">
-        <img src="images/logo-white.png" alt="WODI" class="nav-logo">
+          <img id="navLogo"
+              src="images/logo-nobg.png"
+              alt="WODI"
+              class="nav-logo">
       </a>
-    </div>
+  </div>
   </nav>
 
   <header class="hero" id="hero">
@@ -56,7 +59,7 @@
       <div class="product-card">
         <img src="images/4a_fp_sc09.webp" alt="Toilets">
         <h3>وحدات الحوض</h3>
-        <p>حوّل اختيار وحدة الحمام إلى تجربة بسيطة وممتعة، مع أداة تصميم تفاعلية تمنحك رؤية واضحة للتصميم والتكلفة في الوقت الفعلي.</p>
+        <p>حوّل اختيار وحدة الحمام إلى تجربة بسيطة وممتعة، مع أداة تصميم تفاعلية تتيح لك استكشاف تصميمات متنوعة، ومتابعة تأثير كل اختيار على السعر بشكل فوري وشفاف.</p>
         <a href="#" class="btn-more">المزيد →</a>
       </div>
 
@@ -135,7 +138,7 @@
             <li><strong>مقاومة الرطوبة:</strong> في حال ظهور أي تأثر غير طبيعي للوحدة.</li>
         </ul>
 
-        <p style="background: #333028; padding: 10px; border-right: 3px solid #9caf88; margin-top: 15px; line-height: 1.6;">
+        <p style="background: #ffffff; padding: 10px; border-right: 3px solid #9caf88; margin-top: 15px; line-height: 1.6;">
             <strong>ملاحظة هامة:</strong> الضمان يغطي عيوب الصناعة فقط، ولا يشمل الأضرار الناتجة عن سوء الاستخدام (مثل الخبطات، تعريض الوحدة لدرجات حرارة عالية، أو لتدفق مياه مباشر بشكل مستمر).
         </p>
   </details>
@@ -147,7 +150,7 @@
     <!-- العمود الأول: اللوجو والنبذة -->
     <!-- العمود الأول: مميزات WODI -->
     <div class="footer-col">
-      <img src="images/logo-white.png" alt="WODI Furniture Logo" class="footer-logo">
+      <img src="images/logo-nobg.png" alt="WODI Furniture Logo" class="footer-logo">
       <ul class="wodi-features">
         <li><span>✓</span> أسعار واضحة من أول لحظة.</li>
         <li><span>✓</span> بنسمع، بنقترح، وبنفضل معاك.</li>
@@ -198,10 +201,10 @@ const navLogo = document.getElementById("navLogo");
 window.addEventListener("scroll", () => {
     if (window.scrollY > 20) {
         navbar.classList.add("scrolled");
-        navLogo.src = "images/logo-color.png";
+        navLogo.src = "images/logo-white.png";
     } else {
         navbar.classList.remove("scrolled");
-        navLogo.src = "images/logo-white.png";
+        navLogo.src = "images/logo-nobg.png";
     }
 });
 </script>
