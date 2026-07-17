@@ -45,7 +45,7 @@ body {
 .nav-right a {
   color: #ffffff;
   text-decoration: none;
-  font-size: 15px;
+  font-size: 16px;
   transition: opacity 0.2s;
   position: relative;
 }
@@ -147,7 +147,7 @@ body {
 
 /* Features Section */ 
 .why-wodi-section {
-    padding: 100px 20px;
+    padding: 80px 35px 80px;
     background: #ffffff;
     color: #333028;
     direction: rtl;
@@ -182,7 +182,6 @@ body {
     line-height: 1.7;
     color: #4a4a4a;
     text-align: justify;
-
     display: flex;
     align-items: center;
 }
@@ -225,7 +224,7 @@ body {
 /* ── Products Grid ── */
 
 .products-section {
-    padding: 10px 10px;
+    padding: 40px 10px;
     max-width: 1200px;
     margin: 0 auto;
     direction: rtl;
@@ -238,9 +237,8 @@ body {
     justify-content: flex-start;
     overflow-x: auto;
     scroll-behavior: smooth;
-    gap: 30px;
+    gap: 10px;
     padding-bottom: 20px;
-   
 }
 
 .scroll-nav {
@@ -259,11 +257,12 @@ body {
 }
 
 .product-card {
+    flex: 0 0 280px;
+    width: 280px;
+    transform: scale(0.89);
     display: flex;
     flex-direction: column;
-    /* أزل aspect-ratio من هنا إذا كنت تريد التحكم في ارتفاع الصورة وحدها */
     direction: rtl;
-    width: 350px; /* أو أي عرض ثابت تفضله */
 }
 
 .product-card img {
@@ -273,6 +272,19 @@ body {
     border-radius: 2px;
     margin-bottom: 20px;
     display: block; /* يمنع أي مسافات فراغ تحت الصورة */
+}
+
+/* ===== Product Cards Animation ===== */
+
+.product-card {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.product-card.show {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .scroll-wrap { position: relative; max-width: 1200px; margin: 0 auto; overflow: hidden; }
@@ -292,21 +304,6 @@ body {
     margin-bottom: 15px;
     max-width: 100%;
     flex-grow: 1;
-}
-
-@media (max-width: 768px) {
-    .products-grid {
-        display: flex;
-        overflow-x: auto;
-        scroll-snap-type: x mandatory; /* هذا يجعل السكرول يستقر عند كل كارد */
-        gap: 15px; /* تقليل المسافة قليلاً للموبايل */
-        padding: 10px;
-    }
-
-    .product-card {
-        min-width: 80%; /* الكارد يأخذ 80% من عرض الشاشة ليظهر جزء بسيط من الكارد التالي */
-        scroll-snap-align: center; /* تثبيت الكارد في منتصف الشاشة */
-    }
 }
 
 .btn-more {
@@ -352,6 +349,129 @@ body {
   font-weight: 700;
   flex-shrink: 0;
   margin-top: 1px;
+}
+
+/* ===Collections=== */
+
+.collections-section{
+    padding:40px 10px;
+    max-width:1200px;
+    margin:auto;
+}
+
+.collections-grid{
+
+    display:flex;
+    flex-direction:row-reverse;
+    scroll-snap-type: x mandatory;
+    padding-inline: 12px;
+    overflow-x: auto;
+    scroll-padding-inline: 40px;
+    overflow-x:auto;
+    scroll-behavior:smooth;
+
+    gap:18px;
+}
+
+.collection-card{
+
+    flex: 0 0 88%;
+
+    scroll-snap-align: center;
+
+    transition:
+        transform .45s ease,
+        opacity .45s ease;
+
+    transform: scale(.92) translateY(20px);
+
+    opacity: .45;
+}
+
+.collection-card.active{
+
+    transform: scale(1) translateY(0);
+
+    opacity: 1;
+}
+
+.collection-mosaic{
+
+    display:flex;
+    flex-direction:column;
+
+    gap:4px;
+
+    margin-bottom:14px;
+}
+
+.collection-mosaic .main-img{
+
+    width:100%;
+
+    aspect-ratio:16/16;
+
+    object-fit:cover;
+
+    border-radius:2px;
+}
+
+.collection-bottom{
+
+    display:grid;
+
+    grid-template-columns:1fr 1fr;
+
+    gap:4px;
+}
+
+.collection-bottom img{
+
+    width:100%;
+
+    aspect-ratio:1/1;
+
+    object-fit:cover;
+
+    border-radius:2px;
+}
+
+.collection-card h3{
+
+    font-size:28px;
+
+    color:#333028;
+
+    margin-bottom:10px;
+}
+
+.collection-card p{
+
+    color:#666;
+
+    line-height:1.7;
+
+    margin-bottom:16px;
+
+    flex-grow:1;
+}
+
+.collection-price{
+
+    font-size:17px;
+
+    margin-bottom:20px;
+
+    color:#666;
+}
+
+.collection-price span{
+
+    color:#9caf88;
+
+    font-weight:700;
+
+    font-size:22px;
 }
 
 /* ── FAQ Section ── */

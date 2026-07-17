@@ -59,7 +59,7 @@
       <div class="product-card">
         <img src="images/4a_fp_sc09.webp" alt="Toilets">
         <h3>وحدات الحوض</h3>
-        <p>حوّل اختيار وحدة الحمام إلى تجربة بسيطة وممتعة، مع أداة تصميم تفاعلية تتيح لك استكشاف تصميمات متنوعة، ومتابعة تأثير كل اختيار على السعر بشكل فوري وشفاف.</p>
+        <p>حوّل اختيار وحدة الحوض إلى تجربة بسيطة وممتعة تتيح لك استكشاف تصميمات متنوعة، ومتابعة تأثير كل اختيار على السعر بشكل فوري.</p>
         <a href="#" class="btn-more">المزيد →</a>
       </div>
 
@@ -104,6 +104,95 @@
     </div>
 
   </div>
+</section>
+
+<section class="collections-section">
+
+    <div class="scroll-wrap">
+
+        <!-- السهم الأول -->
+        <div class="scroll-arrow arr-start hidden"
+             id="collectionGrid-start"
+             onclick="scrollCards('collectionGrid', -1)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M15 18l-6-6 6-6"/>
+            </svg>
+        </div>
+
+        <div class="collections-grid" id="collectionGrid">
+
+            <!-- Collection Card -->
+            <div class="collection-card">
+
+                <div class="collection-mosaic">
+
+                    <img src="images/cover-v1.webp" class="main-img" alt="">
+
+                    <div class="collection-bottom">
+                        <img src="images/4a_wh_sc04.webp" alt="">
+                        <img src="images/4e_mc02.webp" alt="">
+                    </div>
+
+                </div>
+
+                <h3>//اسم المجموعة</h3>
+
+                <p>
+                    تشمل وحدة حوض، ووحدة مراية
+                </p>
+
+                <div class="collection-price">
+                    تبدأ من <span>XXXXXX جنيه</span>
+                </div>
+
+                <a href="#" class="btn-more">
+                    استكشف المجموعة →
+                </a>
+
+            </div>
+
+                        <div class="collection-card">
+
+                <div class="collection-mosaic">
+
+                    <img src="images/cover-v1.webp" class="main-img" alt="">
+
+                    <div class="collection-bottom">
+                        <img src="images/4a_wh_sc04.webp" alt="">
+                        <img src="images/4e_mc02.webp" alt="">
+                    </div>
+
+                </div>
+
+                <h3>//اسم المجموعة</h3>
+
+                <p>
+                    تشمل وحدة حوض، ووحدة مراية
+                </p>
+
+                <div class="collection-price">
+                    تبدأ من <span>XXXXXX جنيه</span>
+                </div>
+
+                <a href="#" class="btn-more">
+                    استكشف المجموعة →
+                </a>
+
+            </div>
+
+        </div>
+
+        <!-- السهم الثاني -->
+        <div class="scroll-arrow arr-end hidden"
+             id="collectionGrid-end"
+             onclick="scrollCards('collectionGrid', 1)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 18l6-6-6-6"/>
+            </svg>
+        </div>
+
+    </div>
+
 </section>
 
   <div id="footer-placeholder"></div>
@@ -210,20 +299,36 @@ window.addEventListener("scroll", () => {
 </script>
 
 <script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    const hiddenElement = document.querySelector(".why-text-content");
+
+    hiddenElement.style.opacity = "0";
+    hiddenElement.style.transform = "translateY(40px)";
+    hiddenElement.style.transition = "opacity 0.8s ease, transform 0.8s ease";
+
     const observer = new IntersectionObserver((entries) => {
+
         entries.forEach(entry => {
+
             if (entry.isIntersecting) {
-                entry.target.style.opacity = 1;
-                entry.target.style.transform = 'translateY(0)';
+
+                entry.target.style.opacity = "1";
+                entry.target.style.transform = "translateY(0)";
+
+                observer.unobserve(entry.target);
+
             }
+
         });
+
+    }, {
+        threshold: 0.5
     });
 
-    const hiddenElement = document.querySelector('.why-text-content');
-    // إعدادات البداية للأنيميشن
-    hiddenElement.style.opacity = 0;
-    hiddenElement.style.transition = 'all 1s ease-out';
     observer.observe(hiddenElement);
+
+});
 </script>
 
 <script>
@@ -272,6 +377,61 @@ document.addEventListener("DOMContentLoaded", () => {
 
     window.addEventListener("resize", updateProductArrows);
 
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    const cards = document.querySelectorAll(".product-card");
+
+    const observer = new IntersectionObserver((entries) => {
+
+        entries.forEach((entry) => {
+
+            if (entry.isIntersecting) {
+
+                const index = [...cards].indexOf(entry.target);
+
+                setTimeout(() => {
+                    entry.target.classList.add("show");
+                }, index * 150);
+
+                observer.unobserve(entry.target);
+            }
+
+        });
+
+    }, {
+        threshold: 0.15
+    });
+
+    cards.forEach(card => observer.observe(card));
+
+});
+</script>
+<script>
+const observer = new IntersectionObserver((entries) => {
+
+    entries.forEach(entry => {
+
+        if (entry.isIntersecting) {
+            entry.target.classList.add("active");
+        } else {
+            entry.target.classList.remove("active");
+        }
+
+    });
+
+}, {
+
+    root: document.querySelector(".collections-grid"),
+    threshold: 0.65
+
+});
+
+document.querySelectorAll(".collection-card").forEach(card => {
+    observer.observe(card);
 });
 </script>
 
