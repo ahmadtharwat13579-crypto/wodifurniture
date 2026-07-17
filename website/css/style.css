@@ -259,7 +259,7 @@ body {
 .product-card {
     flex: 0 0 280px;
     width: 280px;
-    transform: scale(0.89);
+    transform: scale(0.86);
     display: flex;
     flex-direction: column;
     direction: rtl;
@@ -504,7 +504,7 @@ details[open] summary::after {
 .wodi-footer {
   background-color: #333028;
   color: #ffffff;
-  padding: 60px 20px 30px;
+  padding: 30px 50px 30px;
   border-top: 1px solid rgba(255, 255, 255, 0.12);
   font-family: 'Cairo', sans-serif;
 }
@@ -530,27 +530,73 @@ details[open] summary::after {
   font-weight: bold;
 }
 
-.footer-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 25px;
-  max-width: 1200px;
-  margin: 0 auto;
+/* ── Footer ── */
+/* اللوجو والخط الفاصل فوق الأعمدة */
+.footer-top-section {
+    max-width: 1000px;
+    margin: 0 auto 40px;
+    border-bottom: 1px solid #9caf88;
+    padding-bottom: 30px;
+    text-align: center;
 }
 
 .footer-logo {
-  max-width: 90px;
-  margin-bottom: 30px; /* زيادة المساحة هنا */
+  max-width: 100px;
   display: block;
+  margin: 0 auto;
 }
 
-.footer-col p {
-  opacity: 0.8;
-  line-height: 1.6;
-  margin-bottom: 15px;
+.footer-container {
+    max-width: 1000px;
+    margin: 0 auto;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+
+    direction: rtl;
 }
 
-/* تنسيق الروابط السريعة */
+.footer-col:first-child {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.footer-col:first-child .footer-links {
+    text-align: right;
+}
+
+/* المجموعات */
+.footer-col:nth-child(2) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.footer-col:nth-child(2) h4 {
+    align-self: center;
+}
+
+.footer-col:nth-child(2) .footer-links {
+    align-self: center;
+    text-align: right;
+}
+
+.footer-col{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.footer-col h4 {
+  color: #ffffff;
+  margin-bottom: 20px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+
 .footer-links {
   list-style: none;
   padding: 0;
@@ -563,8 +609,20 @@ details[open] summary::after {
 .footer-links a {
   color: #ffffff;
   text-decoration: none;
-  opacity: 0.7;
+  opacity: 0.8;
   transition: 0.3s;
+}
+
+.footer-col:last-child {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.footer-col:last-child .social-icons-wrapper {
+    display: flex;
+    gap: 14px;
+    justify-content: flex-end;
 }
 
 .footer-links a:hover {
@@ -572,43 +630,27 @@ details[open] summary::after {
   color: #9caf88;
 }
 
-/* تنسيق معلومات الاتصال */
-.footer-col p a {
-  color: #9caf88;
-  text-decoration: none;
-  display: block;
-  margin-bottom: 10px;
-}
-
-.footer-col p a:hover {
-  text-decoration: underline;
-}
-
-/* تنسيق الأيقونات */
-.social-icons {
-  display: flex;
-  gap: 20px;
-  margin-top: 20px;
-}
-
-.social-icons a {
-  color: #9caf88;
+.social-icons-wrapper a {
+  color: #9caf88; /* اللون الزيتوني */
   transition: 0.3s;
+  display: block;
 }
 
-.social-icons a:hover {
-  color: #333028;
+.social-icons-wrapper a:hover {
+  color: #ffffff; /* التغيير للأبيض عند الوقوف بالماوس */
   transform: translateY(-3px);
 }
 
-/* تنسيق جملة الحقوق */
-.footer-bottom {
-  text-align: center;
-  margin-top: 50px;
-  padding-top: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
-  font-size: 0.9em;
-  opacity: 0.6;
+.social-icons-wrapper a svg {
+  width: 22px;  /* يمكنك تصغير الرقم من 28 إلى 20 أو 18 */
+  height: 22px;
+  transition: 0.3s;
+}
+
+/* للموبايل */
+@media (max-width: 768px) {
+  .footer-container { grid-template-columns: 1fr; text-align: center; }
+  .social-icons { justify-content: center; }
 }
 /* ── Configurator Page ── */
 .conf-page { padding-top: 70px; min-height: 100vh; }
@@ -1219,7 +1261,16 @@ details[open] summary::after {
 }
 
 .contact-section{
-    margin:55px 0 30px;
+
+    margin:40px 0;
+
+    padding:px 20px;
+
+    background:#faf9f6;
+
+    border-top:1px solid #e7e3da;
+
+    border-bottom:1px solid #e7e3da;
 }
 
 .contact-card{
@@ -1267,7 +1318,7 @@ details[open] summary::after {
 
     font-size:20px;
 
-    color:#fff;
+    color:#333028;
 
     font-weight:700;
 }
@@ -1282,7 +1333,7 @@ details[open] summary::after {
 
     line-height:1.7;
 
-    color:rgba(255,255,255,.65);
+    color:#333028;
 }
 
 .contact-btn{
@@ -1291,17 +1342,17 @@ details[open] summary::after {
 
     align-items:center;
 
-    gap:8px;
+    gap:4px;
 
     padding:8px 16px;
 
-    border-radius:8px;
+    border-radius:2px;
 
-    border:1px solid rgba(255,255,255,.15);
+    border:1px solid #9caf88;
 
     background:none;
 
-    color:rgba(255,255,255,.75);
+    color:#9caf88;
 
     font-family:'Cairo',sans-serif;
 
@@ -1316,9 +1367,13 @@ details[open] summary::after {
 
 .contact-btn:hover{
 
-    border-color:#9caf88;
+    background:#9caf88;
 
-    color:#9caf88;
+    color:#fff;
+
+    box-shadow:0 10px 25px rgba(156,175,136,.28);
+
+    transform:translateY(-2px);
 }
 
 .contact-btn svg{
