@@ -45,7 +45,7 @@ body {
 .nav-right a {
   color: #ffffff;
   text-decoration: none;
-  font-size: 16px;
+  font-size: 17px;
   transition: opacity 0.2s;
   position: relative;
 }
@@ -86,7 +86,7 @@ body {
   text-align: right;
   background:
     linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.1)),
-    url('../images/cover-v1.webp') center/cover no-repeat;
+    url('../images/cover-v2.webp') center/cover no-repeat;
   background-attachment: fixed;
   animation: heroFadeIn 1s ease-out forwards;
   will-change: transform;
@@ -160,30 +160,55 @@ body {
 
 .why-text-content {
     display: grid;
-    grid-template-columns: 0.5fr 1fr;
+    grid-template-columns: 0.8fr 1fr;
     gap: 40px;
     align-items: center;
 }
 
 .why-text-content h2 {
     margin: 0;
-    font-size: clamp(42px, 5vw, 72px);
+    font-size: clamp(32px, 5vw, 50px);
     font-weight: 800;
     line-height: 1.1;
     color: #333028;
-
+    margin-right: 60px;
     display: flex;
     align-items: center;
 }
 
 .why-text-content p {
     margin: 0;
-    font-size: 18px;
+    font-size: clamp(16px, 4vw, 20px);
+    max-width: 700px; /* يمنع الفقرة من أن تصبح عريضة جداً ومجهدة للعين */
+    width: 90%;
     line-height: 1.7;
     color: #4a4a4a;
     text-align: justify;
     display: flex;
     align-items: center;
+    
+}
+
+/* هذا الجزء هو المسؤول عن تعديل السكشن على الموبايل فقط */
+@media (max-width: 768px) {
+    .why-text-content {
+        grid-template-columns: 1fr; /* جعل العناصر فوق بعضها في عمود واحد */
+        gap: 35px; /* مسافة بين العنوان والنص */
+    }
+
+    .why-text-content h2 {
+        width: 70%; /* العنوان يأخذ 60% من عرض الشاشة */
+        justify-content: flex-start; /* يبدأ من اليمين */
+        font-size: 34px; /* تصغير الخط قليلاً ليناسب الموبايل */
+        text-align: right;
+    }
+
+    .why-text-content p {
+        width: 75%; /* النص يأخذ 60% من عرض الشاشة */
+        margin-right: auto; /* دفع النص جهة اليسار */
+        text-align: right; /* لتجنب مشاكل الـ justify التي ناقشناها */
+        font-size: 18px;
+    }
 }
 
 /* ── تعريف الأنيميشن الاحترافي ── */
@@ -224,7 +249,7 @@ body {
 /* ── Products Grid ── */
 
 .products-section {
-    padding: 40px 10px;
+    padding: 20px 10px;
     max-width: 1200px;
     margin: 0 auto;
     direction: rtl;
@@ -237,7 +262,7 @@ body {
     justify-content: flex-start;
     overflow-x: auto;
     scroll-behavior: smooth;
-    gap: 10px;
+    gap: 20px;
     padding-bottom: 20px;
 }
 
@@ -257,7 +282,7 @@ body {
 }
 
 .product-card {
-    flex: 0 0 280px;
+    flex: 0 0 260px;
     width: 280px;
     transform: scale(0.86);
     display: flex;
@@ -290,14 +315,14 @@ body {
 .scroll-wrap { position: relative; max-width: 1200px; margin: 0 auto; overflow: hidden; }
 
 .product-card h3 {
-    font-size: 28px;
+    font-size: 25px;
     text-align: right;
     margin-bottom: 8px;
     color: #333;
 }
 
 .product-card p {
-    font-size: 16px;
+    font-size: 15px;
     line-height: 1.6;
     text-align: right;
     color: #666;
@@ -308,7 +333,7 @@ body {
 
 .btn-more {
     display: inline-block;
-    padding: 10px 20px;
+    padding: 7px 20px;
     border: 1px solid #333;
     color: #333;
     text-decoration: none;
@@ -375,7 +400,7 @@ body {
 
 .collection-card{
 
-    flex: 0 0 88%;
+    flex: 0 0 86%;
 
     scroll-snap-align: center;
 
@@ -651,6 +676,20 @@ details[open] summary::after {
 @media (max-width: 768px) {
   .footer-container { grid-template-columns: 1fr; text-align: center; }
   .social-icons { justify-content: center; }
+  /* تصغير العناوين قليلاً */
+    .footer-col h4 {
+        font-size: 16px; /* من 18 إلى 16 */
+        margin-bottom: 12px;
+    }
+
+    /* تصغير نصوص الروابط */
+    .footer-links a {
+        font-size: 15px; /* تصغير طفيف ليناسب الشاشة */
+    }
+    .social-icons-wrapper a svg {
+        width: 19px; 
+        height: 19px;
+    }
 }
 /* ── Configurator Page ── */
 .conf-page { padding-top: 70px; min-height: 100vh; }

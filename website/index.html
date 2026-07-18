@@ -35,7 +35,9 @@
   <section class="why-wodi-section">
     <div class="why-container">
       <div class="why-text-content">
-        <h2>كل ما يخص وحدات الحمام</h2>
+        <h2>
+        كل ما يخص <br> وحدات الحمام
+        </h2>
         <p>نقدم حلولاً ذكية لأثاث الحمامات تساعدك على استغلال المساحة بأفضل شكل، مع أسعار واضحة وشفافة تتيح لك معرفة تكلفة كل اختيار قبل اتخاذ قرار الشراء.</p>
       </div>
     </div>
@@ -57,39 +59,40 @@
     <div class="products-grid" id="productGrid">
 
       <div class="product-card">
-        <img src="images/4a_fp_sc09.webp" alt="Toilets">
+        <img src="images/our-products-1.webp" alt="Vanity-Units">
         <h3>وحدات الحوض</h3>
         <p>حوّل اختيار وحدة الحوض إلى تجربة بسيطة وممتعة تتيح لك استكشاف تصميمات متنوعة، ومتابعة تأثير كل اختيار على السعر بشكل فوري.</p>
         <a href="#" class="btn-more">المزيد →</a>
       </div>
 
       <div class="product-card">
-        <img src="images/4d_wm02.webp" alt="Furniture">
+        <img src="images/our-products-5.webp" alt="Toilets">
+        <h3>وحدات التواليت</h3>
+        <p>استفد من المساحات المهدرة بوحدات تواليت توفر تخزينًا إضافيًا وتكمل تصميم الحمام بشكل أنيق ومتناسق.</p>
+        <a href="#" class="btn-more">المزيد →</a>
+      </div>
+
+      <div class="product-card">
+        <img src="images/our-products-2.webp" alt="Washing-Machine-Cabinets">
         <h3>وحدات الغسالة</h3>
         <p>حلول مخصصة لإخفاء الغسالة ودمجها مع وحدات تخزين عملية، مصممة حسب المقاس لتناسب مختلف المساحات والاحتياجات.</p>
         <a href="#" class="btn-more">المزيد →</a>
       </div>
 
       <div class="product-card">
-        <img src="images/4e_mc02.webp" alt="Toilets">
+        <img src="images/our-products-3.webp" alt="Mirror-Cabinets">
         <h3>وحدات المراية</h3>
         <p>مرايا عملية بتصميمات عصرية، توفر حلول تخزين ذكية وتتكامل مع وحدات الحمام للحصول على مظهر موحد وأنيق.</p>
         <a href="#" class="btn-more">المزيد →</a>
       </div>
 
       <div class="product-card">
-        <img src="images/4f_stc01.webp" alt="Toilets">
+        <img src="images/our-products-4.webp" alt="Storage-Cabinets">
         <h3>وحدات التخزين</h3>
         <p>حافظ على حمام مرتب ومنظم مع وحدات تخزين مصممة لاستيعاب الفوط وأدوات التنظيف ومختلف المستلزمات اليومية.</p>
         <a href="#" class="btn-more">المزيد →</a>
       </div> 
-      
-        <div class="product-card">
-        <img src="images/4g_tc02.webp" alt="Toilets">
-        <h3>وحدات التواليت</h3>
-        <p>استفد من المساحات المهدرة بوحدات تواليت توفر تخزينًا إضافيًا وتكمل تصميم الحمام بشكل أنيق ومتناسق.</p>
-        <a href="#" class="btn-more">المزيد →</a>
-      </div>
+
       
 
     </div>
@@ -112,11 +115,11 @@
 
         <!-- السهم الأول -->
         <div class="scroll-arrow arr-start hidden"
-             id="collectionGrid-start"
-             onclick="scrollCards('collectionGrid', -1)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M15 18l-6-6 6-6"/>
-            </svg>
+            id="collectionGrid-start"
+            onclick="scrollCollections('collectionGrid', -1)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M15 18l-6-6 6-6"/>
+        </svg>
         </div>
 
         <div class="collections-grid" id="collectionGrid">
@@ -126,7 +129,7 @@
 
                 <div class="collection-mosaic">
 
-                    <img src="images/cover-v1.webp" class="main-img" alt="">
+                    <img src="images/cover-v2.webp" class="main-img" alt="">
 
                     <div class="collection-bottom">
                         <img src="images/4a_wh_sc04.webp" alt="">
@@ -155,7 +158,7 @@
 
                 <div class="collection-mosaic">
 
-                    <img src="images/cover-v1.webp" class="main-img" alt="">
+                    <img src="images/cover-v2.webp" class="main-img" alt="">
 
                     <div class="collection-bottom">
                         <img src="images/4a_wh_sc04.webp" alt="">
@@ -182,14 +185,13 @@
 
         </div>
 
-        <!-- السهم الثاني -->
-        <div class="scroll-arrow arr-end hidden"
-             id="collectionGrid-end"
-             onclick="scrollCards('collectionGrid', 1)">
+            <div class="scroll-arrow arr-end hidden"
+                id="collectionGrid-end"
+                onclick="scrollCollections('collectionGrid', 1)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M9 18l6-6-6-6"/>
             </svg>
-        </div>
+            </div>
 
     </div>
 
@@ -298,9 +300,9 @@
       <h4>تواصل معنا</h4>
       
       <div class="social-icons-wrapper">
-        <!-- واتساب -->
-        <a href="https://wa.me/201556840368" aria-label="WhatsApp">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+                <!-- إيميل -->
+        <a href="mailto:wodifurniture@outlook.com" aria-label="Email">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
         </a>
         <!-- إنستجرام -->
         <a href="https://www.instagram.com/wodifurniture" aria-label="Instagram">
@@ -310,9 +312,10 @@
         <a href="https://www.facebook.com/wodifurniture" aria-label="Facebook">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
         </a>
-        <!-- إيميل -->
-        <a href="mailto:wodifurniture@outlook.com" aria-label="Email">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+
+                <!-- واتساب -->
+        <a href="https://wa.me/201556840368" aria-label="WhatsApp">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.533 5.858L.054 23.25a.75.75 0 0 0 .916.916l5.392-1.479A11.954 11.954 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.933 0-3.742-.524-5.287-1.437l-.378-.225-3.924 1.077 1.077-3.924-.225-.378A9.953 9.953 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
         </a>
       </div>
     </div>
@@ -412,6 +415,55 @@ document.addEventListener("DOMContentLoaded", () => {
     container.addEventListener("scroll", updateProductArrows);
 
     window.addEventListener("resize", updateProductArrows);
+
+});
+</script>
+
+<script>
+function scrollCollections(containerId, direction) {
+    const container = document.getElementById(containerId);
+
+    const amount = container.clientWidth * 0.85;
+
+    container.scrollBy({
+        left: direction * amount,
+        behavior: "smooth"
+    });
+}
+
+function updateCollectionArrows() {
+
+    const container = document.getElementById("collectionGrid");
+
+    const startArrow = document.getElementById("collectionGrid-start");
+    const endArrow = document.getElementById("collectionGrid-end");
+
+    const maxScroll = container.scrollWidth - container.clientWidth;
+
+    const current = Math.abs(container.scrollLeft);
+
+    if (current <= 5) {
+        startArrow.classList.add("hidden");
+    } else {
+        startArrow.classList.remove("hidden");
+    }
+
+    if (current >= maxScroll - 5) {
+        endArrow.classList.add("hidden");
+    } else {
+        endArrow.classList.remove("hidden");
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    const container = document.getElementById("collectionGrid");
+
+    updateCollectionArrows();
+
+    container.addEventListener("scroll", updateCollectionArrows);
+
+    window.addEventListener("resize", updateCollectionArrows);
 
 });
 </script>
