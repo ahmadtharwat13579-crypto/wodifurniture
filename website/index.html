@@ -26,11 +26,21 @@
   </div>
   </nav>
 
-  <header class="hero" id="hero">
+<header class="hero" id="hero">
+
+  <video class="hero-video" autoplay muted loop playsinline preload="auto">
+    <source src="images/cover-seamless-video.webm" type="video/mp4">
+  </video>
+
+  <div class="hero-overlay"></div>
+
+  <div class="hero-content">
     <h1>صمّم وحدة حوضك<br>بنفسك</h1>
     <p>اختر التصميم، المقاسات، والتفاصيل — واعرف السعر على طول!</p>
     <a href="configurator.html" class="btn-outline">صمّم وحدتك الآن</a>
-  </header>
+  </div>
+
+</header>
 
   <section class="why-wodi-section">
     <div class="why-container">
@@ -321,6 +331,15 @@
     </div>
   </div>
 </footer>
+
+<video class="hero-video" autoplay muted loop playsinline preload="auto">
+    <source src="videos/cover-seamless-video.mp4" type="video/mp4">
+</video>
+
+<script>
+const heroVideo = document.querySelector('.hero-video');
+heroVideo.playbackRate = 0.6;
+</script>
 
 <script>
 const navbar = document.querySelector(".navbar");
