@@ -1,344 +1,303 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>WODI Furniture | صمم وحدة حوضك</title>
-  <link rel="icon" type="image/png" href="images/favicon-v1.png">
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" type="image/png" href="images/favicon-v1.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
 
 <nav class="navbar-2" id="navbar">
-    <div class="nav-right">
-        <a href="index.html">الرئيسية</a>
-        <a href="products.html">منتجاتنا</a>
-        <a href="configurator.html" class="active">وحدات الحوض</a>
-    </div>
-
-    <div class="nav-left">
-        <a href="index.html" class="logo-link">
-            <img id="navLogo"
-                 src="images/logo-white.png"
-                 alt="WODI"
-                 class="nav-logo">
-        </a>
-    </div>
+  <div class="nav-right">
+    <a href="index.html">الرئيسية</a>
+    <a href="products.html">منتجاتنا</a>
+    <a href="configurator.html" class="active">وحدات الحوض</a>
+  </div>
+  <div class="nav-left">
+    <a href="index.html" class="logo-link">
+      <img id="navLogo" src="images/logo-white.png" alt="WODI" class="nav-logo" />
+    </a>
+  </div>
 </nav>
 
-<div class="conf-page">
-  <div class="conf">
-    <div class="main-header">صمّم وحدة الحوض الخاصة بك</div>
-    <ol class="intro-para" style="padding-right:18px;list-style:decimal">
-      <li>اختر تصميم وحدة الحوض المناسب لك.</li>
-      <li>حدد مقاس الحوض الخاص بك من بين المقاسات المتاحة للتصميم.</li>
-      <li>اختر التقسيمة الداخلية.</li>
-      <li>اختر نوع المقبض.</li>
-      <li>قم بتحديد موقعك لحساب تكلفة التوصيل.</li>
-      <li>سيتم تحديث السعر النهائي تلقائيًا مع كل اختيار.</li>
-      <li>بعد تحديد المواصفات، اضغط على "اطلب الآن" ليتم توجيهك للواتساب.</li>
-      <li>سيتم معاينة الموقع وأخذ المقاسات للتأكد من إمكانية تنفيذ التصميم.</li>
-      <li>سيتم عرض تصميم 3D دقيق للوحدة واعتماده معك بالكامل قبل بدء التنفيذ.</li>
-    </ol>
+<main class="conf-page">
+  <div class="conf config-layout">
 
-    <!-- الحاوية الأساسية لتطبيق الـ Grid (موبايل ولابتوب) -->
-    <div class="wodi-grid-container">
+    <!-- MAIN COLUMN: التصميم -->
+    <section class="main-column">
 
-      <!-- 1. مربع الملاحظات (فوق يمين في اللابتوب) -->
-      <div class="grid-item notes-box" id="notes-box">
-        <div class="notes-header" onclick="toggleNotes()">
-          <div class="notes-header-left">
-            <div class="notes-icon">
-              <svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
-            </div>
-            <div class="notes-title">ملاحظات مهمة</div>
-          </div>
-          <div class="notes-toggle">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-          </div>
-        </div>
-        <div class="notes-content">
-          <ul class="notes-list">
-            <li>الصور المعروضة لأغراض توضيحية وقد تختلف النسب قليلا حسب المقاس المختار.</li>
-            <li>المقاسات المعروضة تمثل عرض الحوض بالسنتيمتر.</li>
-            <li>جميع المفصلات ومجاري الأدراج المستخدمة Soft-Close.</li>
-            <li>السعر الإجمالي المعروض شامل المعاينة, التركيب, التنفيذ والتوصيل بالكامل بدون أي رسوم إضافية.</li>
-            <li>يتم تنفيذ وتسليم الوحدة خلال 3-7 ايام من تأكيد الطلب.</li>
-          </ul>
-        </div>
-      </div>
+      <header class="conf-header">
+        <h1 class="main-header">صمّم وحدة الحوض الخاصة بك</h1>
 
-      <!-- 2. مربع الـ Stepper خطوات التصميم (فوق شمال في اللابتوب) -->
-      <div class="grid-item config-stepper">
-        <div class="stepper-title">خطوات تصميم وحدتك</div>
-        <div class="step-item" id="step-design">
-          <span class="step-check">✓</span>
-          <span class="step-text">اختيار التصميم</span>
+        <!-- Intro collapse -->
+        <div class="intro-collapse">
+          <ol class="intro-para collapsed" id="intro-para" aria-expanded="false">
+            <li>اختر تصميم وحدة الحوض المناسب لك.</li>
+            <li>حدد مقاس الحوض الخاص بك من بين المقاسات المتاحة للتصميم.</li>
+            <li>اختر التقسيمة الداخلية.</li>
+            <li>اختر نوع المقبض.</li>
+            <li>قم بتحديد موقعك لحساب تكلفة التوصيل.</li>
+            <li>سيتم تحديث السعر النهائي تلقائيًا مع كل اختيار.</li>
+            <li>بعد تحديد المواصفات، اضغط على "اطلب الآن" ليتم توجيهك للواتساب.</li>
+          </ol>
+          <button type="button" class="intro-toggle" id="intro-toggle" aria-controls="intro-para" aria-expanded="false">عرض المزيد</button>
         </div>
-        <div class="step-item" id="step-partition">
-          <span class="step-check">✓</span>
-          <span class="step-text">التقسيمة الداخلية</span>
-        </div>
-        <div class="step-item" id="step-handle">
-          <span class="step-check">✓</span>
-          <span class="step-text">نوع المقبض</span>
-        </div>
-        <div class="step-item" id="step-location">
-          <span class="step-check">✓</span>
-          <span class="step-text">النقل والتوصيل</span>
-        </div>
-      </div>
+      </header>
 
-      <!-- 3. مربع كروت التصميم والمقاسات (تحت يمين في اللابتوب) -->
+            <!-- compact modern stepper -->
+          <nav class="compact-stepper" aria-label="Design steps">
+            <ol>
+              <li class="stepper-item" data-step="design" id="st-design">
+                <span class="stepper-icon"></span>
+                <span class="stepper-text">التصميم</span>
+              </li>
+              <li class="stepper-item" data-step="partition" id="st-partition">
+                <span class="stepper-icon"></span>
+                <span class="stepper-text">التقسيمة</span>
+              </li>
+              <li class="stepper-item" data-step="handle" id="st-handle">
+                <span class="stepper-icon"></span>
+                <span class="stepper-text">المقبض</span>
+              </li>
+              <li class="stepper-item" data-step="location" id="st-location">
+                <span class="stepper-icon"></span>
+                <span class="stepper-text">النقل</span>
+              </li>
+            </ol>
+          </nav>
+
+      <!-- Design cards + sizes -->
       <div class="grid-item design-section-box">
-        <div class="step" style="margin-bottom: 0;">
+        <div class="step">
           <div class="step-header">
             <span class="step-title">1. التصميم</span>
           </div>
 
-          <!-- أحواض معلقة -->
-          <div class="step-title" style="margin:12px 0 8px; font-size:14px;">
-            حوض معلق / سقط رخام
-          </div>
-          <div class="scroll-wrap" style="position:relative;">
-            <div class="scroll-arrow arr-end hidden" id="dc-wall-start" onclick="scrollCards('dc-wall',-1)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-            </div>
-            <div class="cards-row" id="dc-wall"></div>
-            <div class="scroll-arrow arr-start hidden" id="dc-wall-end" onclick="scrollCards('dc-wall',1)">
+          <!-- category group: wall-mounted -->
+          <div class="sub-title">حوض معلق / سقط رخام</div>
+          <div class="scroll-wrap" data-group="dc-wall">
+            <button class="scroll-arrow arr-start hidden" data-target="dc-wall" data-dir="-1" aria-label="Scroll left">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
-            </div>
+            </button>
+            <div class="cards-row" id="dc-wall" role="list" aria-label="Design cards wall"></div>
+            <button class="scroll-arrow arr-end hidden" data-target="dc-wall" data-dir="1" aria-label="Scroll right">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+            </button>
           </div>
 
-          <!-- أحواض برجل كاملة -->
-          <div class="step-title" style="margin:20px 0 8px; font-size:14px;">
-            حوض رجل كاملة
-          </div>
-          <div class="scroll-wrap" style="position:relative;">
-            <div class="scroll-arrow arr-end hidden" id="dc-floor-start" onclick="scrollCards('dc-floor',-1)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-            </div>
-            <div class="cards-row" id="dc-floor"></div>
-            <div class="scroll-arrow arr-start hidden" id="dc-floor-end" onclick="scrollCards('dc-floor',1)">
+          <!-- category group: floor -->
+          <div class="sub-title" style="margin-top:16px;">حوض رجل كاملة</div>
+          <div class="scroll-wrap" data-group="dc-floor">
+            <button class="scroll-arrow arr-start hidden" data-target="dc-floor" data-dir="-1" aria-label="Scroll left">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
-            </div>
+            </button>
+            <div class="cards-row" id="dc-floor" role="list" aria-label="Design cards floor"></div>
+            <button class="scroll-arrow arr-end hidden" data-target="dc-floor" data-dir="1" aria-label="Scroll right">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+            </button>
           </div>
 
-          <div class="step-title" style="margin-top:14px; font-size:14px;">
-            المقاس
+          <div class="sub-title" style="margin-top:14px;">المقاس</div>
+          <div class="sizes-grid" id="sb" aria-live="polite">
+            <button class="size-btn disabled" disabled aria-disabled="true">— اختر تصميم أولاً —</button>
           </div>
-          <div class="sizes-row" id="sb">
-            <span class="miss">يجب اختيار التصميم أولاً</span>
+
+        </div>
+      </div>
+
+      <!-- 2. Partition cards -->
+      <div class="grid-item">
+        <div class="step" style="margin-bottom: 0;">
+          <div class="step-header">
+            <span class="step-title">2. التقسيمة الداخلية</span>
+          </div>
+          <div class="scroll-wrap" data-group="vc">
+            <button class="scroll-arrow arr-start hidden" data-target="vc" data-dir="-1" aria-label="Scroll left">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <div class="cards-row" id="vc" role="list" aria-label="Partition cards"></div>
+            <button class="scroll-arrow arr-end hidden" data-target="vc" data-dir="1" aria-label="Scroll right">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+            </button>
           </div>
         </div>
       </div>
 
-      <!-- 4. مربع باقي الاختيارات: التقسيمة، المقبض، وموقع التوصيل (تحت شمال في اللابتوب) -->
- <div class="grid-item options-section-box" style="display: flex; flex-direction: column; gap: 16px; background: transparent; border: none; box-shadow: none; padding: 0;">
-
-  <!-- 1. كارت التقسيمة الداخلية المستقل -->
-<div class="grid-item">
-  <div class="step" style="margin-bottom: 0;">
-    <div class="step-header">
-      <span class="step-title">2. التقسيمة الداخلية</span>
-    </div>
-    <div class="scroll-wrap" style="position:relative;">
-      <div class="scroll-arrow arr-end hidden" id="vc-start" onclick="scrollCards('vc',-1)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-      </div>
-      <div class="cards-row" id="vc"></div>
-      <div class="scroll-arrow arr-start hidden" id="vc-end" onclick="scrollCards('vc',1)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- 2. كارت نوع المقبض -->
-<div class="grid-item">
-  <div class="step" style="margin-bottom: 0;">
-    <div class="step-header">
-      <span class="step-title">3. نوع المقبض</span>
-    </div>
-    <div class="scroll-wrap" style="position:relative;">
-      <div class="scroll-arrow arr-end hidden" id="hc-start" onclick="scrollCards('hc',-1)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-      </div>
-      <div class="cards-row" id="hc"></div>
-      <div class="scroll-arrow arr-start hidden" id="hc-end" onclick="scrollCards('hc',1)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- 3. كارت موقع التوصيل -->
-<div class="grid-item">
-  <div class="loc-section" style="margin-bottom: 0;">
-    <div class="loc-header">
-      <span class="step-title" style="margin-bottom:0">٤. النقل والتوصيل</span>
-      <button class="loc-hint" onclick="openTooltip()" style="background:none; border:none; cursor:pointer; padding:5px;">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9caf88" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"></circle>
-          <line x1="12" y1="16" x2="12" y2="12"></line>
-          <line x1="12" y1="8" x2="12.01" y2="8"></line>
-        </svg>
-      </button>
-    </div>
-    <div class="loc-desc">نحتاج تحديد موقعك لتقدير تكلفة النقل والتوصيل بدقة.</div>
-    <button class="btn-locate" id="btn-locate" onclick="requestLocation()">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="9" stroke-dasharray="4 2"/></svg>
-      تحديد موقعي الحالي
-    </button>
-    <div id="mapContainer" style="display: none; margin-top: 20px;">
-      <iframe id="staticMap" src="" width="100%" height="200" style="border:1px solid #ccc; border-radius:2px;"></iframe>
-    </div>
-    <div class="loc-result" id="loc-result"></div>
-  </div>
+      <!-- 3. Handle cards -->
+      <div class="grid-item">
+        <div class="step" style="margin-bottom: 0;">
+          <div class="step-header">
+            <span class="step-title">3. نوع المقبض</span>
+          </div>
+          <div class="scroll-wrap" data-group="hc">
+            <button class="scroll-arrow arr-start hidden" data-target="hc" data-dir="-1" aria-label="Scroll left">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <div class="cards-row" id="hc" role="list" aria-label="Handle cards"></div>
+            <button class="scroll-arrow arr-end hidden" data-target="hc" data-dir="1" aria-label="Scroll right">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+            </button>
+          </div>
+        </div>
       </div>
 
-    </div>
-  </div>
-</div>
+      <!-- 4. Location (separate card) -->
+      <div class="grid-item" id="location-section">
+        <div class="step" style="margin-bottom: 0;">
+          <div class="step-header" style="align-items:center;gap:8px;">
+            <span class="step-title">4. النقل والتوصيل</span>
+            <!-- info icon (i) with same note text -->
+            <button class="loc-hint" onclick="openTooltip()" aria-label="معلومات عن النقل والتوصيل" aria-describedby="loc-note" style="background:none;border:none;padding:6px;display:inline-flex;align-items:center;justify-content:center;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9caf88" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+            </button>
+            <!-- visually-hidden note for screen readers -->
+            <span id="loc-note" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;">
+              نحتاج تحديد موقعك لتقدير تكلفة النقل والتوصيل بدقة.
+            </span>
+          </div>
 
-<div class="sbar">
-  <div class="price-row">
-    <span class="price-lbl">الإجمالي</span>
-    <span class="price-val" id="total-price">— EGP</span>
-  </div>
-  <div class="price-warning" id="price-warning">* لا تنسَ اختيار المقاس لإظهار السعر</div>
-  <div class="price-divider-bottom"></div>
+          <div class="loc-desc" style="margin-top:10px;">نحتاج تحديد موقعك لتقدير تكلفة النقل والتوصيل بدقة.</div>
 
-  <div class="sum-title">تفاصيل السعر</div>
-  <div class="sum-rows">
-    <div class="srow">
-    <span class="slbl">النوع</span>
-    <span class="sval" id="sd-type">—</span>
-    <span class="sval-price"></span>
-    </div>
-    <div class="srow">
-      <span class="slbl">التصميم</span>
-      <span class="sval" id="sd">—</span>
-      <span class="sval-price" id="sd-price">—</span>
-    </div>
-    <div class="srow">
-      <span class="slbl">المقاس</span>
-      <span class="sval" id="ss">—</span>
-      <span class="sval-price" id="ss-price">—</span>
-    </div>
-    <div class="srow">
-      <span class="slbl">التقسيمة</span>
-      <span class="sval" id="sv">—</span>
-      <span class="sval-price" id="sv-price">—</span>
-    </div>
-    <div class="srow">
-      <span class="slbl">المقبض</span>
-      <span class="sval" id="sh">—</span>
-      <span class="sval-price" id="sh-price">—</span>
-    </div>
-    <div class="sum-rows">
-        <div class="srow" id="si-install-row">
+          <button class="btn-locate" id="btn-locate" aria-label="حدد موقعي الحالي" style="margin-top:8px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="9" stroke-dasharray="4 2"/></svg>
+            تحديد موقعي الحالي
+          </button>
+
+          <div class="loc-result" id="loc-result" role="status" aria-live="polite" style="margin-top:10px;"></div>
+
+          <div id="mapContainer" class="map-container" hidden style="margin-top:12px;">
+            <iframe id="staticMap" data-src="" width="100%" height="200" loading="lazy" title="خريطة الموقع" style="border:1px solid #ccc;border-radius:2px;"></iframe>
+          </div>
+        </div>
+      </div>
+
+    <!-- PRICE SIDEBAR (desktop) / sticky footer (mobile) -->
+    <aside class="price-column sbar" id="sbar">
+      <div class="price-row">
+        <span class="price-lbl">الإجمالي</span>
+        <span class="price-val" id="total-price">— EGP</span>
+      </div>
+      <div class="price-warning" id="price-warning">* لا تنسَ اختيار المقاس لإظهار السعر</div>
+      <div class="price-divider-bottom"></div>
+
+      <div class="sum-title">تفاصيل السعر</div>
+      <div class="sum-rows">
+        <div class="srow">
+          <span class="slbl">النوع</span>
+          <span class="sval" id="sd-type">—</span>
+          <span class="sval-price"></span>
+        </div>
+        <div class="srow">
+          <span class="slbl">التصميم</span>
+          <span class="sval" id="sd">—</span>
+          <span class="sval-price" id="sd-price">—</span>
+        </div>
+        <div class="srow">
+          <span class="slbl">المقاس</span>
+          <span class="sval" id="ss">—</span>
+          <span class="sval-price" id="ss-price">—</span>
+        </div>
+        <div class="srow">
+          <span class="slbl">التقسيمة</span>
+          <span class="sval" id="sv">—</span>
+          <span class="sval-price" id="sv-price">—</span>
+        </div>
+        <div class="srow">
+          <span class="slbl">المقبض</span>
+          <span class="sval" id="sh">—</span>
+          <span class="sval-price" id="sh-price">—</span>
+        </div>
+        <div class="sum-rows">
+          <div class="srow" id="si-install-row">
             <span class="slbl">المعاينة والتركيب</span>
             <span class="sval" id="si-install-label">تكلفة ثابتة</span>
             <span class="sval-price" id="si-install-price">200 EGP</span>
+          </div>
+          <div class="srow">
+            <span class="slbl">التوصيل</span>
+            <span class="sval" id="si-label">—</span>
+            <span class="sval-price" id="si-price">—</span>
+          </div>
         </div>
-  
-        <div class="srow">
-          <span class="slbl">التوصيل</span>
-          <span class="sval" id="si-label">—</span>
-          <span class="sval-price" id="si-price">—</span>
-        </div>
-    </div>
-    <div class="install-warning" id="install-warning">* السعر يشمل الوحدة فقط — تكلفة النقل والتوصيل لم تُحسب بعد</div>
-  </div>
-  <div class="actions">
-    <button class="btn-reset" onclick="resetAll()">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-      إعادة
-    </button>
-    <button class="btn-order" onclick="orderWA()">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.533 5.858L.054 23.25a.75.75 0 0 0 .916.916l5.392-1.479A11.954 11.954 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.933 0-3.742-.524-5.287-1.437l-.378-.225-3.924 1.077 1.077-3.924-.225-.378A9.953 9.953 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
-      اطلب الآن
-    </button>
-  </div>
+        <div class="install-warning" id="install-warning">* السعر يشمل الوحدة فقط — تكلفة النقل والتوصيل لم تُحسب بعد</div>
+      </div>
 
-</div>
-
-
-</div>
-  </div>
-
-  <section class="contact-section">
-    <div class="contact-card">
-        <div class="contact-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                <path d="M12 2v20"/>
-                <path d="M2 12h20"/>
-                <path d="M5 5l14 14"/>
-                <path d="M19 5L5 19"/>
-            </svg>
-        </div>
-        <h2>لديك تصميم مختلف؟</h2>
-        <p>
-            إذا كان لديك تصميم خاص أو فكرة مختلفة غير موجودة ضمن الخيارات الحالية،
-            يمكنك إرسالها لنا مباشرة عبر واتساب وسنساعدك في تنفيذها.
-        </p>
-        <button class="contact-btn" onclick="customWA()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
-                <path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.533 5.858L.054 23.25a.75.75 0 0 0 .916.916l5.392-1.479A11.954 11.954 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.933 0-3.742-.524-5.287-1.437l-.378-.225-3.924 1.077 1.077-3.924-.225-.378A9.953 9.953 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>
-            </svg>
-            إرسال التصميم عبر واتساب
+      <div class="actions">
+        <button class="btn-reset" onclick="resetAll()" aria-label="إعادة">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+          إعادة
         </button>
+        <button class="btn-order" onclick="orderWA()" aria-label="اطلب الآن">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.533 5.858L.054 23.25a.75.75 0 0 0 .916.916l5.392-1.479A11.954 11.954 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.933 0-3.742-.524-5.287-1.437l-.378-.225-3.924 1.077 1.077-3.924-.225-.378A9.953 9.953 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+          اطلب الآن
+        </button>
+      </div>
+    </aside>
+
+  </div>
+</main>
+
+<section class="contact-section">
+  <div class="contact-card">
+    <div class="contact-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M12 2v20" />
+        <path d="M2 12h20" />
+        <path d="M5 5l14 14" />
+        <path d="M19 5L5 19" />
+      </svg>
     </div>
+    <h2>لديك تصميم مختلف؟</h2>
+    <p>إذا كان لديك تصميم خاص أو فكرة مختلفة غير موجودة ضمن الخيارات الحالية، يمكنك إرسالها لنا مباشرة عبر واتساب وسنساعدك في تنفيذها.</p>
+    <button class="contact-btn" onclick="customWA()" aria-label="إرسال التصميم عبر واتساب">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.533 5.858L.054 23.25a.75.75 0 0 0 .916.916l5.392-1.479A11.954 11.954 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.933 0-3.742-.524-5.287-1.437l-.378-.225-3.924 1.077 1.077-3.924-.225-.378A9.953 9.953 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+      إرسال التصميم عبر واتساب
+    </button>
+  </div>
 </section>
 
 <section class="portfolio-section">
-    <h2 class="section-title">استكشف بعض أعمالنا</h2>
-    <p class="section-subtitle">
-      قارن بين التصميم ال3D والتنفيذ الفعلي، وشاهد كيف نحرص على تنفيذ كل التفاصيل كما تم الاتفاق عليها.
-    </p>
-    <div class="portfolio-grid">
-        <div class="portfolio-item" onclick="openLB('images/ic-01.webp')">
-            <img src="images/ic-01.webp" alt="مشروع 1">
-            <div class="portfolio-overlay">
-                <span>عرض بالحجم الكامل</span>
-            </div>
-        </div>
-        <div class="portfolio-item" onclick="openLB('images/ic-02.webp')">
-            <img src="images/ic-02.webp" alt="مشروع 2">
-            <div class="portfolio-overlay">
-                <span>عرض بالحجم الكامل</span>
-            </div>
-        </div>
-        <div class="portfolio-item" onclick="openLB('images/ic-03.webp')">
-            <img src="images/ic-03.webp" alt="مشروع 3">
-            <div class="portfolio-overlay">
-                <span>عرض بالحجم الكامل</span>
-            </div>
-        </div>
-        <div class="portfolio-item" onclick="openLB('images/ic-04.webp')">
-            <img src="images/ic-04.webp" alt="مشروع 4">
-            <div class="portfolio-overlay">
-                <span>عرض بالحجم الكامل</span>
-            </div>
-        </div>
+  <h2 class="section-title">استكشف بعض أعمالنا</h2>
+  <p class="section-subtitle">قارن بين التصميم ال3D والتنفيذ الفعلي، وشاهد كيف نحرص على تنفيذ كل التفاصيل كما تم الاتفاق عليها.</p>
+  <div class="portfolio-grid">
+    <div class="portfolio-item" onclick="openLB('images/ic-01.webp')">
+      <img src="images/ic-01.webp" alt="مشروع 1" />
+      <div class="portfolio-overlay"><span>عرض بالحجم الكامل</span></div>
     </div>
+    <div class="portfolio-item" onclick="openLB('images/ic-02.webp')">
+      <img src="images/ic-02.webp" alt="مشروع 2" />
+      <div class="portfolio-overlay"><span>عرض بالحجم الكامل</span></div>
+    </div>
+    <div class="portfolio-item" onclick="openLB('images/ic-03.webp')">
+      <img src="images/ic-03.webp" alt="مشروع 3" />
+      <div class="portfolio-overlay"><span>عرض بالحجم الكامل</span></div>
+    </div>
+    <div class="portfolio-item" onclick="openLB('images/ic-04.webp')">
+      <img src="images/ic-04.webp" alt="مشروع 4" />
+      <div class="portfolio-overlay"><span>عرض بالحجم الكامل</span></div>
+    </div>
+  </div>
 </section>
 
-  <!-- Lightbox -->
-  <div class="lb" id="lb" onclick="closeLB()">
-    <button class="lb-close" onclick="closeLB()">×</button>
-    <img id="lb-img" src="" alt="">
-  </div>
+<!-- Lightbox -->
+<div class="lb" id="lb" onclick="closeLB()">
+  <button class="lb-close" onclick="closeLB()">×</button>
+  <img id="lb-img" src="" alt="" />
+</div>
 
-  <!-- Toast -->
-  <div class="toast" id="toast"></div>
+<!-- Toast -->
+<div class="toast" id="toast"></div>
 
-  <footer class="wodi-footer">
+<footer class="wodi-footer">
   <div class="footer-top-section">
-    <img src="images/logo-nobg.png" alt="WODI Furniture Logo" class="footer-logo">
+    <img src="images/logo-nobg.png" alt="WODI Furniture Logo" class="footer-logo" />
   </div>
   <div class="footer-container">
     <div class="footer-col">
@@ -362,35 +321,302 @@
     <div class="footer-col">
       <h4>تواصل معنا</h4>
       <div class="social-icons-wrapper">
-        <a href="https://wa.me/201556840368" aria-label="WhatsApp">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
-        </a>
-        <a href="https://www.instagram.com/wodifurniture" aria-label="Instagram">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
-        </a>
-        <a href="https://www.facebook.com/wodifurniture" aria-label="Facebook">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-        </a>
-        <a href="mailto:wodifurniture@outlook.com" aria-label="Email">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-        </a>
+        <a href="https://wa.me/201556840368" aria-label="WhatsApp">…</a>
+        <a href="https://www.instagram.com/wodifurniture" aria-label="Instagram">…</a>
+        <a href="https://www.facebook.com/wodifurniture" aria-label="Facebook">…</a>
+        <a href="mailto:wodifurniture@outlook.com" aria-label="Email">…</a>
       </div>
     </div>
   </div>
 </footer>
 
-  <div class="tooltip-overlay" id="tooltip-overlay" onclick="closeTooltip()">
-    <div class="tooltip-box" onclick="event.stopPropagation()">
-      <button class="tooltip-close" onclick="closeTooltip()">×</button>
-      <div class="tooltip-text">
-  نستخدم موقعك لحساب المسافة وتوفير أفضل سعر للتوصيل. لا يتم حفظ موقعك، ولا يُستخدم إِلا لهذا الغرض.
-  <br><br>
-  إذا كنت تفضل عدم مشاركته، يمكنك التواصل معنا عبر واتساب لتحديد التكلفة يدوياً.
-</div>
-    </div>
-  </div>
+<script src="js/configurator.js"></script>
 
-  <script src="js/configurator.js"></script>
+<script>
+
+// ---- configurator.js (formatted) ----
+
+// Intro collapse toggle
+(function () {
+  const introToggle = document.getElementById('intro-toggle');
+  const introPara = document.getElementById('intro-para');
+
+  if (!introToggle || !introPara) return;
+
+  introToggle.addEventListener('click', function () {
+    const collapsed = introPara.classList.toggle('collapsed');
+    // When class 'collapsed' is present we treat it as collapsed state,
+    // so button text should reflect the action to expand.
+    introToggle.textContent = collapsed ? 'عرض المزيد' : 'عرض أقل';
+    introToggle.setAttribute('aria-expanded', String(!collapsed));
+    introPara.setAttribute('aria-expanded', String(!collapsed));
+  });
+})();
+
+
+// Notes toggle
+(function () {
+  const notesBtn = document.getElementById('notes-toggle-btn');
+  const notesPanel = document.getElementById('notes-panel');
+
+  if (!notesBtn || !notesPanel) return;
+
+  notesBtn.addEventListener('click', function () {
+    const expanded = notesPanel.hidden;
+    notesPanel.hidden = !expanded;
+    notesBtn.setAttribute('aria-expanded', String(expanded));
+  });
+})();
+
+// Show/hide scroll arrows based on overflow & hookup arrows
+(function () {
+  function updateScrollArrows() {
+    document.querySelectorAll('.scroll-wrap').forEach(function (wrap) {
+      const row = wrap.querySelector('.cards-row');
+      const startBtn = wrap.querySelector('.scroll-arrow.arr-start');
+      const endBtn = wrap.querySelector('.scroll-arrow.arr-end');
+
+      if (!row) return;
+
+      const canScrollLeft = row.scrollLeft > 10;
+      const canScrollRight = (row.scrollWidth - row.clientWidth - row.scrollLeft) > 10;
+
+      if (startBtn) startBtn.classList.toggle('hidden', !canScrollLeft);
+      if (endBtn) endBtn.classList.toggle('hidden', !canScrollRight);
+    });
+  }
+
+  window.addEventListener('load', updateScrollArrows);
+  window.addEventListener('resize', updateScrollArrows);
+
+  document.querySelectorAll('.cards-row').forEach(function (row) {
+    row.addEventListener('scroll', updateScrollArrows);
+  });
+})();
+
+
+// Arrow buttons handling (scroll by chunk)
+(function () {
+  document.querySelectorAll('.scroll-arrow').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      const targetId = btn.dataset.target;
+      const dir = parseInt(btn.dataset.dir || '1', 10);
+      const row = document.getElementById(targetId);
+
+      if (!row) return;
+
+      // scroll by ~60% of visible width (RTL-aware flip handled in HTML/CSS)
+      const chunk = row.clientWidth * 0.6;
+      // dir is -1 or 1; multiply by -1 if needed for RTL (HTML sets arr-start/arr-end)
+      row.scrollBy({ left: dir * chunk * -1, behavior: 'smooth' });
+    });
+  });
+})();
+
+// Ensure initial ARIA states on DOMContentLoaded
+document.addEventListener('DOMContentLoaded', function () {
+  const panel = document.getElementById('notes-panel');
+  if (panel) panel.hidden = true;
+
+  const introPara = document.getElementById('intro-para');
+  if (introPara) introPara.classList.add('collapsed');
+
+  // run arrow update once DOM is ready
+  if (typeof updateScrollArrows === 'function') {
+    try { updateScrollArrows(); } catch (e) { /* ignore if not defined */ }
+  }
+});
+
+
+// ---------- Improved Sticky total bar behavior for mobile ----------
+(function () {
+  const MOBILE_BREAK = 900; // px
+  let stickyEl = null;
+  let io = null;
+  let mutation = null;
+
+  function createSticky() {
+    if (stickyEl) return stickyEl;
+
+    stickyEl = document.createElement('div');
+    stickyEl.className = 'price-sticky';
+    stickyEl.innerHTML =
+      '<div class="total">' +
+        '<span class="lbl">الإجمالي</span>' +
+        '<span class="val" id="sticky-total">— EGP</span>' +
+      '</div>' +
+      '<div class="sticky-actions">' +
+        '<button class="sticky-reset" id="sticky-reset">إعادة</button>' +
+        '<button class="sticky-order" id="sticky-order">اطلب الآن</button>' +
+      '</div>';
+
+    document.body.appendChild(stickyEl);
+
+    const orderBtn = document.getElementById('sticky-order');
+    if (orderBtn) {
+      orderBtn.addEventListener('click', function () {
+        if (typeof orderWA === 'function') orderWA();
+        else document.querySelector('.btn-order')?.click();
+      });
+    }
+
+    const resetBtn = document.getElementById('sticky-reset');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', function () {
+        if (typeof resetAll === 'function') resetAll();
+        else document.querySelector('.btn-reset')?.click();
+      });
+    }
+
+    stickyEl.style.display = 'none';
+    return stickyEl;
+  }
+
+  function destroySticky() {
+    if (io) { io.disconnect(); io = null; }
+    if (mutation) { mutation.disconnect(); mutation = null; }
+    if (stickyEl) { stickyEl.remove(); stickyEl = null; }
+  }
+
+  function updateStickyValue() {
+    const total = document.getElementById('total-price')?.textContent?.trim() || '— EGP';
+    const stickyVal = document.getElementById('sticky-total');
+    if (stickyVal) stickyVal.textContent = total;
+  }
+
+  function showSticky() {
+    if (!stickyEl) createSticky();
+    stickyEl.style.display = 'flex';
+    updateStickyValue();
+  }
+
+  function hideSticky() {
+    if (stickyEl) stickyEl.style.display = 'none';
+  }
+
+  function isElementPositionedFixedOrSticky(el) {
+    if (!el) return false;
+    const cs = window.getComputedStyle(el);
+    return cs.position === 'fixed' || cs.position === 'sticky';
+  }
+
+function setupObservers() {
+    const target = document.getElementById('sbar') || document.querySelector('.price-column.sbar');
+    if (!target) {
+      showSticky();
+      return;
+    }
+
+    if (isElementPositionedFixedOrSticky(target)) {
+      destroySticky();
+      return;
+    }
+
+    createSticky();
+
+    if (io) io.disconnect();
+    
+    // استخدام مراقب لتحديد موقع سكشن الأسعار الأصلي بالنسبة للشاشة
+    io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (ent) {
+        // إذا كان السكشن الأصلي مرئياً في الشاشة أو تم تجاوزه (مختفي لأعلى)، نُخفي الشريط العائم.
+        // أي أنه لا يظهر إلا عندما يكون السكشن الأصلي أسفل شاشة العضو (في بداية الصفحة للأعلى).
+        if (ent.isIntersecting || ent.boundingClientRect.top < 0) {
+          hideSticky();
+        } else {
+          showSticky();
+        }
+      });
+    }, {
+      root: null,
+      threshold: 0
+    });
+    
+    io.observe(target);
+  }
+
+  function enableIfMobile() {
+    if (window.innerWidth > MOBILE_BREAK) {
+      destroySticky();
+      return;
+    }
+
+    const target = document.getElementById('sbar') || document.querySelector('.price-column.sbar');
+
+    // If original price-column is styled fixed/sticky via CSS, avoid creating duplicate sticky
+    if (target && isElementPositionedFixedOrSticky(target)) {
+      destroySticky();
+      return;
+    }
+
+    setupObservers();
+  }
+
+  window.addEventListener('load', enableIfMobile);
+  window.addEventListener('resize', function () {
+    clearTimeout(window._priceStickyResize);
+    window._priceStickyResize = setTimeout(enableIfMobile, 120);
+  });
+  window.addEventListener('orientationchange', function () {
+    setTimeout(enableIfMobile, 300);
+  });
+})();
+
+// دالة لتحديث الـ Stepper وتغيير الشكل (عن طريق إضافة أو إزالة الكلاسات المباشرة)
+function updateStepperProgress() {
+  const stepDesign = document.getElementById('st-design');
+  const stepPartition = document.getElementById('st-partition');
+  const stepHandle = document.getElementById('st-handle');
+  const stepLocation = document.getElementById('st-location');
+
+  // 1. التصميم والمقاس
+  if (stepDesign) {
+    if (typeof S !== 'undefined' && S.design && S.size) {
+      stepDesign.classList.add('completed');
+    } else {
+      stepDesign.classList.remove('completed');
+    }
+  }
+
+  // 2. التقسيمة
+  if (stepPartition) {
+    if (typeof S !== 'undefined' && S.div) {
+      stepPartition.classList.add('completed');
+    } else {
+      stepPartition.classList.remove('completed');
+    }
+  }
+
+  // 3. المقبض (مكتمل إذا تم اختياره، أو إذا كان التصميم لا يتطلب مقبض hc === 0)
+  if (stepHandle) {
+    const noH = (typeof S !== 'undefined' && S.design && S.design.hc === 0);
+    if ((typeof S !== 'undefined' && S.handle) || noH) {
+      stepHandle.classList.add('completed');
+    } else {
+      stepHandle.classList.remove('completed');
+    }
+  }
+
+  // 4. النقل والتوصيل (مكتمل إذا تم حساب تكلفة النقل وتحديد الموقع)
+  if (stepLocation) {
+    if (typeof installCost !== 'undefined' && installCost !== null) {
+      stepLocation.classList.add('completed');
+    } else {
+      stepLocation.classList.remove('completed');
+    }
+  }
+}
+
+// تشغيل الفحص تلقائياً عند أي ضغطة زر أو تغيير في الصفحة، واستدعاؤها كل نصف ثانية لضمان التزامن اللحظي
+document.addEventListener('click', function() {
+  setTimeout(updateStepperProgress, 100);
+});
+
+// التشغيل الفوري عند تحميل الصفحة
+window.addEventListener('DOMContentLoaded', function() {
+  updateStepperProgress();
+});
+</script>
 
 </body>
 </html>

@@ -17,6 +17,8 @@ body {
   direction: rtl;
   min-height: 100vh;
   overflow-x: hidden;
+  padding-bottom: 0 !important;
+  margin-bottom: 0 !important;
 }
 
 /* Navbar */
@@ -719,12 +721,29 @@ details[open] summary::after {
   padding-top: 100px;
   min-height: 100vh;
 }
-.conf {
-  max-width: 1700px;
-  margin: 0 auto;
-  padding: 0 16px;
+.conf, .main-column, .sidebar {
+  padding-inline-start: env(safe-area-inset-left, 16px);
+  padding-inline-end: env(safe-area-inset-right, 16px);
   box-sizing: border-box;
-  width: 100%;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+.config-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px; /* main | price/sidebar */
+  gap: 28px;
+  max-width: 1200px; /* اضبط حسب رغبتك */
+  margin: 0 auto;
+  padding: 20px 16px;
+  box-sizing: border-box;
+  align-items: start;
+}
+.price-column {
+  width: 320px;
+  box-sizing: border-box;
+  /* use sticky on desktop only (not fixed) */
+  position: sticky;
+  top: 100px;
 }
 .main-header {
   font-size: 18px;
@@ -901,11 +920,28 @@ details[open] summary::after {
 .step:last-child {
   margin-bottom: 0;
 }
-.step-header {
+/* style for the info icon near the section title */
+#location-section .step-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
+  gap: 10px;
+  position: relative;
+}
+#location-section .loc-hint {
+  width: 34px;
+  height: 34px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(156,175,136,0.06);
+  border: 1px solid rgba(156,175,136,0.12);
+  cursor: pointer;
+}
+#location-section .loc-hint svg {
+  width: 18px;
+  height: 18px;
+  stroke: #9caf88;
 }
 .step-title {
   font-size: 15px;
@@ -946,7 +982,6 @@ details[open] summary::after {
   border-color: #657c59;
   box-shadow: 0 0 0 2px rgba(101, 124, 89, 0.15);
 }
-.cards-row img,
 .cards-row .card-img {
   width: 100%;
   height: auto;
@@ -955,6 +990,8 @@ details[open] summary::after {
   background-color: transparent;
   padding: 0px;
 }
+.cards-row img { max-width: 100%; height: auto; display: block; object-fit: cover; }
+
 
 /* Scroll arrows & cards container */
 .scroll-arrow {
@@ -1315,6 +1352,221 @@ details[open] summary::after {
 .btn-wa:hover {
   background: #8a9e78;
 }
+/* on small screens: single column + sticky price bar bottom */
+@media (max-width: 900px) {
+  .config-layout {
+    grid-template-columns: 1fr;
+    padding-bottom: calc(100px + env(safe-area-inset-bottom, 0)); /* room for sticky */
+  }  
+  .main-column { order: 1; }
+  .sidebar { order: 2; width: auto; }
+  .price-column { order: 3; width: auto; position: relative; top: auto; }
+  .conf { padding-bottom: 120px;} /* prevent content under sticky bar */
+}
+
+/* Location button states & summary box (add to end of style.css) */
+
+.btn-locate {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  background: #9caf88;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .18s ease, transform .12s ease;
+  min-height: 48px;
+}
+
+.btn-locate:disabled { opacity: 0.8; cursor: not-allowed; transform: none; }
+
+/* loading state: keep green but show spinner */
+.btn-locate.loading { background: #8fae7a; pointer-events: none; }
+.btn-locate.success { background: #5f7a53; }
+
+/* spinner (uses inline svg with class "spin") */
+.spin { animation: spin 1s linear infinite; display: inline-block; }
+
+/* summary box under the map */
+.loc-result {
+  margin-top: 12px;
+  display: none; /* toggled to show via JS */
+}
+
+/* unified summary inner card */
+.loc-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  font-weight: 600;
+  box-sizing: border-box;
+}
+
+/* light variant (default) */
+.loc-summary.light {
+  background: #f6f7f4;
+  color: #333;
+  border: 1px solid rgba(0,0,0,0.04);
+}
+
+/* dark variant — use if your page background is dark (toggle via JS if needed) */
+.loc-summary.dark {
+  background: rgba(18,18,18,0.84);
+  color: #f5f5f2;
+  border: 1px solid rgba(255,255,255,0.04);
+}
+
+/* price pill on the left */
+.loc-summary .summary-price {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.loc-summary .summary-price .val {
+  font-size: 18px;
+  color: #657c59; /* olive */
+  font-weight: 800;
+}
+.loc-summary .summary-price .lbl {
+  font-size: 12px;
+  color: rgba(0,0,0,0.5);
+  margin-top: 4px;
+}
+
+/* address / short text on the right */
+.loc-summary .summary-address {
+  text-align: right;
+  font-size: 13px;
+  color: inherit;
+  opacity: 0.95;
+}
+
+/* out-of-range style */
+.loc-result.out-of-range .loc-summary {
+  background: #fff4f2;
+  color: #7a2b2b;
+  border-color: rgba(122,43,43,0.08);
+}
+
+/* small responsive tweak */
+@media (max-width:600px) {
+  .loc-summary { flex-direction: column; align-items: flex-start; }
+  .loc-summary .summary-price { align-items: flex-start; }
+}
+
+/* Intro collapse */
+.intro-para { list-style: decimal; padding-right: 18px; margin-bottom: 8px; transition: max-height .32s ease; overflow: hidden; max-height: 6.5em; }
+.intro-para.collapsed { max-height: 6.5em; }
+.intro-para:not(.collapsed) { max-height: 800px; }
+.intro-toggle { background: none; border: none; color: #657c59; font-weight: 700; cursor: pointer; padding: 6px 0; }
+
+/* Notes sidebar (collapsed/expanded) */
+.notes-sidebar { border: 1px solid rgba(51,48,40,0.06); border-radius: 6px; overflow: hidden; background: #fff; }
+.notes-toggle-btn { display:flex; gap:8px; align-items:center; width:100%; padding:10px 12px; background:transparent; border:none; cursor:pointer; justify-content:space-between; }
+.notes-mini { display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; background: rgba(156,175,136,0.08); border-radius:4px; color:#9caf88; }
+.notes-label { font-weight:700; color:#333028; }
+.notes-caret { transform: rotate(0deg); transition: transform .25s ease; color: rgba(51,48,40,0.6); }
+.notes-panel { padding:12px; border-top: 1px solid rgba(51,48,40,0.04); }
+.notes-sidebar[aria-expanded="true"] .notes-caret { transform: rotate(180deg); }
+
+/* compact stepper */
+.compact-stepper ol {
+  display: flex;
+  justify-content: space-between;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  direction: rtl;
+}
+
+.compact-stepper .stepper-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  font-size: 13px;
+  color: #6c757d;
+}
+
+/* تحجيم الأيقونة الثابتة داخل الـ Stepper لمنع تمددها */
+.compact-stepper .stepper-icon {
+  width: 14px;
+  height: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.compact-stepper .stepper-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* شكل الخطوة عند اكتمالها */
+.compact-stepper .stepper-item.completed {
+  background: #e8f5e9;
+  border-color: #c8e6c9;
+  color: #2e7d32;
+}
+
+/* تحويل الأيقونة إلى علامة صح عند الاكتمال تلقائياً */
+.compact-stepper .stepper-item.completed .stepper-icon::after {
+  content: "✓";
+  font-weight: bold;
+  font-size: 12px;
+}
+.compact-stepper .stepper-item.completed .stepper-icon svg {
+  display: none; /* إخفاء الدائرة الفارغة واستبدالها بالصح */
+}
+
+/* scroll wrap & arrows — show arrows only when needed */
+.scroll-wrap { position: relative; }
+.cards-row {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  padding-inline: 6px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  min-width: 0; /* important */
+}
+.cards-row > * { scroll-snap-align: center; flex: 0 0 220px; } /* card width */
+.scroll-arrow { position:absolute; top:50%; transform:translateY(-50%); width:42px; height:42px; display:flex; align-items:center; justify-content:center; border-radius:6px; background:#fff; box-shadow:0 6px 18px rgba(0,0,0,0.06); border:1px solid rgba(0,0,0,0.04); cursor:pointer; z-index:10; }
+.scroll-arrow.hidden { opacity:0; pointer-events:none; transform:translateY(-50%) scale(.95); }
+.scroll-arrow.arr-start { right:6px; } /* RTL: start is right */
+.scroll-arrow.arr-end { left:6px; }
+.scroll-arrow svg { width:18px; height:18px; stroke:#333028; }
+
+/* sizes grid */
+.sizes-grid { display:flex; gap:8px; flex-wrap:wrap; margin-top:6px; }
+.sizes-grid .size-btn { min-width:84px; padding:10px 14px; border-radius:6px; border:1px solid rgba(51,48,40,0.08); background:#fff; font-weight:700; cursor:pointer; }
+.sizes-grid .size-btn.disabled { opacity:.6; cursor:not-allowed; background:#fafafa; }
+.sizes-grid .size-btn.selected { background:#9caf88; color:#fff; border-color:#9caf88; }
+
+/* touch target improvements */
+.btn-locate, .size-btn, .btn-order, .btn-reset { min-height:44px; }
+
+/* small helpers */
+.sub-title { font-size:14px; font-weight:700; color:#333028; margin-bottom:8px; }
+.conf-header { display:flex; flex-direction:column; gap:8px; margin-bottom:6px; }
+
+/* map container */
+.map-container { margin-top:12px; border-radius:4px; overflow:hidden; border:1px solid rgba(51,48,40,0.08); }
+
+/* ensure sbar spacing on desktop */
+@media (min-width: 901px) {
+  .price-column.sbar {top: 100px; align-self: start; }
+}
 
 /* Lightbox */
 .lb {
@@ -1444,47 +1696,111 @@ details[open] summary::after {
   display: block;
 }
 
-/* Tooltip */
-.tooltip-overlay {
-  display: none;
+/* export modal */
+.wodi-modal {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.6);
-  z-index: 8000;
+  display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  background: rgba(0,0,0,0.52);
+  z-index: 12000;
+  padding: 28px;
 }
-.tooltip-overlay.open {
-  display: flex;
+.wodi-modal-box {
+  max-width: 1100px;
+  width: 100%;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.45);
 }
-.tooltip-box {
-  background: #2a2820;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 2px;
-  padding: 20px;
-  max-width: 500px;
-  min-width: 300px;
-  width: 70%;
-  height: auto;
+.wodi-modal-box .wodi-modal-body {
+  padding: 14px;
+  text-align: center;
+  background: #111;
+}
+.wodi-modal-box img#wodi-export-img { max-width: 100%; height: auto; display:block; margin:0 auto; }
+.wodi-modal-actions { padding: 14px; display:flex; gap:10px; justify-content:center; background:#fff; }
+.wodi-btn {
+  background:#3a7a56;color:#fff;padding:10px 14px;border-radius:8px;text-decoration:none;border:none;font-weight:700;cursor:pointer;
+}
+.wodi-btn.alt { background:#e5e5e5;color:#333; }
+.wodi-modal-close { position:absolute; right:16px; top:10px; background:transparent;border:none;font-size:26px;color:#fff; cursor:pointer; }
+
+/* fallback view */
+.wodi-fallback-body { padding:12px; }
+.wodi-map-wrap { position:relative; display:block; max-width:980px; margin:0 auto; }
+.wodi-map-img { width:100%; height:auto; display:block; border-radius:8px; }
+.wodi-logo-overlay { position:absolute; left:18px; top:18px; width:140px; height:auto; object-fit:contain; }
+.wodi-text-overlay { position:absolute; right:18px; bottom:18px; color:#fff; text-align:right; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
+.wodi-address { font-weight:700; font-size:17px; }
+.wodi-cost { font-weight:600; margin-top:6px; }
+
+.spin { animation: spin 1s linear infinite; display:inline-block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.btn-export {
+  display: inline-block;
+  background:#3a7a56;
+  color:#fff;
+  border-radius:8px;
+  padding:10px 14px;
+  font-weight:700;
+  border:none;
+  cursor:pointer;
+}
+
+/* Tooltip */
+/* tooltip overlay */
+#tooltip-overlay {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.45);
+  z-index: 11000;
+  padding: 16px;
+}
+#tooltip-overlay.open { display: flex; }
+
+/* box */
+#tooltip-overlay .tooltip-box {
+  background: #fff;
+  color: #111;
+  border-radius: 10px;
+  max-width: 520px;
+  width: 100%;
+  padding: 14px 14px 12px 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
   position: relative;
+  box-sizing: border-box;
+  font-family: 'Cairo', sans-serif;
+  line-height: 1.45;
 }
-.tooltip-close {
+
+/* dark page variant: if your site is dark, override with .dark */
+#tooltip-overlay.dark .tooltip-box { background: #1f1f1f; color: #eee; }
+
+/* close button */
+#tooltip-overlay .tooltip-close {
   position: absolute;
   top: 12px;
-  left: 12px;
-  background: none;
+  right: 12px;
   border: none;
-  color: rgba(51,48,40,0.6);
+  background: transparent;
   font-size: 20px;
+  color: inherit;
   cursor: pointer;
-  line-height: 1;
 }
-.tooltip-text {
-  font-size: 13px;
-  color: rgba(51,48,40,0.85);
-  line-height: 1.7;
-  font-family: 'Cairo', sans-serif;
+
+/* text */
+#tooltip-overlay .tooltip-text { font-size: 14px; color: inherit; padding-top: 20px; }
+
+/* responsive */
+@media (max-width: 420px) {
+  #tooltip-overlay .tooltip-box { padding: 12px; border-radius: 8px; }
 }
 .install-warning {
   display: none;
@@ -2233,3 +2549,99 @@ details[open] summary::after {
   width: 16px;
   height: 16px;
 }
+
+/* ---------- Mobile sticky total bar & text-fix (ADD) ---------- */
+/* Ensure page has safe padding on small screens (fix text cut-off for RTL) */
+.conf, .config-layout, .main-column {
+  padding-inline-start: env(safe-area-inset-left, 16px);
+  padding-inline-end: env(safe-area-inset-right, 16px);
+  box-sizing: border-box;
+}
+
+/* Allow long words/wrap to avoid being cut off */
+.main-column, .conf, .srow, .prod-body, .prod-desc, .notes-list li {
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Sticky total bar styles (mobile-only) */
+.price-sticky {
+  display: none; /* shown by JS only on mobile */
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1200;
+  background: #ffffff;
+  border-top: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 -8px 18px rgba(0,0,0,0.08);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: space-between;
+  min-height: 56px;
+  box-sizing: border-box;
+}
+
+/* inner row for total & CTA */
+.price-sticky .total {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  direction: rtl;
+}
+.price-sticky .total .lbl { font-size: 14px; color: #666; }
+.price-sticky .total .val { font-size: 18px; font-weight: 800; color: #9caf88; }
+
+/* sticky CTA */
+.price-sticky .sticky-actions { display: flex; gap: 8px; align-items: center; }
+.price-sticky .sticky-order {
+  background: #9caf88;
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-weight: 700;
+  cursor: pointer;
+  min-height: 40px;
+}
+.price-sticky .sticky-reset {
+  background: transparent;
+  border: 1px solid rgba(51,48,40,0.12);
+  padding: 8px 10px;
+  border-radius: 4px;
+  color: #333;
+  cursor: pointer;
+  min-height: 40px;
+}
+
+/* When sticky shown, ensure main content not hidden by it (extra bottom padding) */
+@media (max-width: 900px) {
+  body, .conf { padding-bottom: calc(80px + env(safe-area-inset-bottom, 0)); }
+}
+
+/* small visual tweak: ensure original price-column doesn't get covered (z-index) */
+.price-column.sbar {
+  z-index: 1000;
+}
+
+/* --- Mobile layout fixes: add at end of style.css --- */ @media (max-width: 900px) {
+
+/* Force single-column layout and prevent fixed-width sidebars */ .config-layout { grid-template-columns: 1fr !important; gap: 18px; padding: 16px !important; }
+
+.sidebar, .price-column, .footer-container, .cards-row { width: 100% !important; max-width: 100% !important; box-sizing: border-box; }
+
+/* Allow main column & flex children to shrink (prevents overflow) */ .main-column, .cards-row, .conf { min-width: 0 !important; overflow-wrap: break-word; word-break: break-word; }
+
+/* Horizontal carousels: make cards narrower on small screens */ .cards-row { padding-inline: 6px; gap: 12px; }
+
+.cards-row > * { flex: 0 0 calc(46% - 12px); /* two items per row approx */ max-width: calc(46% - 12px); min-width: 120px; box-sizing: border-box; }
+
+.cards-row img { width: 100%; height: auto; display: block; object-fit: cover; }
+
+/* Sidebar internal padding: prevent pushing content */ .sidebar, .notes-sidebar { padding: 8px 10px !important; }
+
+/* Ensure no element uses full 100vw causing horizontal overflow */
+
+/* Bottom padding to avoid sticky covering content */ body, .conf { padding-bottom: calc(100px + env(safe-area-inset-bottom, 0)); } }

@@ -42,6 +42,7 @@ function parseCSV(t){
   return ls.slice(1).map(l=>{const v=l.split(',').map(x=>x.trim().replace(/^"|"$/g,''));const o={};hs.forEach((h,i)=>o[h]=v[i]||'');return o;});
 }
 
+
 function build(rows){
   const des={},divs=[],hnd=[];
   rows.forEach(r=>{
@@ -49,32 +50,34 @@ function build(rows){
     if(cat==='sink_cabinets'){
       const b=base(id);
       if(!des[b]) {
+        // تحديد النوع: fp للرجل الكاملة، أي شيء آخر يعتبر معلق
         const type = id.includes('_fp_') ? 'floor-standing' : 'wall-hung';
         des[b]={id:b, name:nm, hc:parseInt(r.handle_count)||0, sizes:[], type:type};
       }
       else if(nm) des[b].name=nm;
       des[b].sizes.push({id,size:sz,price:p});
-      }else if(cat==='cabinet_inside_config'){
-
-        const b = id;
-        const type = id.includes('_fp_')
-          ? 'floor-standing'
-          : 'wall-hung';
+      } else if (cat === 'cabinet_inside_config') {
+        // use grouping that keeps the _wh_/_fp_ part but removes size suffix
+        const b = groupBase(id); // e.g. '4b_wh_cic01' or '4b_fp_cic01'
+        // determine type from the original id (which قد يحتوي على _fp_ أو _wh_)
+        const type = (id.includes('_fp_') || id.includes('_fp')) ? 'floor-standing' : 'wall-hung';
 
         let g = divs.find(d => d.id === b);
-
-        if(!g){
+        if (!g) {
           g = {
             id: b,
-            name: nm,
+            name: nm || b,
             type: type,
             sizes: []
           };
           divs.push(g);
+        } else if (nm) {
+          g.name = nm;
         }
 
+        // push the full row as a size entry (so we still have the exact id for matching/prices)
         g.sizes.push({
-          id,
+          id: id,
           size: sz || 'any',
           price: p
         });
@@ -111,6 +114,7 @@ let S={design:null,size:null,div:null,handle:null};
 let dt=null;
 let dataLoaded=false;
 
+// Placeholder data — cards show immediately, prices show — until data loads
 const PLACEHOLDER={
   designs:[
     {id:'4a_wh_sc01',name:'تخزين مفتوح',hc:0,sizes:[{id:'4a_wh_sc01_45cm',size:'40–50 cm',price:null},{id:'4a_wh_sc01_60cm',size:'55–65 cm',price:null}]},
@@ -192,6 +196,62 @@ function rDes() {
   updateArrows('dc-floor');
 }
 
+// دالة مساعدة لإنشاء الكارت (بنفس تنسيق الموقع الأصلي)
+function createDesignCard(d) {
+  const validPrices = d.sizes.map(s => s.price).filter(p => p !== null);
+  const minP = validPrices.length ? Math.min(...validPrices) : null;
+  
+  const el = document.createElement('div');
+  el.className = 'design-card' + (S.design && S.design.id === d.id ? ' selected' : '');
+  el.appendChild(mkImg(d.id, el));
+  
+  const info = document.createElement('div'); info.className = 'cinfo';
+  info.innerHTML = '<div class="cname">'+d.name+'</div><div class="cprice">يبدأ من: '+(minP!==null?r5(minP)+' EGP':'—')+'</div>';
+  el.appendChild(info);
+
+  el.onclick = () => {
+  // إذا تغير التصميم، صفّر المقاس
+  if (!S.design || S.design.id !== d.id) {
+    S.size = null;
+  }
+
+  // إذا تغير نوع التصميم، صفّر أيضًا التقسيمة والمقبض
+  if (S.design && S.design.type !== d.type) {
+    S.div = null;
+    S.handle = null;
+  }
+
+  S.design = d;
+  rDes();
+  rSz();
+  rDiv();
+  rHnd();
+  upd();
+};
+}
+
+// دالة إنشاء الكارت (نفس التي استخدمناها سابقاً)
+function createDesignCard(d) {
+  const validPrices = d.sizes.map(s => s.price).filter(p => p !== null);
+  const minP = validPrices.length ? Math.min(...validPrices) : null;
+  
+  const el = document.createElement('div');
+  el.className = 'design-card' + (S.design && S.design.id === d.id ? ' selected' : '');
+  el.appendChild(mkImg(d.id, el));
+  
+  const info = document.createElement('div'); info.className = 'cinfo';
+  info.innerHTML = `<div class="cname">${d.name}</div><div class="cprice">يبدأ من: ${minP !== null ? r5(minP) : '—'} EGP</div>`;
+  el.appendChild(info);
+
+  el.onclick = () => {
+    if (S.design && S.design.type !== d.type) { S.size = null; S.div = null; S.handle = null; }
+    S.design = d; 
+    rDes(); rSz(); rDiv(); rHnd(); upd();
+  };
+  return el;
+}
+
+// دالة مساعدة لإنشاء الكارت بنفس تنسيقك القديم
 function createDesignCard(d) {
     const validPrices = d.sizes.map(s => s.price).filter(p => p !== null);
     const minP = validPrices.length ? Math.min(...validPrices) : null;
@@ -208,7 +268,6 @@ function createDesignCard(d) {
         if (S.design && S.design.type !== d.type) { S.size = null; S.div = null; S.handle = null; }
         S.design = d; 
         rDes(); rSz(); rDiv(); rHnd(); upd();
-        completeStep('step-design'); // تحديث الخطوة أوتوماتيكياً
     };
     return el;
 }
@@ -223,6 +282,7 @@ function rSz() {
     return;
   }
 
+  // إذا كان المقاس الحالي لا ينتمي للتصميم المختار، امسحه
   if (S.size && !S.design.sizes.some(s => s.id === S.size.id)) {
     S.size = null;
   }
@@ -236,7 +296,6 @@ function rSz() {
       rSz();
       rDiv();
       upd();
-      completeStep('step-design'); // تفعيل خطوة التصميم والمقاس
     };
     c.appendChild(b);
   });
@@ -251,7 +310,8 @@ function rDiv() {
   const sg = S.size ? sgr(S.size.size) : null;
 
   D.divisions.forEach(d => {
-    if (d.type !== S.design.type) return;
+    // إظهار التقسيمات المطابقة فقط لنوع الحوض
+  if (d.type !== S.design.type) return;
 
     const el = document.createElement('div');
     el.className = 'div-card' + (S.div && S.div.id === d.id ? ' selected' : '');
@@ -263,17 +323,11 @@ function rDiv() {
     info.innerHTML = '<div class="cname">' + d.name + '</div><div class="cprice">' + priceText + '</div>';
     el.appendChild(info);
     
-    el.onclick = () => { 
-      S.div = d; 
-      rDiv(); 
-      upd(); 
-      completeStep('step-partition'); // تحديث خطوة التقسيمة الداخلية أوتوماتيكياً
-    };
+    el.onclick = () => { S.div = d; rDiv(); upd(); };
     c.appendChild(el);
   });
   setTimeout(() => updateArrows('vc'), 100);
 }
-
 function rHnd(){
   const c=document.getElementById('hc');c.innerHTML='';
   const noH=S.design&&S.design.hc===0;
@@ -287,23 +341,10 @@ function rHnd(){
     const displayPrice=dataLoaded&&h.price!==null?'+ '+pricePerDoor+' EGP / ضلفة':'—';
     info.innerHTML='<div class="cname">'+h.name+'</div><div class="cprice'+(dataLoaded?'':' loading')+'">'+(dataLoaded?displayPrice:'—')+'</div>';
     el.appendChild(info);
-    if(!noH)el.onclick=()=>{
-      S.handle=h;
-      rHnd();
-      upd();
-      completeStep('step-handle'); // تحديث خطوة نوع المقبض أوتوماتيكياً
-    };
+    if(!noH)el.onclick=()=>{S.handle=h;rHnd();upd();};
     c.appendChild(el);
   });
   setTimeout(()=>updateArrows('hc'),50);
-}
-
-// دالة مساعدة لتفعيل الخطوات في الـ Stepper
-function completeStep(stepId) {
-  const step = document.getElementById(stepId);
-  if (step) {
-    step.classList.add("completed");
-  }
 }
 
 function haversine(lat1,lng1,lat2,lng2){
@@ -320,11 +361,14 @@ function calcInstall(lat, lng) {
                 ? parseFloat(LOC.max_distance_km) 
                 : 25;
 
+  // التحقق من المسافة
   if (dist > maxDist) {
-    return null;
+    return null; // نعيد null فقط، والتحكم في عرض الرسالة يكون في دالة requestLocation
   }
 
+  // الحساب إذا كان داخل النطاق
   const adjusted = dist * LOC.correction_factor;
+  // أصلحت الحساب هنا بإزالة الـ 4 التي كانت مضافة بدون داعٍ
   return r5(4*adjusted * LOC.price_per_km + LOC.fixed_cost);
 }
 
@@ -334,11 +378,13 @@ function calc(){
   if(!noH&&!S.handle)return null;
   
   const sg=sgr(S.size.size);
-  const installationFee = 200;
+  const installationFee = 200; // البند الثابت للمعاينة والتركيب
   const unitPrice = r5(S.size.price + dvp(S.div, sg) + (noH ? 0 : S.handle.price * S.design.hc));
   
+  // إذا كان العميل لم يحدد موقعه بعد، نعيد سعر الوحدة + التركيب الثابت فقط
   if(installCost === null) return unitPrice + installationFee;
   
+  // إذا حدد موقعه، نضيف سعر التوصيل أيضاً
   return unitPrice + installationFee + installCost;
 }
 
@@ -349,14 +395,16 @@ function upd() {
     const noH = S.design && S.design.hc === 0;
     const sg = S.size ? sgr(S.size.size) : '85';
 
+    // 1. تحديث السعر الإجمالي
     const totalEl = document.getElementById('total-price');
-    const canShowPrice = S.design && S.size;
+const canShowPrice = S.design && S.size;
 
-    totalEl.textContent =
-      canShowPrice && t !== null
-        ? t + ' EGP'
-        : '— EGP';
+totalEl.textContent =
+  canShowPrice && t !== null
+    ? t + ' EGP'
+    : '— EGP';
 
+    // 2. تحديث التحذيرات (إن وجدت)
     const warn = document.getElementById('price-warning');
     if (warn) {
       const needsWarn = S.design && !S.size;
@@ -367,27 +415,30 @@ function upd() {
     const instWarn = document.getElementById('install-warning');
     if (instWarn) instWarn.classList.toggle('show', allSelected && installCost === null);
 
+    // 3. تحديث بيانات التوصيل
     const siLabel = document.getElementById('si-label');
     const siPrice = document.getElementById('si-price');
     if (siLabel) siLabel.textContent = installCost !== null ? 'محسوبة' : '—';
     if (siPrice) siPrice.textContent = installCost !== null ? installCost + ' EGP' : '—';
 
-    const sdTypeEl = document.getElementById('sd-type');
-    if (sdTypeEl) {
-      if (S.design) {
-        sdTypeEl.textContent =
-          S.design.type === 'floor-standing'
-            ? 'حوض رجل كاملة'
-            : 'حوض معلق / سقط رخام';
-      } else {
-        sdTypeEl.textContent = '—';
-      }
-    }
+  // تحديث النوع
+const sdTypeEl = document.getElementById('sd-type');
+if (sdTypeEl) {
+  if (S.design) {
+    sdTypeEl.textContent =
+      S.design.type === 'floor-standing'
+        ? 'حوض رجل كاملة'
+        : 'حوض معلق / سقط رخام';
+  } else {
+    sdTypeEl.textContent = '—';
+  }
+}
 
-    const sdEl = document.getElementById('sd');
-    if (sdEl) {
-      sdEl.textContent = S.design ? S.design.name : '—';
-    }
+// تحديث اسم التصميم
+const sdEl = document.getElementById('sd');
+if (sdEl) {
+  sdEl.textContent = S.design ? S.design.name : '—';
+}
 
     document.getElementById('sd-price').textContent = S.size ? r5(S.size.price) + ' EGP' : '—';
     document.getElementById('ss').textContent = S.size ? S.size.size : '—';
@@ -404,13 +455,17 @@ function upd() {
   }, 300);
 }
 
+// دالة جلب العنوان (Reverse Geocoding)
 async function getAddress(lat, lon, resElement) {
   const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=ar`;
   try {
     const response = await fetch(url);
     const data = await response.json();
+    console.log(data);
+    console.table(data.configurator);
     if (data.address) {
       const a = data.address;
+      // ناخد الحي والمدينة فقط
       const neighbourhood = a.neighbourhood || a.suburb || a.quarter || '';
       const city = a.city || a.town || a.state_district || a.state || a.county || '';
       const parts = [neighbourhood, city].filter(Boolean);
@@ -419,6 +474,7 @@ async function getAddress(lat, lon, resElement) {
         resElement.innerHTML += `<br><small>الموقع: ${address}</small>`;
       }
     }
+    window.lastAddress = shortLabel || display || (`${lat.toFixed(6)}, ${lon.toFixed(6)}`);
   } catch (e) {
     console.error("تعذر جلب العنوان", e);
   }
@@ -430,6 +486,7 @@ function requestLocation() {
   const mapContainer = document.getElementById('mapContainer');
   const mapIframe = document.getElementById('staticMap');
 
+  // 1. حالة البدء
   btn.disabled = true;
   btn.innerHTML = '<svg class="spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> جارٍ تحديد موقعك...';
 
@@ -440,70 +497,220 @@ function requestLocation() {
     return;
   }
 
+  // الآن نستدعي دالة تحديد الموقع
   getLocation(btn, res, mapContainer, mapIframe);
 }
 
 function getLocation(btn, res, mapContainer, mapIframe) {
+  // normalize parameters (accept element or id)
+  btn = (typeof btn === 'string') ? document.getElementById(btn) : btn;
+  res = (typeof res === 'string') ? document.getElementById(res) : res;
+  mapContainer = (typeof mapContainer === 'string') ? document.getElementById(mapContainer) : mapContainer;
+  mapIframe = (typeof mapIframe === 'string') ? document.getElementById(mapIframe) : mapIframe;
+
+  // early UI: show loading state
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<svg class="spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> جارٍ تحديد موقعك...';
+  }
+  if (res) {
+    res.innerHTML = '<span style="display:inline-flex;align-items:center;gap:8px"><svg class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg><span>يتم تحديد موقعك... الرجاء الانتظار</span></span>';
+    res.className = 'loc-result';
+    res.style.display = 'block';
+  }
+
+  // short delay for UX
   setTimeout(() => {
+    if (!navigator.geolocation) {
+      if (res) {
+        res.textContent = 'متصفحك لا يدعم تحديد الموقع';
+        res.className = 'loc-result error show';
+      }
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = 'تحديد موقعي الحالي';
+      }
+      return;
+    }
+
     navigator.geolocation.getCurrentPosition(
       async pos => {
-        const userLat = pos.coords.latitude;
-        const userLng = pos.coords.longitude;
-        
-        const zoomFactor = 0.002; 
-        mapIframe.src = `https://www.openstreetmap.org/export/embed.html?bbox=${userLng - zoomFactor},${userLat - zoomFactor},${userLng + zoomFactor},${userLat + zoomFactor}&layer=mapnik`;
-        mapContainer.style.display = 'block';
-
-        installCost = calcInstall(userLat, userLng);
-
-        let isForbidden = false;
         try {
+          // set globals so other features (export, etc.) can read them
+          userLat = pos.coords.latitude;
+          userLng = pos.coords.longitude;
+          window.userLat = userLat;
+          window.userLng = userLng;
+
+          // show static map (OpenStreetMap embed)
+          const zoomFactor = 0.0005;
+          if (mapIframe) {
+            mapIframe.src = `https://www.openstreetmap.org/export/embed.html?bbox=${userLng - zoomFactor},${userLat - zoomFactor},${userLng + zoomFactor},${userLat + zoomFactor}&layer=mapnik`;
+          }
+          if (mapContainer) {
+            mapContainer.style.display = 'block';
+            mapContainer.hidden = false;
+          }
+
+          // compute install cost and expose globally
+          try {
+            installCost = (typeof calcInstall === 'function') ? calcInstall(userLat, userLng) : null;
+          } catch (e) {
+            console.warn('calcInstall error', e);
+            installCost = null;
+          }
+          window.installCost = installCost;
+
+          // optional: check forbidden keywords via reverse geocode (best-effort)
+          let isForbidden = false;
+          try {
             const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${userLat}&lon=${userLng}&accept-language=ar`;
             const response = await fetch(url);
-            const data = await response.json();
-            if (data.address) {
+            if (response && response.ok) {
+              const data = await response.json();
+              if (data && data.address) {
                 const addr = JSON.stringify(data.address);
                 const forbiddenKeywords = ['أشمون', 'بشتيل', 'أوسيم', 'أبو زعبل', 'القناطر', 'طنان'];
                 isForbidden = forbiddenKeywords.some(keyword => addr.includes(keyword));
+              }
             }
-        } catch (e) {
-            console.warn("تعذر التحقق من اسم المنطقة، سنعتمد على المسافة فقط.");
-        }
+          } catch (e) {
+            console.warn("تعذر التحقق من اسم المنطقة، سنعتمد على المسافة فقط.", e);
+          }
 
-        if (installCost === null || isForbidden) {
-            res.innerHTML = `نعتذر, موقعك خارج نطاق خدمتنا. <button onclick="outOfRangeWA()" style="background:none;border:none;color:#9caf88;cursor:pointer;font-family:'Cairo',sans-serif;font-size:12px;text-decoration:underline;">هل يمكن التنفيذ في منطقتي؟</button>`;
-            res.className = 'loc-result show out-of-range';
-            btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="9" stroke-dasharray="4 2"/></svg> تحديد موقعي الحالي';
+          // handle out-of-range or forbidden
+          if (installCost === null || isForbidden) {
+            if (res) {
+              res.innerHTML = `نعتذر، موقعك خارج نطاق خدمتنا. <button onclick="outOfRangeWA()" style="background:none;border:none;color:#9caf88;cursor:pointer;font-family:'Cairo',sans-serif;font-size:12px;text-decoration:underline;">هل يمكن التنفيذ في منطقتي؟</button>`;
+              res.className = 'loc-result show out-of-range';
+            }
+            if (btn) {
+              btn.disabled = false;
+              btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="9" stroke-dasharray="4 2"/></svg> تحديد موقعي الحالي';
+            }
+            // ensure totals update
+            if (typeof upd === 'function') try { upd(); } catch (e) { console.warn(e); }
+            return;
+          }
+
+          // success: show cost and then fetch + display address details (getAddress updates sidebar and res)
+          if (res) {
+            res.innerHTML = 'تم تحديد موقعك — تكلفة التوصيل: ' + (installCost !== null ? installCost + ' EGP' : '—');
+            res.className = 'loc-result show';
+          }
+
+          // call getAddress to show short address (neighbourhood/city) and update sidebar fields
+          if (typeof getAddress === 'function') {
+            try { await getAddress(userLat, userLng, res); } catch (e) { console.warn('getAddress failed', e); }
+          }
+
+          // enable export button if present
+          const expBtn = document.getElementById('export-location');
+          if (expBtn) expBtn.disabled = false;
+
+          // finalize UI
+          if (btn) {
+            btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> تم تحديد الموقع';
             btn.disabled = false;
-            upd();
-            return; 
-        }
+          }
 
-        res.innerHTML = 'تم تحديد موقعك — تكلفة التوصيل: ' + installCost + ' EGP';
-        await getAddress(userLat, userLng, res);
-        
-        res.className = 'loc-result show';
-        btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> تم تحديد الموقع';
-        btn.disabled = false;
-        
-        completeStep('step-location'); // تفعيل خطوة النقل والتوصيل أوتوماتيكياً عند نجاح تحديد الموقع
-        upd();
+          // mark step complete and update totals
+          if (typeof completeStep === 'function') {
+            try { completeStep('step-location'); } catch (e) { /* ignore */ }
+          }
+          if (typeof upd === 'function') {
+            try { upd(); } catch (e) { console.warn(e); }
+          }
+
+        } catch (err) {
+          console.error('Error in getLocation success handler', err);
+          if (res) { res.textContent = 'حدث خطأ أثناء معالجة الموقع'; res.className = 'loc-result error show'; }
+          if (btn) { btn.disabled = false; btn.innerHTML = 'إعادة المحاولة'; }
+        }
       },
       err => {
         let msg = 'لم يتم السماح بالوصول للموقع';
-        if (err.code === 1) msg = 'يرجى السماح للمتصفح بالوصول لموقعك';
-        res.textContent = msg;
-        res.className = 'loc-result error show';
-        btn.disabled = false;
-        btn.innerHTML = 'إعادة المحاولة';
+        if (err && err.code === 1) msg = 'يرجى السماح للمتصفح بالوصول لموقعك';
+        if (res) { res.textContent = msg; res.className = 'loc-result error show'; }
+        if (btn) { btn.disabled = false; btn.innerHTML = 'إعادة المحاولة'; }
       },
       { timeout: 15000, maximumAge: 60000 }
     );
   }, 500);
 }
 
-function openTooltip(){document.getElementById('tooltip-overlay').classList.add('open');}
-function closeTooltip(){document.getElementById('tooltip-overlay').classList.remove('open');}
+// safe escapeHtml fallback (إن لم تكن موجودة)
+function escapeHtmlSafe(str) {
+  if (typeof str !== 'string') return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+// improved tooltip that can open many times and always sets text
+function openTooltip(text) {
+  const note = (typeof text === 'string' && text.length) ? text : 'نستخدم موقعك لحساب المسافة وتوفير أفضل سعر للتوصيل. لا يتم حفظ موقعك، ولا يُستخدم إلا لهذا الغرض.';
+  try {
+    let overlay = document.getElementById('tooltip-overlay');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'tooltip-overlay';
+      overlay.className = 'tooltip-overlay';
+      overlay.innerHTML = `
+        <div class="tooltip-box" role="dialog" aria-modal="true" aria-label="ملاحظة النقل والتوصيل">
+          <button class="tooltip-close" type="button" aria-label="إغلاق">×</button>
+          <div class="tooltip-text" aria-live="polite"></div>
+        </div>`;
+      document.body.appendChild(overlay);
+
+      // attach close handler (no inline onclick)
+      const closeBtn = overlay.querySelector('.tooltip-close');
+      closeBtn.addEventListener('click', closeTooltip);
+      // also close on overlay click outside box
+      overlay.addEventListener('click', function (ev) {
+        if (ev.target === overlay) closeTooltip();
+      });
+      // allow ESC to close
+      document.addEventListener('keydown', function onEsc(e) {
+        if (e.key === 'Escape' && document.getElementById('tooltip-overlay')) {
+          closeTooltip();
+        }
+      });
+    }
+
+    // set/replace text (use innerHTML only with escaped content)
+    const textEl = overlay.querySelector('.tooltip-text');
+    if (textEl) {
+      textEl.innerHTML = escapeHtmlSafe(note).replace(/\n/g, '<br>');
+    }
+
+    // show overlay
+    overlay.style.display = 'flex';
+    // small delay for CSS animation if any
+    requestAnimationFrame(() => overlay.classList.add('open'));
+  } catch (err) {
+    console.error('openTooltip error', err);
+  }
+}
+
+function closeTooltip() {
+  try {
+    const overlay = document.getElementById('tooltip-overlay');
+    if (!overlay) return;
+    overlay.classList.remove('open');
+    // allow animation then hide
+    setTimeout(() => {
+      if (overlay.parentNode) {
+        overlay.style.display = 'none';
+      }
+    }, 180);
+  } catch (err) {
+    console.error('closeTooltip error', err);
+  }
+}
 
 function resetAll(){
   S={design:null,size:null,div:null,handle:null};
@@ -512,10 +719,6 @@ function resetAll(){
   if(res){res.className='loc-result';res.textContent='';}
   const btn=document.getElementById('btn-locate');
   if(btn){btn.disabled=false;btn.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg> تحديد موقعي الحالي';}
-  
-  // إعادة تعيين خطوات الـ Stepper
-  document.querySelectorAll('.step-item').forEach(el => el.classList.remove('completed'));
-  
   rDes();rSz();rDiv();rHnd();upd();
 }
 
@@ -571,11 +774,16 @@ fetch(LOCATION_SHEET)
   })
   .catch(()=>{console.log('Using default location settings');});
 
+
 fetch(SHEET)
   .then(r => r.json())
   .then(data => {
+
     const rows = data.configurator;
+
     if (rows && rows.length > 5) {
+
+        // حفظ الاختيارات القديمة
         const oldDesignId = S.design?.id;
         const oldSizeId = S.size?.id;
         const oldDivId = S.div?.id;
@@ -584,6 +792,7 @@ fetch(SHEET)
         D = build(rows);
         dataLoaded = true;
 
+        // ريستور الاختيارات
         if (oldDesignId) S.design = D.designs.find(d => d.id === oldDesignId) || null;
         if (oldSizeId && S.design) S.size = S.design.sizes.find(s => s.id === oldSizeId) || null;
         if (oldDivId) S.div = D.divisions.find(d => d.id === oldDivId) || null;
@@ -597,8 +806,10 @@ fetch(SHEET)
 
         console.log("✅ Loaded fresh data from Apps Script");
     }
+
 });
 
+// Render cards immediately with placeholder data
 rDes();rSz();rDiv();rHnd();upd();
 
 const images = ['ic-01.webp', 'ic-02.webp', 'ic-03.webp', 'ic-04.webp'];
@@ -608,6 +819,11 @@ let autoplayTimer;
 function initCarousel() {
   const track = document.getElementById('carousel-track');
   const dotsContainer = document.getElementById('carousel-dots');
+
+  if (!track || !dotsContainer) {
+    console.warn('initCarousel: track or dots not found — skipping carousel init.');
+    return;
+  }
 
   images.forEach((img, index) => {
     const slide = document.createElement('div');
@@ -635,11 +851,28 @@ function showSlide(index) {
 
 function moveSlide(step) { showSlide(currentIndex + step); resetAutoplay(); }
 function startAutoplay() {
+    // التأكد أننا نبدأ من أول عنصر
     currentIndex = 0; 
     autoplayTimer = setInterval(() => {
+        // الاتجاه الطبيعي هو +1
         currentIndex = (currentIndex + 1) % images.length;
         showSlide(currentIndex);
     }, 2500);
 }
 function resetAutoplay() { clearInterval(autoplayTimer); startAutoplay(); }
+// تشغيل عند التحميل
 window.addEventListener('load', initCarousel);
+
+window.addEventListener('DOMContentLoaded', function () {
+  const btn = document.getElementById('btn-locate');
+  if (btn && typeof requestLocation === 'function') {
+    // 안전하게: نزيل أي listener سابق ثم نضيف واحد جديد
+    try { btn.removeEventListener('click', requestLocation); } catch (e) {}
+    btn.addEventListener('click', requestLocation);
+    console.log('requestLocation bound to #btn-locate');
+  } else {
+    console.warn('requestLocation or #btn-locate not available on DOMContentLoaded');
+  }
+});
+
+
