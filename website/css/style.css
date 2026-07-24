@@ -1375,6 +1375,7 @@ details[open] summary::after {
   color: rgba(51,48,40,0.6);
   font-family: 'Cairo', sans-serif;
   white-space: nowrap;
+  line-height: 1.4;
 }
 .cprice.loading::after {
   content: '—';
@@ -2836,7 +2837,3 @@ details[open] summary::after {
 /* Allow main column & flex children to shrink (prevents overflow) */ .main-column, .cards-row, .conf { min-width: 0 !important; overflow-wrap: break-word; word-break: break-word; }
 /* Horizontal carousels: make cards narrower on small screens */ .cards-row { padding-inline: 6px; gap: 12px; }
 
-html, body {
-  max-width: 100%;
-  overflow-x: hidden;
-}
