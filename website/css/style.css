@@ -2842,5 +2842,5 @@ details[open] summary::after {
 /* Horizontal carousels: make cards narrower on small screens */ .cards-row { padding-inline: 6px; gap: 12px; }
 
 html, body {
-  max-width: 100%;
+  overflow-x: hidden;
 }
