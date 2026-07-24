@@ -750,6 +750,7 @@ details[open] summary::after {
   font-weight: 700;
   line-height: 1;
   margin-bottom: 10px;
+  margin-right: 16px;
   color: #333028;
   text-align: right;
 }
@@ -758,6 +759,7 @@ details[open] summary::after {
   line-height: 1.8;
   color: rgba(51,48,40,0.7);
   margin-bottom: 18px;
+  margin-right: 16px;
   margin-top: 15px;
   text-align: right;
 }
@@ -1676,7 +1678,7 @@ details[open] summary::after {
 .intro-para { list-style: decimal; padding-right: 18px; margin-bottom: 8px; transition: max-height .32s ease; overflow: hidden; max-height: 6.5em; }
 .intro-para.collapsed { max-height: 6.5em; }
 .intro-para:not(.collapsed) { max-height: 800px; }
-.intro-toggle { background: none; border: none; color: #657c59; font-weight: 700; cursor: pointer; padding: 6px 0; }
+.intro-toggle { background: none; border: none; color: #657c59; font-weight: 700; cursor: pointer; padding: 6px 0; margin-right: 16px; }
 
 /* Notes sidebar (collapsed/expanded) */
 .notes-sidebar { border: 1px solid rgba(51,48,40,0.06); border-radius: 6px; overflow: hidden; background: #fff; }
