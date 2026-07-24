@@ -753,6 +753,7 @@ details[open] summary::after {
   margin-right: 16px;
   color: #333028;
   text-align: right;
+  max-width: 100%;
 }
 .intro-para {
   font-size: 12px;
@@ -777,7 +778,7 @@ details[open] summary::after {
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
-  width: 100%;
+  max-width: 100%;
   box-sizing: border-box;
   margin-bottom: 20px;
 }
@@ -889,6 +890,7 @@ details[open] summary::after {
   overflow-x: auto;
   gap: 10px;
   padding: 10px 14px;
+  max-width: 100%;
 }
 .config-stepper .stepper-title {
   display: none;
