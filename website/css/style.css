@@ -390,11 +390,11 @@ body {
   opacity: 1;
   transform: scale(.86) translateY(0);
 }
-.scroll-wrap {
-  position: relative;
-  max-width: 1200px;
-  margin: 0 auto;
-  overflow: hidden;
+.scroll-wrap{
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
 }
 .product-card h3 {
   font-size: 25px;
@@ -748,8 +748,8 @@ details[open] summary::after {
 .main-header {
   font-size: 18px;
   font-weight: 700;
-  line-height: 1.6;
-  margin-bottom: 14px;
+  line-height: 1;
+  margin-bottom: 10px;
   color: #333028;
   text-align: right;
 }
@@ -777,8 +777,16 @@ details[open] summary::after {
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
   width: 100%;
   box-sizing: border-box;
+  margin-bottom: 20px;
 }
-
+.grid-item + .grid-item {
+  border-top: 1px solid #e5e5e5;
+  margin-top: 32px;
+  padding-top: 32px;
+}
+.grid-item.step-box + .grid-item.step-box {
+  border-top: 1px solid #e5e5e5;
+}
 /* Notes box */
 .notes-box {
   border: 2px solid rgba(51,48,40,0.12);
@@ -887,10 +895,45 @@ details[open] summary::after {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 11px;
+  font-size: 10px;
   color: #71717a;
   white-space: nowrap;
 }
+.step {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  border: 1px solid #f0f0f0;
+}
+.step-desc{
+    margin:8px 0 18px;
+    font-size:14px;
+    color:#777;
+    line-height:1.6;
+    transition:.25s;
+}
+
+.step-desc strong{
+    color:#333028;
+    font-weight:700;
+}
+.step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent-color, #6b8e5a);
+  color: #fff;
+  font-weight: 600;
+  margin-left: 8px;
+}
+.step.locked { background: #fafafa; opacity: 0.6; }
+.step.active { border: 1.5px solid var(--accent-color); }
+.step.completed { border-left: 3px solid #4caf50; }
 .step-check {
   width: 16px;
   height: 16px;
@@ -914,9 +957,6 @@ details[open] summary::after {
 }
 
 /* Step cards */
-.step {
-  margin-bottom: 20px;
-}
 .step:last-child {
   margin-bottom: 0;
 }
@@ -943,11 +983,61 @@ details[open] summary::after {
   height: 18px;
   stroke: #9caf88;
 }
+.design-section-box {
+  margin-bottom: 50px;
+}
+
+/* 2. تنسيق العنوان الرئيسي (1. التصميم) */
 .step-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 28px;
+  text-align: center;
+  display: inline-block; /* 1. خليها inline-block عشان تاخد عرض الكلام بس */
+  position: relative;
+  margin-left: auto;     /* 2. مع الـ margin الآتي لتوسيت العنصر الـ inline-block */
+  margin-right: auto;
+}
+
+/* 3. تأكيد الكونتينر الأب لو محتاج توسيط سليم */
+.step-header {
+  text-align: center;
+  width: 100%;
+}
+.step-title-container { /* (أو استبدل هذا الكلاس بالكونتينر الفعلي عندك) */
+  position: relative;
+  display: inline-block; /* عشان الخط ياخد عرض الكلمة بس، أو شيلها لو عايزه ياخد العرض كامل */
+}
+
+/* 2. تطبيق نفس إعدادات الـ Underline بالضبط */
+.step-title::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  right: 0;
+  width: 100%;        /* هتبقى 100% من عرض الكلمة فقط بما أن العنصر بقى inline-block */
+  height: 4px;
+  background: #9caf88;
+  border-radius: 1px;
+}
+.step > .sub-title {
   font-size: 15px;
-  font-weight: 800;
-  color: #333028;
-  text-align: right;
+  font-weight: 500;
+  color: #666666;
+  margin-bottom: 15px; /* مسافة رايقة قبل ما يبدأ الخط */
+  position: relative;
+}
+
+/* 4. تصميم الخط الفاصل الأفقي النايق تحت العنوان الفرعي مباشرة */
+.step > .sub-title::after {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 1px;
+  background-color: #e5e5e5; /* لون رمادي فاتح وهادئ جداً */
+  margin-top: 5px;         /* مسافة بين الكلام والخط */
+  margin-bottom: 10px;      /* مسافة واسعة وآمنة تفصل الخط عن صف الكروت اللي تحته */
 }
 
 /* Cards row */
@@ -958,13 +1048,16 @@ details[open] summary::after {
   scroll-behavior: smooth;
   padding: 4px 2px 8px 2px;
   box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 .cards-row::-webkit-scrollbar {
   display: none;
 }
 .cards-row > div,
 .cards-row > a,
-.cards-row .card {
+.cards-row .card .product-skeleton{
   flex: 0 0 38vw;
   max-width: 270px;
   min-width: 150px;
@@ -1008,6 +1101,7 @@ details[open] summary::after {
   cursor: pointer;
   z-index: 10;
   transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05); /* إضافة ظل خفيف لتمييزه فوق الكروت */
 }
 .scroll-arrow:hover {
   background: #333028;
@@ -1017,6 +1111,7 @@ details[open] summary::after {
 }
 .scroll-arrow.hidden {
   opacity: 0;
+  visibility: hidden; /* إخفاء تام يمنع الضغط عليه بالخطأ فوق السهم الآخر */
   pointer-events: none;
 }
 .scroll-arrow svg {
@@ -1026,10 +1121,12 @@ details[open] summary::after {
   transition: stroke 0.3s ease;
 }
 .scroll-arrow.arr-start {
-  left: 8px;
+  right: 8px; 
 }
+
+/* تثبيت سهم النهاية على اليسار تماماً */
 .scroll-arrow.arr-end {
-  right: 8px;
+  left: 8px; 
 }
 .cards-container {
   display: flex;
@@ -1042,6 +1139,7 @@ details[open] summary::after {
   border: 2px solid rgba(51,48,40,0.12);
   border-radius: 2px;
   overflow: hidden;
+  position:relative;
   cursor: pointer;
   background: #ffffff;
   transition: border-color 0.15s;
@@ -1049,6 +1147,75 @@ details[open] summary::after {
 .design-card.selected {
   border: 2px solid #9caf88;
   box-shadow: 0 0 0 3px rgba(156,175,136,0.25);
+}
+.design-card.disabled{
+    opacity:.55;
+    cursor:not-allowed;
+}
+.design-card.disabled, .div-card.disabled, .handle-card.disabled, .design-card.dis, .div-card.dis {
+  opacity: 0.4;
+  pointer-events: none;
+  cursor: not-allowed;
+  filter: grayscale(40%);
+}
+.design-overlay{
+    position:absolute;
+    inset:0;
+    z-index:5;
+
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+
+    background:rgba(255,255,255,.75);
+    backdrop-filter:blur(2px);
+
+    padding:16px;
+    text-align:center;
+}
+
+.design-overlay svg{
+    width:20px;
+    height:20px;
+    margin-bottom:8px;
+    color:#555;
+}
+
+.overlay-title{
+    color:#333028;
+    font-size:13px;
+    font-weight:700;
+    line-height:1.5;
+}
+
+.overlay-sizes{
+    margin-top:10px;
+    color:#333028;
+}
+
+.overlay-sizes span{
+    display:block;
+    margin-bottom:2px;
+}
+
+.overlay-sizes-title{
+    font-size:12px;
+    font-weight:600;
+    color:#666;
+    margin-bottom:6px;
+}
+
+.overlay-sizes-list{
+    color:#333028;
+    font-size:13px;
+    font-weight:600;
+    line-height:1.7;
+}
+
+.overlay-sizes strong{
+    font-weight:600;
+    color:#333028;
 }
 .design-card.loading-lock {
   opacity: 0.5;
@@ -1068,6 +1235,12 @@ details[open] summary::after {
 .div-card.selected {
   border: 2px solid #9caf88;
   box-shadow: 0 0 0 3px rgba(156,175,136,0.25);
+}
+.division-card.disabled {
+  opacity: 0.4;          /* جعل الكارت مغيماً وباهتاً */
+  pointer-events: none;  /* منع النقر أو التفاعل معه تماماً */
+  cursor: not-allowed;   /* تغيير شكل المؤشر */
+  filter: grayscale(50%); /* (اختياري) إعطاء مسحة رمادية خفيفة */
 }
 .div-card.loading-lock {
   opacity: 0.5;
@@ -1099,10 +1272,40 @@ details[open] summary::after {
   pointer-events: none;
   filter: grayscale(0.4);
 }
+.card-overlay{
+    position:absolute;
+    inset:0;
+    background:rgba(0,0,0,.22);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    pointer-events:none;
+}
+.card-msg{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    margin-top:8px;
+    font-size:12px;
+    color:#666;
+    font-weight:600;
+}
+.card-sizes{
+    margin-top:8px;
+    font-size:12px;
+    line-height:1.4;
+    color:#666;
+    text-align:right !important;
+}
+.card-sizes .value{
+    color:#333028;
+    font-weight:550;
+}
 .cimg {
   width: 100%;
   padding-top: 100%;
-  overflow: hidden;
+  overflow: auto;
   background: rgba(51,48,40,0.04);
   position: relative;
 }
@@ -1151,10 +1354,17 @@ details[open] summary::after {
 }
 .cinfo {
   padding: 8px;
+  font-size: 12px;
+}
+.csizes {
+  font-size: 12px;
+  color: #888;
+  margin: 2px 0;
+  line-height: 1.4;
 }
 .cname {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 650;
   color: #333028;
   line-height: 1.3;
   margin-bottom: 2px;
@@ -1477,56 +1687,117 @@ details[open] summary::after {
 .notes-sidebar[aria-expanded="true"] .notes-caret { transform: rotate(180deg); }
 
 /* compact stepper */
+.compact-stepper {
+  background: transparent;
+  padding: 12px 10px;
+  margin-bottom: 25px;
+  direction: rtl;
+  position: sticky;
+  top: 10px;
+  z-index: 99;
+  transition: all 0.3s ease;
+}
+
+/* الحالة الـ Sticky: خلفية بيضاء مستطيلة وظل خفيف عند التمرير */
+.compact-stepper.is-sticky {
+  background: #ffffff;
+  padding: 12px 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #f3f4f6;
+  top: 15px;
+}
+
 .compact-stepper ol {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   list-style: none;
-  padding: 0;
+  padding: 0 10px;
   margin: 0;
-  direction: rtl;
+  position: relative;
+}
+
+/* الخط الرابط الخلفي المتصل */
+.compact-stepper ol::before {
+  content: '';
+  position: absolute;
+  top: 18px;
+  right: 45px;
+  left: 45px;
+  height: 2px;
+  background: #e5e7eb;
+  z-index: 1;
 }
 
 .compact-stepper .stepper-item {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: 20px;
-  background: #f8f9fa;
-  border: 1px solid #dee2e6;
-  font-size: 13px;
-  color: #6c757d;
+  position: relative;
+  z-index: 2;
+  background: transparent;
+  padding: 0 8px;
+  text-align: center;
+  align-self: flex-start;
 }
 
-/* تحجيم الأيقونة الثابتة داخل الـ Stepper لمنع تمددها */
+/* شكل الأيقونة والـ SVG بداخله */
 .compact-stepper .stepper-icon {
-  width: 14px;
-  height: 14px;
-  display: inline-flex;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #9ca3af;
+  display: flex;
   align-items: center;
   justify-content: center;
+  margin-bottom: 8px;
+  border: 2px solid #e5e7eb;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+  transition: all 0.3s ease;
 }
 
 .compact-stepper .stepper-icon svg {
-  width: 14px;
-  height: 14px;
+  width: 18px;
+  height: 18px;
 }
 
-/* شكل الخطوة عند اكتمالها */
-.compact-stepper .stepper-item.completed {
-  background: #e8f5e9;
-  border-color: #c8e6c9;
-  color: #2e7d32;
+.compact-stepper .stepper-title {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #6b7280;
 }
 
-/* تحويل الأيقونة إلى علامة صح عند الاكتمال تلقائياً */
-.compact-stepper .stepper-item.completed .stepper-icon::after {
-  content: "✓";
-  font-weight: bold;
-  font-size: 12px;
+/* حالة الاكتمال (باللون الأخضر الزيتوني المطلوب #9caf88) */
+.compact-stepper .stepper-item.completed .stepper-icon {
+  background: #9caf88;
+  color: #ffffff;
+  border-color: #9caf88;
 }
+
+/* علامة الصح الهندسية الحادة المينيملست (Straight checkmark) */
 .compact-stepper .stepper-item.completed .stepper-icon svg {
-  display: none; /* إخفاء الدائرة الفارغة واستبدالها بالصح */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='square' stroke-linejoin='miter'%3E%3Cpolyline points='4 12 10 18 20 6'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 16px;
+}
+
+.compact-stepper .stepper-item.completed .stepper-icon svg > * {
+  display: none;
+}
+
+.compact-stepper .stepper-item.completed .stepper-title {
+  color: #111827;
+}
+
+/* حالة فشل تحديد الموقع أو خارج النطاق (برتقالي / أصفر) */
+.compact-stepper .stepper-item.out-of-range .stepper-icon {
+  background: #f59e0b;
+  color: #ffffff;
+  border-color: #f59e0b;
 }
 
 /* scroll wrap & arrows — show arrows only when needed */
@@ -1557,7 +1828,16 @@ details[open] summary::after {
 .btn-locate, .size-btn, .btn-order, .btn-reset { min-height:44px; }
 
 /* small helpers */
-.sub-title { font-size:14px; font-weight:700; color:#333028; margin-bottom:8px; }
+.sub-category-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #9caf88; /* لون متناسق مع هوية الموقع */
+  background: #f9fbf8;
+  padding: 8px 16px;
+  border-radius: 6px;
+  display: inline-block;
+  margin-bottom: 20px;
+}
 .conf-header { display:flex; flex-direction:column; gap:8px; margin-bottom:6px; }
 
 /* map container */
@@ -1895,78 +2175,6 @@ details[open] summary::after {
     grid-template-columns: 1fr;
     gap: 24px;
   }
-}
-
-/* Carousel */
-.carousel-wrap {
-  position: relative;
-  overflow: hidden;
-  border-radius: 2px;
-}
-.carousel-track {
-  display: flex;
-  transition: transform .45s ease;
-}
-.carousel-slide {
-  flex: 0 0 100%;
-}
-.carousel-slide img {
-  width: 100%;
-  aspect-ratio: 980/1325;
-  object-fit: cover;
-  display: block;
-  border-radius: 2px;
-}
-.carousel-dots {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 22px;
-}
-.carousel-dot {
-  width: 9px;
-  height: 9px;
-  border: none;
-  border-radius: 50%;
-  background: rgba(51,48,40,.18);
-  cursor: pointer;
-  transition: .25s;
-}
-.carousel-dot.active {
-  background: #9caf88;
-  transform: scale(1.2);
-}
-.carousel-arrows {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 14px;
-  pointer-events: none;
-}
-.carousel-arrow {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(51,48,40,.65);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  pointer-events: auto;
-  transition: .25s;
-}
-.carousel-arrow:hover {
-  background: #9caf88;
-  transform: scale(1.05);
-}
-.carousel-arrow svg {
-  width: 18px;
-  height: 18px;
-  stroke: #fff;
 }
 
 /* Toast */
@@ -2365,57 +2573,54 @@ details[open] summary::after {
 
 /* Skeleton Loading */
 .prod-skeleton {
-  display: flex;
-  gap: 0;
-  background: #ffffff;
-  border: 1px solid rgba(51,48,40,0.04);
+  flex: 0 0 38vw;
+  max-width: 270px;
+  min-width: 150px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
   border-radius: 2px;
   overflow: hidden;
-  min-height: 130px;
-}
-.skel-img {
-  flex: 0 0 120px;
-  background: rgba(255,255,255,0.07);
-  animation: skelPulse 1.4s ease-in-out infinite;
-}
-.skel-body {
-  flex: 1;
-  padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  justify-content: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  pointer-events: none;
 }
+
+.skel-img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: rgba(0, 0, 0, 0.06);
+  animation: skelPulse 1.5s infinite ease-in-out;
+}
+
+.skel-info {
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start; /* لضمان محاذاة السطور لليمين مثل الموقع العربي */
+}
+
 .skel-line {
   height: 10px;
+  background: rgba(0, 0, 0, 0.08);
   border-radius: 2px;
-  background: rgba(255,255,255,0.07);
-  animation: skelPulse 1.4s ease-in-out infinite;
+  animation: skelPulse 1.5s infinite ease-in-out;
 }
-.skel-line.w60 {
-  width: 60%;
+
+.skel-line.w-80 {
+  width: 70%; /* مطابق لعرض عنوان المنتج مثل "تخزين مفتوح" */
 }
-.skel-line.w80 {
-  width: 80%;
+
+.skel-line.w-40 {
+  width: 45%; /* مطابق لعرض السطر الثاني مثل السعر */
+  height: 8px;
 }
-.skel-line.w40 {
-  width: 40%;
-}
+
 @keyframes skelPulse {
-  0%,100% {
-    opacity: 0.5;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-@media (min-width: 600px) {
-  .prod-list {
-    max-width: 700px;
-  }
-  .prod-img-wrap {
-    flex: 0 0 150px;
-  }
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.9; }
 }
 
 /* Loading box */
@@ -2483,6 +2688,7 @@ details[open] summary::after {
 /* Contact */
 .contact-section {
   margin: 40px 0;
+  margin-top: 5px;
   padding: 20px;
   background: #faf9f6;
   border-top: 1px solid #e7e3da;
@@ -2626,22 +2832,7 @@ details[open] summary::after {
   z-index: 1000;
 }
 
-/* --- Mobile layout fixes: add at end of style.css --- */ @media (max-width: 900px) {
-
-/* Force single-column layout and prevent fixed-width sidebars */ .config-layout { grid-template-columns: 1fr !important; gap: 18px; padding: 16px !important; }
-
-.sidebar, .price-column, .footer-container, .cards-row { width: 100% !important; max-width: 100% !important; box-sizing: border-box; }
 
 /* Allow main column & flex children to shrink (prevents overflow) */ .main-column, .cards-row, .conf { min-width: 0 !important; overflow-wrap: break-word; word-break: break-word; }
-
 /* Horizontal carousels: make cards narrower on small screens */ .cards-row { padding-inline: 6px; gap: 12px; }
 
-.cards-row > * { flex: 0 0 calc(46% - 12px); /* two items per row approx */ max-width: calc(46% - 12px); min-width: 120px; box-sizing: border-box; }
-
-.cards-row img { width: 100%; height: auto; display: block; object-fit: cover; }
-
-/* Sidebar internal padding: prevent pushing content */ .sidebar, .notes-sidebar { padding: 8px 10px !important; }
-
-/* Ensure no element uses full 100vw causing horizontal overflow */
-
-/* Bottom padding to avoid sticky covering content */ body, .conf { padding-bottom: calc(100px + env(safe-area-inset-bottom, 0)); } }

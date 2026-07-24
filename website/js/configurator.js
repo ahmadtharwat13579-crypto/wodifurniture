@@ -8,8 +8,7 @@ const SHEET='https://script.google.com/macros/s/AKfycbz3xuCuZ6sU9QVo2nTRaItWFLpl
 const r5=n=>Math.round(n/5)*5;
 const toAr=n=>String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g,',').replace(/[0-9]/g,d=>'٠١٢٣٤٥٦٧٨٩'[d]).replace(',','،');
 const cur='ج.م.';
-const base=id=>id.replace(/_\d+[\-\.]?\d*cm$/i,'');
-
+const base = id => (id && typeof id.toString === 'function') ? id.toString().replace(/_\d+[\-\.]?\d*cm$/i, '') : '';
 
 function toggleNotes(){
   document.getElementById('notes-box').classList.toggle('open');
@@ -42,6 +41,41 @@ function parseCSV(t){
   return ls.slice(1).map(l=>{const v=l.split(',').map(x=>x.trim().replace(/^"|"$/g,''));const o={};hs.forEach((h,i)=>o[h]=v[i]||'');return o;});
 }
 
+function showAllSkeletons() {
+  // إنشاء كارتين أو ثلاثة كـ Skeleton لكل صف بداخل الـ HTML النظيف
+  const skeletonCardHtml = `
+    <div class="prod-skeleton" role="status">
+      <div class="skel-img"></div>
+      <div class="skel-info">
+        <div class="skel-line w-80"></div>
+        <div class="skel-line w-40"></div>
+      </div>
+    </div>
+  `.repeat(2); // تكرار كارتين وهميين في كل صف
+
+  ['dc-wall', 'dc-floor', 'vc-wall', 'vc-floor', 'hc'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = skeletonCardHtml;
+  });
+}
+
+// returns group id like '4b_wh_cic01' from '4b_wh_cic01_45cm' or leaves '4b_fp_cic00' as-is
+function divisionBase(id){
+  if(!id) return id;
+  const s = String(id);
+
+  // 1) لو النهاية هي مقياس مثل _45cm أو _100cm -> احذفها
+  const sizeSuffix = /_\d+[\-\.]?\d*cm$/i;
+  if(sizeSuffix.test(s)) return s.replace(sizeSuffix, '');
+
+  // 2) خلاف ذلك: إذا كان المعرف يحتوي على 3 أجزاء أو أكثر، نعيد أول 3 أجزاء
+  const parts = s.split('_');
+  if(parts.length >= 3) return parts.slice(0,3).join('_');
+
+  // 3) خلاف ذلك اعد القيمة كما هي
+  return s;
+}
+
 
 function build(rows){
   const des={},divs=[],hnd=[];
@@ -51,16 +85,34 @@ function build(rows){
       const b=base(id);
       if(!des[b]) {
         // تحديد النوع: fp للرجل الكاملة، أي شيء آخر يعتبر معلق
-        const type = id.includes('_fp_') ? 'floor-standing' : 'wall-hung';
+        let type;
+
+        if (id.includes('_fp_')) {
+            type = 'floor-standing';
+        }
+        else if (id.includes('_wh_')) {
+            type = 'wall-hung';
+        }
+        else if (id.includes('_di_')) {
+            type = 'drop-in';
+        }
+        else if (id.includes('_bw_')) {
+            type = 'bowl';
+        }
+        else {
+            type = 'wall-hung';
+        }
         des[b]={id:b, name:nm, hc:parseInt(r.handle_count)||0, sizes:[], type:type};
       }
       else if(nm) des[b].name=nm;
       des[b].sizes.push({id,size:sz,price:p});
       } else if (cat === 'cabinet_inside_config') {
         // use grouping that keeps the _wh_/_fp_ part but removes size suffix
-        const b = groupBase(id); // e.g. '4b_wh_cic01' or '4b_fp_cic01'
+        const b = divisionBase(id); // e.g. '4b_wh_cic01' or '4b_fp_cic01'
         // determine type from the original id (which قد يحتوي على _fp_ أو _wh_)
-        const type = (id.includes('_fp_') || id.includes('_fp')) ? 'floor-standing' : 'wall-hung';
+        const type = id.includes('_fp_')
+        ? 'floor-standing'
+        : 'wall-hung';
 
         let g = divs.find(d => d.id === b);
         if (!g) {
@@ -110,7 +162,15 @@ function dvp(div,sg){
 }
 
 let D={designs:[],divisions:[],handles:[]};
-let S={design:null,size:null,div:null,handle:null};
+
+let S={
+  sinkType:null,
+  design:null,
+  size:null,
+  div:null,
+  handle:null
+};
+
 let dt=null;
 let dataLoaded=false;
 
@@ -139,34 +199,46 @@ const PLACEHOLDER={
 
 D=PLACEHOLDER;
 
-function mkImg(id,cardEl){
-  const w=document.createElement('div');w.className='cimg';
-  const img=document.createElement('img');
-  const b=base(id);
-  const encoded=encodeURIComponent(b);
-  img.src=GH+encoded+'.webp';
-  img.alt='';
-  img.onerror=function(){
+function mkImg(id, cardEl){
+  const w = document.createElement('div'); w.className = 'cimg';
+  const img = document.createElement('img');
+  img.alt = '';
+  img.loading = 'lazy';
+
+  // determine which base id to use for image files
+  let imgBaseId = id;
+  if (id && typeof id === 'string' && id.includes('_cic')) {
+    // if id is a size-id like '4b_wh_cic01_45cm' -> use its group '4b_wh_cic01'
+    imgBaseId = divisionBase(id); // returns '4b_wh_cic01'
+  } else {
+    // for products/handles keep original base() behavior (strip trailing '45cm' only)
+    imgBaseId = base(id);
+  }
+
+  const encoded = encodeURIComponent(imgBaseId);
+  img.src = GH + encoded + '.webp';
+  img.onerror = function(){
     if(this.src.endsWith('.webp')){
-      this.src=GH+encoded+'.png';
+      this.src = GH + encoded + '.png';
     }else{
-      this.style.display='none';
+      this.style.display = 'none';
       const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
       svg.setAttribute('class','placeholder');
       svg.setAttribute('viewBox','0 0 24 24');
       svg.setAttribute('fill','none');
       svg.setAttribute('stroke','currentColor');
       svg.setAttribute('stroke-width','1.5');
-      svg.innerHTML='<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>';
+      svg.innerHTML = '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>';
       w.appendChild(svg);
     }
   };
   w.appendChild(img);
 
-  const zoomBtn=document.createElement('div');
-  zoomBtn.className='zoom-btn';
-  zoomBtn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/><path d="M11 8v6M8 11h6"/></svg>';
-  zoomBtn.onclick=function(e){
+  // zoom button unchanged...
+  const zoomBtn = document.createElement('div');
+  zoomBtn.className = 'zoom-btn';
+  zoomBtn.innerHTML = '...'; // (احتفظ بما لديك)
+  zoomBtn.onclick = function(e){
     e.stopPropagation();
     openLB(img.src);
   };
@@ -176,158 +248,323 @@ function mkImg(id,cardEl){
 }
 
 function rDes() {
-  const wall = document.getElementById('dc-wall');
-  const floor = document.getElementById('dc-floor');
+
+  const box = document.getElementById("dc");
+  const title = document.getElementById("design-group-title");
+
+  if (!box) return;
+
+  box.innerHTML = "";
+
+      const desc = document.getElementById("design-desc");
+
+    if(desc){
+
+        if(!S.sinkType){
+
+            desc.innerHTML = "اختر نوع الحوض أولاً.";
+
+        }
+        else if(!S.size){
+
+            desc.innerHTML = 'اختر <strong>مقاس الحوض</strong> لإختيار التصميم.';
+
+        }
+        else{
+
+            const count = D.designs.filter(d =>
+                d.type === S.sinkType &&
+                d.sizes.some(s => s.size === S.size.size)
+            ).length;
+
+            desc.innerHTML = `تم العثور على <strong>${count}</strong> تصميمات مناسبة.`;
+
+        }
+
+    }
+
+  if (!S.sinkType) {
+    title.textContent = "اختر نوع الحوض أولاً";
+    updateArrows("dc");
+    return;
+  }
+
+  const titleMap = {
+    "wall-hung": "تصميمات الحوض المعلق",
+    "drop-in": "تصميمات الحوض السقط رخام",
+    "bowl": "تصميمات الحوض فوق سطح أفقي",
+    "floor-standing": "تصميمات الحوض برجل كاملة"
+  };
+
+  title.textContent = titleMap[S.sinkType];
+
+  D.designs
+    .filter(d => d.type === S.sinkType)
+    .forEach(d => {
+      box.appendChild(createDesignCard(d));
+    });
+
+  updateArrows("dc");
+}
+
+// دالة مساعدة لإنشاء كارت التصميم
+function createDesignCard(d) {
+
+  const validPrices = d.sizes
+    .map(s => s.price)
+    .filter(p => p !== null);
+
+  const minP = validPrices.length ? Math.min(...validPrices) : null;
+
+  const el = document.createElement("div");
+
+  const isAvailable =
+    !S.size ||
+    d.sizes.some(s => s.size === S.size.size);
+
+  el.className =
+    "design-card" +
+    (S.design && S.design.id === d.id ? " selected" : "") +
+    (S.size && !isAvailable ? " disabled" : "");
+
+  el.appendChild(mkImg(d.id, el));
+
+  if (!S.size) {
+  const overlay = document.createElement("div");
+  overlay.className = "card-overlay";
+
+  overlay.innerHTML = `
+  <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#fff" stroke-width="2">
+    <rect x="5" y="11" width="14" height="10" rx="2"/>
+    <path d="M8 11V8a4 4 0 118 0v3"/>
+  </svg>
+  `;
+
+  el.querySelector(".cimg").appendChild(overlay);
+}
+
+  // ========= المقاسات =========
+
+  const availableSizes = d.sizes.map(s => s.size);
+
+  let sizeText = "";
+
+  if (availableSizes.length) {
+
+    const first = availableSizes[0];
+    const last = availableSizes[availableSizes.length - 1];
+
+    const firstMin = first.split("-")[0].trim();
+
+    const lastMax = last
+      .split("-")[1]
+      .replace("cm","")
+      .replace("سم","")
+      .trim();
+
+    sizeText = `${firstMin}–${lastMax} سم`;
+  }
+
+  // ============================
+
+  const info = document.createElement("div");
+  info.className = "cinfo";
+
+    info.innerHTML = `
+    <div class="cname">${d.name}</div>
+
+    ${
+    !S.size
+    ?
+    `
+
+    <div class="card-sizes">
+    <span class="label">المقاسات المتاحة:</span>
+    <span class="value">${sizeText}</span>
+    </div>
+    `
+    :
+    `
+    <div class="card-sizes">
+    ${sizeText}
+    </div>
+    `
+    }
+
+    <div class="cprice">
+    يبدأ من ${r5(minP)} EGP
+    </div>
+    `;
+
+  el.appendChild(info);
+
+  el.onclick = () => {
+
+    // ممنوع اختيار التصميم قبل اختيار المقاس
+    if (!S.size) return;
+
+    // أو لو التصميم غير متاح للمقاس المختار
+    if (!isAvailable) return;
+
+    if (!S.design || S.design.id !== d.id) {
+      S.div = null;
+      S.handle = null;
+    }
+
+    S.design = d;
+
+    rDes();
+    rDiv();
+    rHnd();
+    upd();
+
+  };
+
+  return el;
+}
+
+function rSz() {
+
+  const c = document.getElementById("sb");
+  c.innerHTML = "";
+
+  if (!S.sinkType) {
+    S.size = null;
+
+    c.innerHTML = `
+      <button class="size-btn disabled" disabled>
+        — اختر نوع الحوض أولاً —
+      </button>
+    `;
+    return;
+  }
+
+  // جمع المقاسات بدون تكرار
+  const sizesMap = new Map();
+
+  D.designs
+    .filter(d => d.type === S.sinkType)
+    .forEach(d => {
+      d.sizes.forEach(s => {
+        if (!sizesMap.has(s.size)) {
+          sizesMap.set(s.size, s);
+        }
+      });
+    });
+
+  const sizes = [...sizesMap.values()];
+
+  sizes.forEach(s => {
+
+    const b = document.createElement("button");
+
+    b.className =
+      "size-btn" +
+      (S.size && S.size.size === s.size ? " selected" : "");
+
+    b.textContent = s.size;
+
+    b.onclick = () => {
+
+      S.size = s;
+
+      // تغيير المقاس يلغي الاختيارات التالية
+      S.design = null;
+      S.div = null;
+      S.handle = null;
+
+      rSz();
+      rDes();
+      rDiv();
+      rHnd();
+      upd();
+
+    };
+
+    c.appendChild(b);
+
+  });
+
+}
+
+function rDiv() {
+
+  const wall = document.getElementById('vc-wall');
+  const floor = document.getElementById('vc-floor');
+  const title = document.getElementById("division-group-title");
 
   if (!wall || !floor) return;
 
   wall.innerHTML = '';
   floor.innerHTML = '';
 
-  D.designs
-    .filter(d => d.type !== 'floor-standing')
-    .forEach(d => wall.appendChild(createDesignCard(d)));
+    if (!S.sinkType) {
+      title.textContent = "اختر نوع الحوض أولاً";
+      updateArrows('vc-wall');
+      updateArrows('vc-floor');
+      return;
+    }
 
-  D.designs
-    .filter(d => d.type === 'floor-standing')
-    .forEach(d => floor.appendChild(createDesignCard(d)));
-
-  updateArrows('dc-wall');
-  updateArrows('dc-floor');
-}
-
-// دالة مساعدة لإنشاء الكارت (بنفس تنسيق الموقع الأصلي)
-function createDesignCard(d) {
-  const validPrices = d.sizes.map(s => s.price).filter(p => p !== null);
-  const minP = validPrices.length ? Math.min(...validPrices) : null;
-  
-  const el = document.createElement('div');
-  el.className = 'design-card' + (S.design && S.design.id === d.id ? ' selected' : '');
-  el.appendChild(mkImg(d.id, el));
-  
-  const info = document.createElement('div'); info.className = 'cinfo';
-  info.innerHTML = '<div class="cname">'+d.name+'</div><div class="cprice">يبدأ من: '+(minP!==null?r5(minP)+' EGP':'—')+'</div>';
-  el.appendChild(info);
-
-  el.onclick = () => {
-  // إذا تغير التصميم، صفّر المقاس
-  if (!S.design || S.design.id !== d.id) {
-    S.size = null;
-  }
-
-  // إذا تغير نوع التصميم، صفّر أيضًا التقسيمة والمقبض
-  if (S.design && S.design.type !== d.type) {
-    S.div = null;
-    S.handle = null;
-  }
-
-  S.design = d;
-  rDes();
-  rSz();
-  rDiv();
-  rHnd();
-  upd();
-};
-}
-
-// دالة إنشاء الكارت (نفس التي استخدمناها سابقاً)
-function createDesignCard(d) {
-  const validPrices = d.sizes.map(s => s.price).filter(p => p !== null);
-  const minP = validPrices.length ? Math.min(...validPrices) : null;
-  
-  const el = document.createElement('div');
-  el.className = 'design-card' + (S.design && S.design.id === d.id ? ' selected' : '');
-  el.appendChild(mkImg(d.id, el));
-  
-  const info = document.createElement('div'); info.className = 'cinfo';
-  info.innerHTML = `<div class="cname">${d.name}</div><div class="cprice">يبدأ من: ${minP !== null ? r5(minP) : '—'} EGP</div>`;
-  el.appendChild(info);
-
-  el.onclick = () => {
-    if (S.design && S.design.type !== d.type) { S.size = null; S.div = null; S.handle = null; }
-    S.design = d; 
-    rDes(); rSz(); rDiv(); rHnd(); upd();
-  };
-  return el;
-}
-
-// دالة مساعدة لإنشاء الكارت بنفس تنسيقك القديم
-function createDesignCard(d) {
-    const validPrices = d.sizes.map(s => s.price).filter(p => p !== null);
-    const minP = validPrices.length ? Math.min(...validPrices) : null;
-    
-    const el = document.createElement('div');
-    el.className = 'design-card' + (S.design && S.design.id === d.id ? ' selected' : '');
-    el.appendChild(mkImg(d.id, el));
-    
-    const info = document.createElement('div'); info.className = 'cinfo';
-    info.innerHTML = `<div class="cname">${d.name}</div><div class="cprice">يبدأ من: ${minP !== null ? r5(minP) : '—'} EGP</div>`;
-    el.appendChild(info);
-
-    el.onclick = () => {
-        if (S.design && S.design.type !== d.type) { S.size = null; S.div = null; S.handle = null; }
-        S.design = d; 
-        rDes(); rSz(); rDiv(); rHnd(); upd();
+    const titleMap = {
+      "wall-hung": "التقسيمة الداخلية للحوض المعلق",
+      "drop-in": "التقسيمة الداخلية للحوض السقط رخام",
+      "bowl": "التقسيمة الداخلية للحوض فوق سطح أفقي",
+      "floor-standing": "التقسيمة الداخلية للحوض برجل كاملة"
     };
-    return el;
+
+    title.textContent = titleMap[S.sinkType];
+
+  // تحديد القسم الذي سيظهر
+  const divisionType =
+    (S.sinkType === 'floor-standing')
+      ? 'floor-standing'
+      : 'wall-hung';
+
+  D.divisions
+    .filter(d => d.type === divisionType)
+    .forEach(d => {
+
+      const el = document.createElement('div');
+
+      el.className =
+        'div-card' +
+        (S.div && S.div.id === d.id ? ' selected' : '');
+
+      el.appendChild(mkImg(d.id, el));
+
+      const info = document.createElement('div');
+      info.className = 'cinfo';
+
+      const sg = S.size ? sgr(S.size.size) : null;
+      const divP = sg ? dvp(d, sg) : null;
+
+      info.innerHTML =
+        '<div class="cname">' + d.name + '</div>' +
+        '<div class="cprice">' +
+        ((divP !== null && divP !== undefined) ? ('+' + divP + ' EGP') : '—') +
+        '</div>';
+
+      el.appendChild(info);
+
+      el.onclick = () => {
+        S.div = d;
+        rDiv();
+        upd();
+      };
+
+      if (divisionType === 'wall-hung') {
+        wall.appendChild(el);
+      } else {
+        floor.appendChild(el);
+      }
+
+    });
+
+  updateArrows('vc-wall');
+  updateArrows('vc-floor');
+
 }
 
-function rSz() {
-  const c = document.getElementById('sb');
-  c.innerHTML = '';
-
-  if (!S.design) {
-    S.size = null;
-    c.innerHTML = '<span class="miss">يجب اختيار التصميم أولاً</span>';
-    return;
-  }
-
-  // إذا كان المقاس الحالي لا ينتمي للتصميم المختار، امسحه
-  if (S.size && !S.design.sizes.some(s => s.id === S.size.id)) {
-    S.size = null;
-  }
-
-  S.design.sizes.forEach(s => {
-    const b = document.createElement('button');
-    b.className = 'size-btn' + (S.size && S.size.id === s.id ? ' selected' : '');
-    b.textContent = s.size;
-    b.onclick = () => {
-      S.size = s;
-      rSz();
-      rDiv();
-      upd();
-    };
-    c.appendChild(b);
-  });
-}
-
-function rDiv() {
-  const c = document.getElementById('vc');
-  c.innerHTML = '';
-  if (!S.design) return;
-
-  const isFp = S.design.type === 'floor-standing';
-  const sg = S.size ? sgr(S.size.size) : null;
-
-  D.divisions.forEach(d => {
-    // إظهار التقسيمات المطابقة فقط لنوع الحوض
-  if (d.type !== S.design.type) return;
-
-    const el = document.createElement('div');
-    el.className = 'div-card' + (S.div && S.div.id === d.id ? ' selected' : '');
-    el.appendChild(mkImg(d.id, el));
-    
-    const info = document.createElement('div'); info.className = 'cinfo';
-    const divP = sg ? dvp(d, sg) : null;
-    const priceText = (divP !== null && divP !== undefined) ? '+' + divP + ' EGP' : '—';
-    info.innerHTML = '<div class="cname">' + d.name + '</div><div class="cprice">' + priceText + '</div>';
-    el.appendChild(info);
-    
-    el.onclick = () => { S.div = d; rDiv(); upd(); };
-    c.appendChild(el);
-  });
-  setTimeout(() => updateArrows('vc'), 100);
-}
 function rHnd(){
   const c=document.getElementById('hc');c.innerHTML='';
   const noH=S.design&&S.design.hc===0;
@@ -432,6 +669,7 @@ if (sdTypeEl) {
   } else {
     sdTypeEl.textContent = '—';
   }
+  updateStepperProgress()
 }
 
 // تحديث اسم التصميم
@@ -812,67 +1050,51 @@ fetch(SHEET)
 // Render cards immediately with placeholder data
 rDes();rSz();rDiv();rHnd();upd();
 
-const images = ['ic-01.webp', 'ic-02.webp', 'ic-03.webp', 'ic-04.webp'];
-let currentIndex = 0;
-let autoplayTimer;
-
-function initCarousel() {
-  const track = document.getElementById('carousel-track');
-  const dotsContainer = document.getElementById('carousel-dots');
-
-  if (!track || !dotsContainer) {
-    console.warn('initCarousel: track or dots not found — skipping carousel init.');
-    return;
-  }
-
-  images.forEach((img, index) => {
-    const slide = document.createElement('div');
-    slide.className = 'carousel-slide';
-    slide.innerHTML = `<img src="${GH}${img}" alt="عمل منفذ ${index+1}">`;
-    track.appendChild(slide);
-
-    const dot = document.createElement('button');
-    dot.className = 'carousel-dot' + (index === 0 ? ' active' : '');
-    dot.onclick = () => { showSlide(index); resetAutoplay(); };
-    dotsContainer.appendChild(dot);
-  });
-
-  startAutoplay();
-}
-
-function showSlide(index) {
-  currentIndex = (index + images.length) % images.length;
-  const track = document.getElementById('carousel-track');
-  track.style.transform = `translateX(${currentIndex * 100}%)`;
-  document.querySelectorAll('.carousel-dot').forEach((dot, i) => {
-    dot.classList.toggle('active', i === currentIndex);
-  });
-}
-
-function moveSlide(step) { showSlide(currentIndex + step); resetAutoplay(); }
-function startAutoplay() {
-    // التأكد أننا نبدأ من أول عنصر
-    currentIndex = 0; 
-    autoplayTimer = setInterval(() => {
-        // الاتجاه الطبيعي هو +1
-        currentIndex = (currentIndex + 1) % images.length;
-        showSlide(currentIndex);
-    }, 2500);
-}
-function resetAutoplay() { clearInterval(autoplayTimer); startAutoplay(); }
 // تشغيل عند التحميل
-window.addEventListener('load', initCarousel);
 
 window.addEventListener('DOMContentLoaded', function () {
+
+  // زرار تحديد الموقع
   const btn = document.getElementById('btn-locate');
   if (btn && typeof requestLocation === 'function') {
-    // 안전하게: نزيل أي listener سابق ثم نضيف واحد جديد
     try { btn.removeEventListener('click', requestLocation); } catch (e) {}
     btn.addEventListener('click', requestLocation);
-    console.log('requestLocation bound to #btn-locate');
-  } else {
-    console.warn('requestLocation or #btn-locate not available on DOMContentLoaded');
   }
+
+  // كروت نوع الحوض
+  document.querySelectorAll('.sink-type-card').forEach(card => {
+
+    card.addEventListener('click', function () {
+
+      document.querySelectorAll('.sink-type-card').forEach(c => {
+        c.classList.remove('selected');
+      });
+
+      this.classList.add('selected');
+
+      S.sinkType = this.dataset.type;
+
+      S.design = null;
+      S.size = null;
+      S.div = null;
+      S.handle = null;
+
+      rDes();
+      rSz();
+      rDiv();
+      rHnd();
+      upd();
+
+    });
+
+  });
+
+  // Scroll arrows الخاصة بنوع الحوض
+  updateArrows('sink-types');
+
+  const sinkRow = document.getElementById('sink-types');
+  if (sinkRow) {
+    sinkRow.addEventListener('scroll', () => updateArrows('sink-types'));
+  }
+
 });
-
-
