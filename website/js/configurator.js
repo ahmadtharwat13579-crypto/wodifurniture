@@ -379,7 +379,7 @@ function createDesignCard(d) {
     `
 
     <div class="card-sizes">
-    <span class="label">المقاسات المتاحة:</span>
+    <span class="label">المقاس:</span>
     <span class="value">${sizeText}</span>
     </div>
     `
