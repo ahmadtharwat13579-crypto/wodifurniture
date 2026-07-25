@@ -31,20 +31,7 @@
 
       <header class="conf-header">
         <h1 class="main-header">صمّم وحدة الحوض الخاصة بك</h1>
-
-        <!-- Intro collapse -->
-        <div class="intro-collapse">
-          <ol class="intro-para collapsed" id="intro-para" aria-expanded="false">
-            <li>اختر تصميم وحدة الحوض المناسب لك.</li>
-            <li>حدد مقاس الحوض الخاص بك من بين المقاسات المتاحة للتصميم.</li>
-            <li>اختر التقسيمة الداخلية.</li>
-            <li>اختر نوع المقبض.</li>
-            <li>قم بتحديد موقعك لحساب تكلفة التوصيل.</li>
-            <li>سيتم تحديث السعر النهائي تلقائيًا مع كل اختيار.</li>
-            <li>بعد تحديد المواصفات، اضغط على "اطلب الآن" ليتم توجيهك للواتساب.</li>
-          </ol>
-          <button type="button" class="intro-toggle" id="intro-toggle" aria-controls="intro-para" aria-expanded="false">عرض المزيد</button>
-        </div>
+        <p class="intro-line">اتبع الخطوات لتصميم وحدتك — هتشوف السعر يتحدث تلقائيًا مع كل اختيار</p>
       </header>
 
             <!-- compact modern stepper -->
@@ -752,11 +739,14 @@ document.addEventListener('DOMContentLoaded', function () {
     if (stickyEl) { stickyEl.remove(); stickyEl = null; }
   }
 
-  function updateStickyValue() {
-    const total = document.getElementById('total-price')?.textContent?.trim() || '— EGP';
-    const stickyVal = document.getElementById('sticky-total');
-    if (stickyVal) stickyVal.textContent = total;
+function updateStickyValue() {
+  const total = document.getElementById('total-price')?.textContent?.trim() || '— EGP';
+  const stickyVal = document.getElementById('sticky-total');
+  if (stickyVal) {
+    stickyVal.textContent = total;
+    pulsePrice(stickyVal);
   }
+}
 
   function showSticky() {
     if (!stickyEl) createSticky();
@@ -834,7 +824,19 @@ function setupObservers() {
   window.addEventListener('orientationchange', function () {
     setTimeout(enableIfMobile, 300);
   });
+
+  window.updateStickyValue = updateStickyValue;
+
 })();
+
+function pulsePrice(el) {
+  if (!el) return;
+  const text = el.textContent?.trim() || '';
+  if (text === '— EGP' || text === '') return;
+  el.classList.remove('price-pulse');
+  void el.offsetWidth;
+  el.classList.add('price-pulse');
+}
 
 // دالة لتحديث الـ Stepper وتغيير الشكل (عن طريق إضافة أو إزالة الكلاسات المباشرة)
 function updateStepperProgress() {

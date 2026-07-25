@@ -641,6 +641,8 @@ totalEl.textContent =
     ? t + ' EGP'
     : '— EGP';
 
+    pulsePrice(totalEl);
+
     // 2. تحديث التحذيرات (إن وجدت)
     const warn = document.getElementById('price-warning');
     if (warn) {
@@ -670,7 +672,9 @@ if (sdTypeEl) {
     sdTypeEl.textContent = '—';
   }
   updateStepperProgress()
+  if (typeof updateStickyValue === 'function') updateStickyValue();
 }
+
 
 // تحديث اسم التصميم
 const sdEl = document.getElementById('sd');
