@@ -732,7 +732,7 @@ details[open] summary::after {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 320px; /* main | price/sidebar */
   gap: 28px;
-  max-width: 1200px; /* اضبط حسب رغبتك */
+  max-width: 1800px; /* اضبط حسب رغبتك */
   margin: 0 auto;
   padding: 20px 16px;
   box-sizing: border-box;
@@ -1054,9 +1054,9 @@ details[open] summary::after {
 .cards-row > div,
 .cards-row > a,
 .cards-row .card .product-skeleton{
-  flex: 0 0 38vw;
-  max-width: 270px;
-  min-width: 150px;
+  flex: 0 0 40vw;
+  max-width: 280px;
+  min-width: 220px;
   background: #f8fafc;
   border: 1px solid #cbd5e1;
   border-radius: 2px;
@@ -1560,7 +1560,7 @@ details[open] summary::after {
   background: #8a9e78;
 }
 /* on small screens: single column + sticky price bar bottom */
-@media (max-width: 900px) {
+
   .config-layout {
     grid-template-columns: 1fr;
     padding-bottom: calc(100px + env(safe-area-inset-bottom, 0)); /* room for sticky */
@@ -1569,7 +1569,7 @@ details[open] summary::after {
   .sidebar { order: 2; width: auto; }
   .price-column { order: 3; width: auto; position: relative; top: auto; }
   .conf { padding-bottom: 120px;} /* prevent content under sticky bar */
-}
+
 
 /* Location button states & summary box (add to end of style.css) */
 
