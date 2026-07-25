@@ -2841,8 +2841,3 @@ details[open] summary::after {
 /* Allow main column & flex children to shrink (prevents overflow) */ .main-column, .cards-row, .conf { min-width: 0 !important; overflow-wrap: break-word; word-break: break-word; }
 /* Horizontal carousels: make cards narrower on small screens */ .cards-row { padding-inline: 6px; gap: 12px; }
 
-html, body {
-  overflow-x: visible;
-  position:auto;
-}
-
