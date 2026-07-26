@@ -237,7 +237,12 @@ function mkImg(id, cardEl){
   // zoom button unchanged...
   const zoomBtn = document.createElement('div');
   zoomBtn.className = 'zoom-btn';
-  zoomBtn.innerHTML = '...'; // (احتفظ بما لديك)
+  zoomBtn.innerHTML = `
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="7"></circle>
+      <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
+    </svg>
+    `;
   zoomBtn.onclick = function(e){
     e.stopPropagation();
     openLB(img.src);
@@ -262,12 +267,12 @@ function rDes() {
 
         if(!S.sinkType){
 
-            desc.innerHTML = "اختر نوع الحوض أولاً.";
+            desc.innerHTML = "";
 
         }
         else if(!S.size){
 
-            desc.innerHTML = 'اختر <strong>مقاس الحوض</strong> لإختيار التصميم.';
+            desc.innerHTML = 'اختر <strong>عرض الحوض</strong> لعرض التصميمات المتوافقة.';
 
         }
         else{
@@ -290,10 +295,10 @@ function rDes() {
   }
 
   const titleMap = {
-    "wall-hung": "تصميمات الحوض المعلق",
-    "drop-in": "تصميمات الحوض السقط رخام",
-    "bowl": "تصميمات الحوض فوق سطح أفقي",
-    "floor-standing": "تصميمات الحوض برجل كاملة"
+    "wall-hung": "تصميمات وحدات الحوض المعلق",
+    "drop-in": "تصميمات وحدات الحوض الساقط",
+    "bowl": "تصميمات وحدات الحوض فوق الكاونتر",
+    "floor-standing": "تصميمات وحدات الحوض برجل كاملة"
   };
 
   title.textContent = titleMap[S.sinkType];
@@ -407,8 +412,6 @@ function createDesignCard(d) {
     if (!isAvailable) return;
 
     if (!S.design || S.design.id !== d.id) {
-      S.div = null;
-      S.handle = null;
     }
 
     S.design = d;
@@ -427,17 +430,20 @@ function rSz() {
 
   const c = document.getElementById("sb");
   c.innerHTML = "";
+  const title = document.getElementById("size-group-title");
 
-  if (!S.sinkType) {
+if (!S.sinkType) {
+
     S.size = null;
 
-    c.innerHTML = `
-      <button class="size-btn disabled" disabled>
-        — اختر نوع الحوض أولاً —
-      </button>
-    `;
+    title.textContent = "اختر نوع الحوض أولاً";
+
+    c.innerHTML = "";
+
     return;
-  }
+}
+
+  title.textContent = "اختر عرض الحوض لديك";
 
   // جمع المقاسات بدون تكرار
   const sizesMap = new Map();
@@ -566,22 +572,85 @@ function rDiv() {
 }
 
 function rHnd(){
-  const c=document.getElementById('hc');c.innerHTML='';
-  const noH=S.design&&S.design.hc===0;
-  if(noH)S.handle=null;
+
+  const c = document.getElementById('hc');
+  const title = document.getElementById('handle-group-title');
+
+  c.innerHTML = '';
+
+  // لم يتم اختيار نوع الحوض
+  if(!S.sinkType){
+
+    title.textContent = 'اختر نوع الحوض أولاً';
+
+    document.querySelector('[data-group="hc"]').classList.add('hidden');
+
+    return;
+  }
+
+  // إظهار السكشن بعد اختيار نوع الحوض
+  document.querySelector('[data-group="hc"]').classList.remove('hidden');
+
+
+  title.textContent = 'اختر نوع المقبض';
+
+  const noH = S.design && S.design.hc === 0;
+
+  if(noH){
+
+    S.handle = null;
+
+    c.innerHTML = `
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M5 12h14"/>
+        </svg>
+        <div>هذا التصميم لا يحتوي على مقابض.</div>
+      </div>
+    `;
+
+    updateArrows('hc');
+    return;
+  }
+
   D.handles.forEach(h=>{
-    const el=document.createElement('div');
-    el.className='handle-card'+(noH?' dis':'')+(S.handle&&S.handle.id===h.id?' selected':'');
+
+    const el = document.createElement('div');
+
+    el.className =
+      'handle-card' +
+      (S.handle && S.handle.id===h.id ? ' selected' : '');
+
     el.appendChild(mkImg(h.id,el));
-    const info=document.createElement('div');info.className='cinfo';
-    const pricePerDoor=(!dataLoaded||h.price===null)?'—':(S.design?h.price:'—');
-    const displayPrice=dataLoaded&&h.price!==null?'+ '+pricePerDoor+' EGP / ضلفة':'—';
-    info.innerHTML='<div class="cname">'+h.name+'</div><div class="cprice'+(dataLoaded?'':' loading')+'">'+(dataLoaded?displayPrice:'—')+'</div>';
+
+    const info = document.createElement('div');
+    info.className='cinfo';
+
+    const displayPrice =
+      (S.design && dataLoaded && h.price !== null)
+        ? '+ ' + h.price + ' EGP / ضلفة'
+        : '—';
+
+    info.innerHTML =
+      '<div class="cname">'+h.name+'</div>' +
+      '<div class="cprice'+(dataLoaded?'':' loading')+'">'+
+      (dataLoaded ? displayPrice : '—')+
+      '</div>';
+
     el.appendChild(info);
-    if(!noH)el.onclick=()=>{S.handle=h;rHnd();upd();};
+
+    el.onclick = ()=>{
+      S.handle = h;
+      rHnd();
+      upd();
+    };
+
     c.appendChild(el);
+
   });
+
   setTimeout(()=>updateArrows('hc'),50);
+
 }
 
 function haversine(lat1,lng1,lat2,lng2){
@@ -712,11 +781,11 @@ async function getAddress(lat, lon, resElement) {
       const city = a.city || a.town || a.state_district || a.state || a.county || '';
       const parts = [neighbourhood, city].filter(Boolean);
       const address = parts.join('، ');
+
       if (address) {
         resElement.innerHTML += `<br><small>الموقع: ${address}</small>`;
       }
     }
-    window.lastAddress = shortLabel || display || (`${lat.toFixed(6)}, ${lon.toFixed(6)}`);
   } catch (e) {
     console.error("تعذر جلب العنوان", e);
   }
@@ -892,67 +961,6 @@ function escapeHtmlSafe(str) {
     .replace(/>/g, '&gt;');
 }
 
-// improved tooltip that can open many times and always sets text
-function openTooltip(text) {
-  const note = (typeof text === 'string' && text.length) ? text : 'نستخدم موقعك لحساب المسافة وتوفير أفضل سعر للتوصيل. لا يتم حفظ موقعك، ولا يُستخدم إلا لهذا الغرض.';
-  try {
-    let overlay = document.getElementById('tooltip-overlay');
-    if (!overlay) {
-      overlay = document.createElement('div');
-      overlay.id = 'tooltip-overlay';
-      overlay.className = 'tooltip-overlay';
-      overlay.innerHTML = `
-        <div class="tooltip-box" role="dialog" aria-modal="true" aria-label="ملاحظة النقل والتوصيل">
-          <button class="tooltip-close" type="button" aria-label="إغلاق">×</button>
-          <div class="tooltip-text" aria-live="polite"></div>
-        </div>`;
-      document.body.appendChild(overlay);
-
-      // attach close handler (no inline onclick)
-      const closeBtn = overlay.querySelector('.tooltip-close');
-      closeBtn.addEventListener('click', closeTooltip);
-      // also close on overlay click outside box
-      overlay.addEventListener('click', function (ev) {
-        if (ev.target === overlay) closeTooltip();
-      });
-      // allow ESC to close
-      document.addEventListener('keydown', function onEsc(e) {
-        if (e.key === 'Escape' && document.getElementById('tooltip-overlay')) {
-          closeTooltip();
-        }
-      });
-    }
-
-    // set/replace text (use innerHTML only with escaped content)
-    const textEl = overlay.querySelector('.tooltip-text');
-    if (textEl) {
-      textEl.innerHTML = escapeHtmlSafe(note).replace(/\n/g, '<br>');
-    }
-
-    // show overlay
-    overlay.style.display = 'flex';
-    // small delay for CSS animation if any
-    requestAnimationFrame(() => overlay.classList.add('open'));
-  } catch (err) {
-    console.error('openTooltip error', err);
-  }
-}
-
-function closeTooltip() {
-  try {
-    const overlay = document.getElementById('tooltip-overlay');
-    if (!overlay) return;
-    overlay.classList.remove('open');
-    // allow animation then hide
-    setTimeout(() => {
-      if (overlay.parentNode) {
-        overlay.style.display = 'none';
-      }
-    }, 180);
-  } catch (err) {
-    console.error('closeTooltip error', err);
-  }
-}
 
 function resetAll(){
   S={design:null,size:null,div:null,handle:null};
@@ -972,29 +980,103 @@ function showToast(msg){
 }
 
 function orderWA(){
+
   const t = calc();
-  if(!t){showToast('الطلب غير مكتمل، يرجى إكمال جميع الخيارات');return;}
-  const noH = S.design.hc===0;
-  const deliveryNote = installCost !== null ? '\nتكلفة التوصيل: ' + installCost + ' EGP' : '\nتكلفة التوصيل: سيتم تحديدها عند التواصل';
-  
-  const msg = 'السلام عليكم، أرغب في طلب وحدة حوض بالمواصفات التالية:\n\n' +
-              'التصميم: ' + S.design.name + '\n' +
-              'المقاس: ' + S.size.size + '\n' +
-              'التقسيمة الداخلية: ' + S.div.name + '\n' +
-              'نوع المقبض: ' + (noH ? 'بدون مقبض' : S.handle.name) + '\n' +
-              'تكلفة المعاينة والتركيب: 200 EGP' + 
-              deliveryNote + '\n\n' +
-              'السعر الإجمالي: ' + t + ' EGP\n\n' +
-              'برجاء تأكيد الطلب.';
-              
-  window.open('https://wa.me/' + WA + '?text=' + encodeURIComponent(msg), '_blank');
+
+  if(!t){
+    showToast('الطلب غير مكتمل، يرجى إكمال جميع الخيارات');
+    return;
+  }
+
+  const noH = S.design.hc === 0;
+
+  const sinkTypeNames = {
+    "wall-hung": "حوض معلق",
+    "drop-in": "حوض ساقط",
+    "bowl": "حوض فوق الكاونتر",
+    "floor-standing": "حوض برجل كاملة"
+  };
+
+  const specs =
+`نوع الحوض: ${sinkTypeNames[S.sinkType]}
+عرض الحوض: ${S.size.size}
+تصميم الوحدة: ${S.design.name}
+التقسيمة الداخلية: ${S.div.name}
+نوع المقبض: ${noH ? 'بدون مقبض' : S.handle.name}
+`;
+
+  let msg;
+
+  // خارج نطاق الخدمة
+  if (installCost === null) {
+
+    msg =
+`السلام عليكم،
+
+أرغب في الاستفسار عن إمكانية تنفيذ وحدة حوض بالمواصفات التالية:
+
+${specs}
+
+هل يمكن تنفيذ وتركيب الوحدة في موقعي؟
+
+وشكرًا لكم.`;
+
+  }
+
+  // داخل نطاق الخدمة
+  else {
+
+    msg =
+`السلام عليكم،
+
+أرغب في الاستفسار عن وحدة حوض بالمواصفات التالية:
+
+${specs}
+
+برجاء التواصل معي لمعرفة التفاصيل وإتمام الطلب.
+
+وشكرًا لكم.`;
+
+  }
+
+  window.open(
+    'https://wa.me/' + WA + '?text=' + encodeURIComponent(msg),
+    '_blank'
+  );
 }
 
-function customWA(){window.open('https://wa.me/'+WA+'?text='+encodeURIComponent('السلام عليكم، عندي فكرة تصميم وحدة حوض خاص وعايز أستفسر عنه.'),'_blank');}
-function outOfRangeWA(){ 
-  window.open('https://wa.me/'+WA+'?text='+
-  encodeURIComponent('السلام عليكم، موقعي خارج نطاق الخدمة الحالي، وأرغب في معرفة إمكانية التنفيذ في منطقتي.'),'_blank');
+function customWA(){
+  window.open(
+    'https://wa.me/' + WA + '?text=' +
+    encodeURIComponent(
+`السلام عليكم،
+
+أرغب في تنفيذ وحدة حوض بتصميم خاص يختلف عن التصميمات المتوفرة في الموقع.
+
+هل يمكن مناقشة الفكرة ومعرفة إمكانية تنفيذها؟
+
+وشكرًا لكم.`
+    ),
+    '_blank'
+  );
 }
+
+function outOfRangeWA(){
+  window.open(
+    'https://wa.me/' + WA + '?text=' +
+    encodeURIComponent(
+`السلام عليكم،
+
+قمت بتجربة تحديد موقعي في الموقع، وظهر أنه خارج نطاق الخدمة الحالي.
+
+هل يمكن تنفيذ وتركيب وحدة حوض في منطقتي؟
+
+وشكرًا لكم.`
+    ),
+    '_blank'
+  );
+}
+
 function openLB(s){document.getElementById('lb-img').src=s;document.getElementById('lb').classList.add('open');}
 function closeLB(){document.getElementById('lb').classList.remove('open');}
 

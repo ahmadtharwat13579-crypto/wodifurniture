@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>WODI Furniture | صمم وحدة حوضك</title>
-  <link rel="icon" type="image/png" href="images/favicon-v1.png" />
+  <link rel="icon" type="image/png" href="images/logos/favicon-v1.png" />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
 </head>
@@ -18,7 +18,7 @@
   </div>
   <div class="nav-left">
     <a href="index.html" class="logo-link">
-      <img id="navLogo" src="images/logo-white.png" alt="WODI" class="nav-logo" />
+      <img id="navLogo" src="images/logos/logo-white.png" alt="WODI" class="nav-logo" />
     </a>
   </div>
 </nav>
@@ -52,15 +52,23 @@
                 <!-- المقاس -->
                 <li class="stepper-item" data-step="size" id="st-size">
                   <div class="stepper-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="8" width="18" height="8" rx="1"/>
+                    <path d="M7 8v3M10 8v2M13 8v3M16 8v2"/>
+                  </svg>
                   </div>
-                  <span class="stepper-title">مقاس<br>الحوض</span>
+                  <span class="stepper-title">عرض<br>الحوض</span>
                 </li>
                 
                 <!-- التصميم -->
                 <li class="stepper-item" data-step="design" id="st-design">
                   <div class="stepper-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="4" y="4" width="16" height="16" rx="1.5"/>
+                      <line x1="12" y1="4" x2="12" y2="20"/>
+                      <circle cx="9.5" cy="12" r="0.5"/>
+                      <circle cx="14.5" cy="12" r="0.5"/>
+                    </svg>
                   </div>
                   <span class="stepper-title">تصميم <br> الوحدة</span>
                 </li>
@@ -91,6 +99,9 @@
                 </li>
               </ol>
             </nav>
+
+<div class="configurator-card">
+
 
 <!-- 0. Sink Type -->
 <div class="grid-item sink-type-section-box">
@@ -124,24 +135,7 @@
           </div>
           <div class="cinfo">
             <div class="cname">حوض معلق</div>
-          </div>
-        </div>
-
-        <div class="design-card sink-type-card" data-type="drop-in">
-          <div class="cimg">
-            <img src="images/sink-types/drop-in.webp" alt="حوض سقط رخام">
-          </div>
-          <div class="cinfo">
-            <div class="cname">حوض سقط رخام</div>
-          </div>
-        </div>
-
-        <div class="design-card sink-type-card" data-type="bowl">
-          <div class="cimg">
-            <img src="images/sink-types/bowl.webp" alt="حوض فوق سطح أفقي">
-          </div>
-          <div class="cinfo">
-            <div class="cname">حوض فوق سطح أفقي</div>
+            <div class="csize">يثبت مباشرة على الحائط</div>
           </div>
         </div>
 
@@ -151,6 +145,27 @@
           </div>
           <div class="cinfo">
             <div class="cname">حوض برجل كاملة</div>
+            <div class="csize">يستند على الأرض بقاعدة</div>
+          </div>
+        </div>
+
+        <div class="design-card sink-type-card" data-type="drop-in">
+          <div class="cimg">
+            <img src="images/sink-types/drop-in.webp" alt="حوض سقط رخام">
+          </div>
+          <div class="cinfo">
+            <div class="cname">حوض ساقط</div>
+            <div class="csize">يركب داخل فتحة بالرخامة</div>
+          </div>
+        </div>
+
+        <div class="design-card sink-type-card" data-type="bowl">
+          <div class="cimg">
+            <img src="images/sink-types/bowl.webp" alt="حوض فوق سطح أفقي">
+          </div>
+          <div class="cinfo">
+            <div class="cname">حوض فوق الكاونتر</div>
+            <div class="csize">يوضع أعلى سطح الوحدة</div>
           </div>
         </div>
 
@@ -176,11 +191,11 @@
 
     <div class="step-header">
       <span class="step-num">2</span>
-      <span class="step-title">مقاس الحوض</span>
+      <span class="step-title">عرض الحوض</span>
     </div>
 
-    <div class="step-desc">
-      اختر عرض الحوض المناسب للوحدة.
+    <div class="sub-title" id="size-group-title">
+      اختر عرض الحوض لديك
     </div>
 
     <div class="sizes-grid" id="sb" aria-live="polite">
@@ -343,6 +358,11 @@
       <span class="step-num">5</span>
       <span class="step-title">نوع المقبض</span>
     </div>
+
+    <div class="sub-title" id="handle-group-title">
+  اختر نوع الحوض أولاً
+</div>
+
     <div class="scroll-wrap" data-group="hc">
       <button class="scroll-arrow arr-start hidden" data-target="hc" data-dir="-1" aria-label="Scroll right">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
@@ -370,27 +390,26 @@
   </div>
 </div>
 
-      <!-- 4. Location (separate card) -->
-      <div class="grid-item" id="location-section">
-        <div class="step" style="margin-bottom: 0;">
-          <div class="step-header" style="align-items:center;gap:8px;">
-            <span class="step-num">6</span>
-            <span class="step-title">النقل والتوصيل</span>
-            <!-- info icon (i) with same note text -->
-            <button class="loc-hint" onclick="openTooltip()" aria-label="معلومات عن النقل والتوصيل" aria-describedby="loc-note" style="background:none;border:none;padding:6px;display:inline-flex;align-items:center;justify-content:center;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9caf88" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="16" x2="12" y2="12"></line>
-                <line x1="12" y1="8" x2="12.01" y2="8"></line>
-              </svg>
-            </button>
-            <!-- visually-hidden note for screen readers -->
-            <span id="loc-note" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">
-              نحتاج تحديد موقعك لتقدير تكلفة النقل والتوصيل بدقة.
-            </span>
-          </div>
+<!-- 4. Location (separate card) -->
+  <div class="grid-item" id="location-section">
+    <div class="step" style="margin-bottom: 0;">
 
-          <div class="loc-desc" style="margin-top:10px;">نحتاج تحديد موقعك لتقدير تكلفة النقل والتوصيل بدقة.</div>
+      <div class="step-header" style="align-items:center;gap:8px;">
+        <span class="step-num">6</span>
+        <span class="step-title">النقل والتوصيل</span>
+
+        <!-- نص مخفي لقارئات الشاشة -->
+        <span id="loc-note" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">
+          تختلف تكلفة النقل حسب المحافظة ومكان التركيب، وسيتم إضافتها تلقائياً إلى إجمالي السعر.
+        </span>
+      </div>
+
+      <!-- Subtitle -->
+      <div class="sub-title" id="location-group-title">
+        حدد موقع التركيب.
+      </div>
+
+          <div class="loc-desc" style="margin-top:10px;">نستخدم موقعك لتقدير تكلفة التوصيل والتحقق من تغطية منطقتك فقط. لا يتم تخزين موقعك أو استخدامه لأي غرض آخر.</div>
 
           <button class="btn-locate" id="btn-locate" aria-label="حدد موقعي الحالي" style="margin-top:8px;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="9" stroke-dasharray="4 2"/></svg>
@@ -405,6 +424,8 @@
         </div>
       </div>
 
+</div>
+
     <!-- PRICE SIDEBAR (desktop) / sticky footer (mobile) -->
     <aside class="price-column sbar" id="sbar">
       <div class="price-row">
@@ -417,22 +438,22 @@
       <div class="sum-title">تفاصيل السعر</div>
       <div class="sum-rows">
         <div class="srow">
-          <span class="slbl">النوع</span>
+          <span class="slbl">نوع الحوض</span>
           <span class="sval" id="sd-type">—</span>
           <span class="sval-price"></span>
         </div>
         <div class="srow">
-          <span class="slbl">التصميم</span>
+          <span class="slbl">تصميم الوحدة</span>
           <span class="sval" id="sd">—</span>
           <span class="sval-price" id="sd-price">—</span>
         </div>
         <div class="srow">
-          <span class="slbl">المقاس</span>
+          <span class="slbl">عرض الحوض</span>
           <span class="sval" id="ss">—</span>
           <span class="sval-price" id="ss-price">—</span>
         </div>
         <div class="srow">
-          <span class="slbl">التقسيمة</span>
+          <span class="slbl">التقسيمة الداخلية</span>
           <span class="sval" id="sv">—</span>
           <span class="sval-price" id="sv-price">—</span>
         </div>
@@ -448,7 +469,7 @@
             <span class="sval-price" id="si-install-price">200 EGP</span>
           </div>
           <div class="srow">
-            <span class="slbl">التوصيل</span>
+            <span class="slbl">النقل والتوصيل</span>
             <span class="sval" id="si-label">—</span>
             <span class="sval-price" id="si-price">—</span>
           </div>
@@ -490,29 +511,6 @@
   </div>
 </section>
 
-<section class="portfolio-section">
-  <h2 class="section-title">استكشف بعض أعمالنا</h2>
-  <p class="section-subtitle">قارن بين التصميم ال3D والتنفيذ الفعلي، وشاهد كيف نحرص على تنفيذ كل التفاصيل كما تم الاتفاق عليها.</p>
-  <div class="portfolio-grid">
-    <div class="portfolio-item" onclick="openLB('images/ic-01.webp')">
-      <img src="images/ic-01.webp" alt="مشروع 1" />
-      <div class="portfolio-overlay"><span>عرض بالحجم الكامل</span></div>
-    </div>
-    <div class="portfolio-item" onclick="openLB('images/ic-02.webp')">
-      <img src="images/ic-02.webp" alt="مشروع 2" />
-      <div class="portfolio-overlay"><span>عرض بالحجم الكامل</span></div>
-    </div>
-    <div class="portfolio-item" onclick="openLB('images/ic-03.webp')">
-      <img src="images/ic-03.webp" alt="مشروع 3" />
-      <div class="portfolio-overlay"><span>عرض بالحجم الكامل</span></div>
-    </div>
-    <div class="portfolio-item" onclick="openLB('images/ic-04.webp')">
-      <img src="images/ic-04.webp" alt="مشروع 4" />
-      <div class="portfolio-overlay"><span>عرض بالحجم الكامل</span></div>
-    </div>
-  </div>
-</section>
-
 <!-- Lightbox -->
 <div class="lb" id="lb" onclick="closeLB()">
   <button class="lb-close" onclick="closeLB()">×</button>
@@ -524,7 +522,7 @@
 
 <footer class="wodi-footer">
       <div class="footer-top-section">
-        <img src="images/logo-nobg.png" alt="WODI Furniture Logo" class="footer-logo">
+        <img src="images/logos/logo-nobg.png" alt="WODI Furniture Logo" class="footer-logo">
       </div>
 
       <div class="footer-container">
