@@ -728,7 +728,7 @@ details[open] summary::after {
     margin-right: 10px;
     margin-left: 10px;
     margin-bottom: 60px;
-    padding:14px;
+    padding:4px;
     box-shadow:0 2px 8px rgba(0,0,0,.05);
 }
 
@@ -955,7 +955,7 @@ details[open] summary::after {
   border: none;
 }
 .step-desc{
-    margin:8px 0 18px;
+    margin:0 0 18px;
     font-size:14px;
     color:#777;
     line-height:1.6;
@@ -1092,7 +1092,6 @@ details[open] summary::after {
 .cards-row .card .product-skeleton{
   flex: 0 0 39vw;
   max-width: 280px;
-  min-width: 200px;
   background: #f8fafc;
   border: 1px solid #cbd5e1;
   border-radius: 2px;
@@ -1296,6 +1295,16 @@ details[open] summary::after {
   cursor: not-allowed;
   pointer-events: none;
   filter: grayscale(0.4);
+}
+#handle-desc{
+  font-size:11px;
+  color:#666;
+  margin-top:4px;
+  margin-bottom:12px;
+}
+
+#handle-desc:empty{
+  display:none;
 }
 .card-overlay{
     position:absolute;
@@ -2789,7 +2798,7 @@ details[open] summary::after {
   border: none;
   padding: 8px 12px;
   border-radius: 4px;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
   min-height: 40px;
   font-size: 12px;

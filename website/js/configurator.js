@@ -575,7 +575,7 @@ function rHnd(){
 
   const c = document.getElementById('hc');
   const title = document.getElementById('handle-group-title');
-
+  const desc = document.getElementById('handle-desc');
   c.innerHTML = '';
 
   // لم يتم اختيار نوع الحوض
@@ -594,22 +594,45 @@ function rHnd(){
 
   title.textContent = 'اختر نوع المقبض';
 
+  desc.replaceChildren();
+
   const noH = S.design && S.design.hc === 0;
 
   if(noH){
 
     S.handle = null;
 
-    c.innerHTML = `
-      <div class="empty-state">
-        <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M5 12h14"/>
-        </svg>
-        <div>هذا التصميم لا يحتوي على مقابض.</div>
-      </div>
-    `;
+    desc.innerHTML =
+    'التصميم المختار لا يدعم استخدام المقابض.';
 
-    updateArrows('hc');
+    D.handles.forEach(h=>{
+
+      const el = document.createElement('div');
+      el.className = 'handle-card disabled';
+
+      el.appendChild(mkImg(h.id, el));
+
+      const info = document.createElement('div');
+      info.className = 'cinfo';
+
+      const displayPrice =
+        (dataLoaded && h.price !== null)
+          ? '+ ' + h.price + ' EGP / ضلفة'
+          : '—';
+
+      info.innerHTML =
+        '<div class="cname">'+h.name+'</div>' +
+        '<div class="cprice'+(dataLoaded?'':' loading')+'">'+
+        (dataLoaded ? displayPrice : '—')+
+        '</div>';
+
+      el.appendChild(info);
+
+      c.appendChild(el);
+
+    });
+
+    setTimeout(()=>updateArrows('hc'),50);
     return;
   }
 
@@ -963,7 +986,7 @@ function escapeHtmlSafe(str) {
 
 
 function resetAll(){
-  S={design:null,size:null,div:null,handle:null};
+  S={sinkType:null,design:null,size:null,div:null,handle:null};
   userLat=null;userLng=null;installCost=null;
   const res=document.getElementById('loc-result');
   if(res){res.className='loc-result';res.textContent='';}
@@ -1575,3 +1598,22 @@ window.addEventListener('DOMContentLoaded', function() {
   updateStepperProgress();
 });
 
+function saveConfig() {
+
+  localStorage.setItem("wodi-config", JSON.stringify({
+
+    sinkType: S.sinkType || null,
+
+    size: S.size ? S.size.size : null,
+
+    design: S.design ? S.design.id : null,
+
+    division: S.division ? S.division.id : null,
+
+    handle: S.handle ? S.handle.id : null,
+
+    location: S.loc || null
+
+  }));
+
+}
