@@ -2,7 +2,7 @@ const WA='201556840368';
 const LOCATION_SHEET='https://script.google.com/macros/s/AKfycbz1Dj9QB3rlz_sZoLwC-kdfZiMUBsHheGT62dIgajmzqffFm7Z_XiQ9sH558XW9sgDZ/exec?pwd=double-protection-password';
 let LOC={workshop_lat:30.061113,workshop_lng:31.394701,correction_factor:0,price_per_km:0,fixed_cost:0};
 let userLat=null,userLng=null,installCost=null;
-const GH = 'https://raw.githubusercontent.com/ahmadtharwat13579-crypto/wodifurniture/main/website/images/';
+const GH = 'https://raw.githubusercontent.com/ahmadtharwat13579-crypto/wodifurniture/main/website/images/conf/';
 const SHEET='https://script.google.com/macros/s/AKfycbz3xuCuZ6sU9QVo2nTRaItWFLplEhG7bKuzeZSQpk4DseShYrzycpRhyO2u2kuwPVkY/exec?pwd=double-protection-password';
 
 const r5=n=>Math.round(n/5)*5;
@@ -1184,3 +1184,394 @@ window.addEventListener('DOMContentLoaded', function () {
   }
 
 });
+
+// Intro collapse toggle
+(function () {
+  const introToggle = document.getElementById('intro-toggle');
+  const introPara = document.getElementById('intro-para');
+
+  if (!introToggle || !introPara) return;
+
+  introToggle.addEventListener('click', function () {
+    const collapsed = introPara.classList.toggle('collapsed');
+    // When class 'collapsed' is present we treat it as collapsed state,
+    // so button text should reflect the action to expand.
+    introToggle.textContent = collapsed ? 'عرض المزيد' : 'عرض أقل';
+    introToggle.setAttribute('aria-expanded', String(!collapsed));
+    introPara.setAttribute('aria-expanded', String(!collapsed));
+  });
+})();
+
+
+// Notes toggle
+(function () {
+  const notesBtn = document.getElementById('notes-toggle-btn');
+  const notesPanel = document.getElementById('notes-panel');
+
+  if (!notesBtn || !notesPanel) return;
+
+  notesBtn.addEventListener('click', function () {
+    const expanded = notesPanel.hidden;
+    notesPanel.hidden = !expanded;
+    notesBtn.setAttribute('aria-expanded', String(expanded));
+  });
+})();
+
+// Show/hide scroll arrows based on overflow & hookup arrows
+(function () {
+  function updateScrollArrows() {
+    document.querySelectorAll('.scroll-wrap').forEach(function (wrap) {
+      const row = wrap.querySelector('.cards-row');
+      const startBtn = wrap.querySelector('.scroll-arrow.arr-start');
+      const endBtn = wrap.querySelector('.scroll-arrow.arr-end');
+
+      if (!row) return;
+
+      const maxScroll = row.scrollWidth - row.clientWidth;
+      if (maxScroll <= 0) {
+        if (startBtn) startBtn.classList.add('hidden');
+        if (endBtn) endBtn.classList.add('hidden');
+        return;
+      }
+
+      // القيمة المطلقة لضمان دقة الحسابات بغض النظر عن طريقة المتصفح في الـ RTL
+      const current = Math.abs(row.scrollLeft);
+
+      // في الـ RTL، السكرول يبدأ من أقصى اليمين ويقل باتجاه اليسار
+      const canScrollRight = current > 10;                  // هل متاح التحريك يمين؟
+      const canScrollLeft = current < (maxScroll - 10);     // هل متاح التحريك يسار؟
+
+      // ربط الحالة بالأسهم (arr-start تمثل اليمين، arr-end تمثل اليسار في تصميمك)
+      if (startBtn) startBtn.classList.toggle('hidden', !canScrollRight);
+      if (endBtn) endBtn.classList.toggle('hidden', !canScrollLeft);
+    });
+  }
+
+  window.addEventListener('load', updateScrollArrows);
+  window.addEventListener('resize', updateScrollArrows);
+
+  document.querySelectorAll('.cards-row').forEach(function (row) {
+    row.addEventListener('scroll', updateScrollArrows);
+  });
+  
+  // التشغيل فور تحميل السكربت لضمان ظهور الأسهم صحيحة من البداية
+  document.addEventListener('DOMContentLoaded', updateScrollArrows);
+})();
+
+
+// Arrow buttons handling (scroll by chunk)
+(function () {
+  document.querySelectorAll('.scroll-arrow').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      const targetId = btn.dataset.target;
+      const dir = parseInt(btn.dataset.dir || '1', 10);
+      const row = document.getElementById(targetId);
+
+      if (!row) return;
+
+      // scroll by ~60% of visible width (RTL-aware flip handled in HTML/CSS)
+      const chunk = row.clientWidth * 0.6;
+      // dir is -1 or 1; multiply by -1 if needed for RTL (HTML sets arr-start/arr-end)
+      row.scrollBy({ left: dir * chunk * -1, behavior: 'smooth' });
+    });
+  });
+})();
+
+// Ensure initial ARIA states on DOMContentLoaded
+document.addEventListener('DOMContentLoaded', function () {
+  const panel = document.getElementById('notes-panel');
+  if (panel) panel.hidden = true;
+
+  const introPara = document.getElementById('intro-para');
+  if (introPara) introPara.classList.add('collapsed');
+
+  // run arrow update once DOM is ready
+  if (typeof updateScrollArrows === 'function') {
+    try { updateScrollArrows(); } catch (e) { /* ignore if not defined */ }
+  }
+});
+
+
+// ---------- Improved Sticky total bar behavior for mobile ----------
+(function () {
+  const MOBILE_BREAK = 900; // px
+  let stickyEl = null;
+  let io = null;
+  let mutation = null;
+
+  function createSticky() {
+    if (stickyEl) return stickyEl;
+
+    stickyEl = document.createElement('div');
+    stickyEl.className = 'price-sticky';
+    stickyEl.innerHTML =
+      '<div class="total">' +
+        '<span class="lbl">الإجمالي</span>' +
+        '<span class="val" id="sticky-total">— EGP</span>' +
+      '</div>' +
+      '<div class="sticky-actions">' +
+        '<button class="sticky-reset" id="sticky-reset">إعادة</button>' +
+        '<button class="sticky-order" id="sticky-order">إرسال الطلب</button>' +
+      '</div>';
+
+    document.body.appendChild(stickyEl);
+
+    const orderBtn = document.getElementById('sticky-order');
+    if (orderBtn) {
+      orderBtn.addEventListener('click', function () {
+        if (typeof orderWA === 'function') orderWA();
+        else document.querySelector('.btn-order')?.click();
+      });
+    }
+
+    const resetBtn = document.getElementById('sticky-reset');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', function () {
+        if (typeof resetAll === 'function') resetAll();
+        else document.querySelector('.btn-reset')?.click();
+      });
+    }
+
+    stickyEl.style.display = 'none';
+    return stickyEl;
+  }
+
+  function destroySticky() {
+    if (io) { io.disconnect(); io = null; }
+    if (mutation) { mutation.disconnect(); mutation = null; }
+    if (stickyEl) { stickyEl.remove(); stickyEl = null; }
+  }
+
+function updateStickyValue() {
+  const total = document.getElementById('total-price')?.textContent?.trim() || '— EGP';
+  const stickyVal = document.getElementById('sticky-total');
+  if (stickyVal) {
+    stickyVal.textContent = total;
+    pulsePrice(stickyVal);
+  }
+}
+
+  function showSticky() {
+    if (!stickyEl) createSticky();
+    stickyEl.style.display = 'flex';
+    updateStickyValue();
+  }
+
+  function hideSticky() {
+    if (stickyEl) stickyEl.style.display = 'none';
+  }
+
+  function isElementPositionedFixedOrSticky(el) {
+    if (!el) return false;
+    const cs = window.getComputedStyle(el);
+    return cs.position === 'fixed' || cs.position === 'sticky';
+  }
+
+function setupObservers() {
+    const target = document.getElementById('sbar') || document.querySelector('.price-column.sbar');
+    if (!target) {
+      showSticky();
+      return;
+    }
+
+    if (isElementPositionedFixedOrSticky(target)) {
+      destroySticky();
+      return;
+    }
+
+    createSticky();
+
+    if (io) io.disconnect();
+    
+    // استخدام مراقب لتحديد موقع سكشن الأسعار الأصلي بالنسبة للشاشة
+    io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (ent) {
+        // إذا كان السكشن الأصلي مرئياً في الشاشة أو تم تجاوزه (مختفي لأعلى)، نُخفي الشريط العائم.
+        // أي أنه لا يظهر إلا عندما يكون السكشن الأصلي أسفل شاشة العضو (في بداية الصفحة للأعلى).
+        if (ent.isIntersecting || ent.boundingClientRect.top < 0) {
+          hideSticky();
+        } else {
+          showSticky();
+        }
+      });
+    }, {
+      root: null,
+      threshold: 0
+    });
+    
+    io.observe(target);
+  }
+
+  function enableIfMobile() {
+    if (window.innerWidth > MOBILE_BREAK) {
+      destroySticky();
+      return;
+    }
+
+    const target = document.getElementById('sbar') || document.querySelector('.price-column.sbar');
+
+    // If original price-column is styled fixed/sticky via CSS, avoid creating duplicate sticky
+    if (target && isElementPositionedFixedOrSticky(target)) {
+      destroySticky();
+      return;
+    }
+
+    setupObservers();
+  }
+
+  window.addEventListener('load', enableIfMobile);
+  window.addEventListener('resize', function () {
+    clearTimeout(window._priceStickyResize);
+    window._priceStickyResize = setTimeout(enableIfMobile, 120);
+  });
+  window.addEventListener('orientationchange', function () {
+    setTimeout(enableIfMobile, 300);
+  });
+
+  window.updateStickyValue = updateStickyValue;
+
+})();
+
+function pulsePrice(el) {
+  if (!el) return;
+  const text = el.textContent?.trim() || '';
+  if (text === '— EGP' || text === '') return;
+  el.classList.remove('price-pulse');
+  void el.offsetWidth;
+  el.classList.add('price-pulse');
+}
+
+// دالة لتحديث الـ Stepper وتغيير الشكل (عن طريق إضافة أو إزالة الكلاسات المباشرة)
+function updateStepperProgress() {
+  const stepDesign = document.getElementById('st-design');
+  const stepSinkType = document.getElementById('st-sink-type');
+  const stepSize = document.getElementById('st-size');
+  const stepPartition = document.getElementById('st-partition');
+  const stepHandle = document.getElementById('st-handle');
+  const stepLocation = document.getElementById('st-location');
+
+  // فحص التصميم: شملنا جميع حالات الكارد (سواء معلق أو رجل كاملة أو أي خصائص مرتبطة به)
+  const hasDesign = (typeof S !== 'undefined' && S.design && (S.design.id || S.design.name || S.design.type));
+  const hasSinkType = (typeof S !== 'undefined' && S.sinkType);
+  const hasSize = (typeof S !== 'undefined' && S.size);
+  const hasDiv = (typeof S !== 'undefined' && S.div);
+  
+  const noH = (typeof S !== 'undefined' && S.design && S.design.hc === 0);
+  const hasHandle = (typeof S !== 'undefined' && (S.handle || noH));
+
+    if (stepSinkType) {
+      if (hasSinkType) {
+        stepSinkType.classList.add('completed');
+      } else {
+        stepSinkType.classList.remove('completed');
+      }
+    }
+  
+  if (stepDesign) {
+    if (hasDesign) {
+      stepDesign.classList.add('completed');
+    } else {
+      stepDesign.classList.remove('completed');
+    }
+  }
+
+  if (stepSize) {
+    if (hasSize) {
+      stepSize.classList.add('completed');
+    } else {
+      stepSize.classList.remove('completed');
+    }
+  }
+
+  if (stepPartition) {
+    if (hasDiv) {
+      stepPartition.classList.add('completed');
+    } else {
+      stepPartition.classList.remove('completed');
+    }
+  }
+
+  if (stepHandle) {
+    if (hasHandle) {
+      stepHandle.classList.add('completed');
+    } else {
+      stepHandle.classList.remove('completed');
+    }
+  }
+
+  if (stepLocation) {
+    const errorMsgElement = document.body.innerText.includes('خارج نطاق خدمتنا');
+    const isOutOfRange = (typeof locationError !== 'undefined' && locationError === true) || errorMsgElement;
+    
+    const hasLocation = (typeof installCost !== 'undefined' && installCost !== null && !isOutOfRange);
+
+    if (hasLocation) {
+      stepLocation.classList.add('completed');
+      stepLocation.classList.remove('out-of-range');
+    } else if (isOutOfRange) {
+      stepLocation.classList.remove('completed');
+      stepLocation.classList.add('out-of-range'); // ستتلون بالبرتقالي فوراً
+    } else {
+      stepLocation.classList.remove('completed', 'out-of-range');
+    }
+  }
+}
+
+
+// نظام الـ Sticky والخلفية البيضاء عند التمرير
+(function () {
+  let io = null;
+
+  function setupStepperSticky() {
+    const stepperEl = document.getElementById('design-stepper');
+    const targetSection = document.getElementById('sbar') || document.querySelector('.price-column.sbar') || document.querySelector('.details-section');
+
+    if (!stepperEl || !targetSection) return;
+
+    if (io) io.disconnect();
+
+    io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (ent) {
+        if (ent.boundingClientRect.top < 0 && !ent.isIntersecting) {
+          stepperEl.style.opacity = '0';
+          stepperEl.style.pointerEvents = 'none';
+        } else {
+          stepperEl.style.opacity = '1';
+          stepperEl.style.pointerEvents = 'auto';
+        }
+      });
+    }, {
+      root: null,
+      threshold: 0
+    });
+
+    io.observe(targetSection);
+
+    window.addEventListener('scroll', function() {
+      if (window.scrollY > 150) {
+        stepperEl.classList.add('is-sticky');
+      } else {
+        stepperEl.classList.remove('is-sticky');
+      }
+    });
+  }
+
+  window.addEventListener('load', setupStepperSticky);
+  window.addEventListener('resize', setupStepperSticky);
+})();
+
+// تحديث تلقائي عند النقر مع تأمين ضد أخطاء الـ DOM
+document.addEventListener('click', function(e) {
+  if (e.target.closest('.card') || e.target.closest('.option') || e.target.closest('button')) {
+    setTimeout(updateStepperProgress, 120);
+  }
+});
+
+// تشغيل أولي عند تحميل الصفحة
+window.addEventListener('DOMContentLoaded', updateStepperProgress);
+
+// التشغيل الفوري عند تحميل الصفحة
+window.addEventListener('DOMContentLoaded', function() {
+  updateStepperProgress();
+});
+

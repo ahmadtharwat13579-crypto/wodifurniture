@@ -107,8 +107,7 @@
 <div class="grid-item sink-type-section-box">
   <div class="step">
     <div class="step-header">
-      <span class="step-num">1</span>
-      <span class="step-title">نوع الحوض</span>
+      <span class="step-title">خطوة 1: نوع الحوض</span>
     </div>
 
         <div class="sub-title" id="sinkType-group-title">
@@ -190,8 +189,7 @@
   <div class="step">
 
     <div class="step-header">
-      <span class="step-num">2</span>
-      <span class="step-title">عرض الحوض</span>
+      <span class="step-title">خطوة 2: عرض الحوض</span>
     </div>
 
     <div class="sub-title" id="size-group-title">
@@ -212,8 +210,7 @@
   <div class="step">
 
     <div class="step-header">
-      <span class="step-num">3</span>
-      <span class="step-title">تصميم الوحدة</span>
+      <span class="step-title">خطوة 3: تصميم الوحدة</span>
     </div>
 
     <div class="sub-title" id="design-group-title">
@@ -286,8 +283,7 @@
   <div class="step">
 
     <div class="step-header">
-      <span class="step-num">4</span>
-      <span class="step-title">التقسيمة الداخلية</span>
+      <span class="step-title">خطوة 4: التقسيمة الداخلية</span>
     </div>
 
     <div class="sub-title" id="division-group-title">
@@ -355,8 +351,7 @@
 <div class="grid-item">
   <div class="step" style="margin-bottom: 0;">
     <div class="step-header">
-      <span class="step-num">5</span>
-      <span class="step-title">نوع المقبض</span>
+      <span class="step-title">خطوة 5: نوع المقبض</span>
     </div>
 
     <div class="sub-title" id="handle-group-title">
@@ -395,21 +390,14 @@
     <div class="step" style="margin-bottom: 0;">
 
       <div class="step-header" style="align-items:center;gap:8px;">
-        <span class="step-num">6</span>
-        <span class="step-title">النقل والتوصيل</span>
-
-        <!-- نص مخفي لقارئات الشاشة -->
-        <span id="loc-note" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">
-          تختلف تكلفة النقل حسب المحافظة ومكان التركيب، وسيتم إضافتها تلقائياً إلى إجمالي السعر.
-        </span>
+        <span class="step-title">خطوة 6: النقل والتوصيل</span>
       </div>
-
       <!-- Subtitle -->
       <div class="sub-title" id="location-group-title">
-        حدد موقع التركيب.
+        قم بتحديد موقعك
       </div>
 
-          <div class="loc-desc" style="margin-top:10px;">نستخدم موقعك لتقدير تكلفة التوصيل والتحقق من تغطية منطقتك فقط. لا يتم تخزين موقعك أو استخدامه لأي غرض آخر.</div>
+          <div class="loc-desc" >نستخدم موقعك لتقدير تكلفة التوصيل والتحقق من تغطية منطقتك فقط. لا يتم تخزين موقعك أو استخدامه لأي غرض آخر.</div>
 
           <button class="btn-locate" id="btn-locate" aria-label="حدد موقعي الحالي" style="margin-top:8px;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="9" stroke-dasharray="4 2"/></svg>
@@ -482,9 +470,9 @@
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
           إعادة
         </button>
-        <button class="btn-order" onclick="orderWA()" aria-label="اطلب الآن">
+        <button class="btn-order" onclick="orderWA()" aria-label="إرسال الطلب">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.533 5.858L.054 23.25a.75.75 0 0 0 .916.916l5.392-1.479A11.954 11.954 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.933 0-3.742-.524-5.287-1.437l-.378-.225-3.924 1.077 1.077-3.924-.225-.378A9.953 9.953 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
-          اطلب الآن
+          إرسال الطلب
         </button>
       </div>
     </aside>
@@ -575,403 +563,6 @@
 
 
 <script src="js/configurator.js"></script>
-
-<script>
-
-// ---- configurator.js (formatted) ----
-
-// Intro collapse toggle
-(function () {
-  const introToggle = document.getElementById('intro-toggle');
-  const introPara = document.getElementById('intro-para');
-
-  if (!introToggle || !introPara) return;
-
-  introToggle.addEventListener('click', function () {
-    const collapsed = introPara.classList.toggle('collapsed');
-    // When class 'collapsed' is present we treat it as collapsed state,
-    // so button text should reflect the action to expand.
-    introToggle.textContent = collapsed ? 'عرض المزيد' : 'عرض أقل';
-    introToggle.setAttribute('aria-expanded', String(!collapsed));
-    introPara.setAttribute('aria-expanded', String(!collapsed));
-  });
-})();
-
-
-// Notes toggle
-(function () {
-  const notesBtn = document.getElementById('notes-toggle-btn');
-  const notesPanel = document.getElementById('notes-panel');
-
-  if (!notesBtn || !notesPanel) return;
-
-  notesBtn.addEventListener('click', function () {
-    const expanded = notesPanel.hidden;
-    notesPanel.hidden = !expanded;
-    notesBtn.setAttribute('aria-expanded', String(expanded));
-  });
-})();
-
-// Show/hide scroll arrows based on overflow & hookup arrows
-(function () {
-  function updateScrollArrows() {
-    document.querySelectorAll('.scroll-wrap').forEach(function (wrap) {
-      const row = wrap.querySelector('.cards-row');
-      const startBtn = wrap.querySelector('.scroll-arrow.arr-start');
-      const endBtn = wrap.querySelector('.scroll-arrow.arr-end');
-
-      if (!row) return;
-
-      const maxScroll = row.scrollWidth - row.clientWidth;
-      if (maxScroll <= 0) {
-        if (startBtn) startBtn.classList.add('hidden');
-        if (endBtn) endBtn.classList.add('hidden');
-        return;
-      }
-
-      // القيمة المطلقة لضمان دقة الحسابات بغض النظر عن طريقة المتصفح في الـ RTL
-      const current = Math.abs(row.scrollLeft);
-
-      // في الـ RTL، السكرول يبدأ من أقصى اليمين ويقل باتجاه اليسار
-      const canScrollRight = current > 10;                  // هل متاح التحريك يمين؟
-      const canScrollLeft = current < (maxScroll - 10);     // هل متاح التحريك يسار؟
-
-      // ربط الحالة بالأسهم (arr-start تمثل اليمين، arr-end تمثل اليسار في تصميمك)
-      if (startBtn) startBtn.classList.toggle('hidden', !canScrollRight);
-      if (endBtn) endBtn.classList.toggle('hidden', !canScrollLeft);
-    });
-  }
-
-  window.addEventListener('load', updateScrollArrows);
-  window.addEventListener('resize', updateScrollArrows);
-
-  document.querySelectorAll('.cards-row').forEach(function (row) {
-    row.addEventListener('scroll', updateScrollArrows);
-  });
-  
-  // التشغيل فور تحميل السكربت لضمان ظهور الأسهم صحيحة من البداية
-  document.addEventListener('DOMContentLoaded', updateScrollArrows);
-})();
-
-
-// Arrow buttons handling (scroll by chunk)
-(function () {
-  document.querySelectorAll('.scroll-arrow').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      const targetId = btn.dataset.target;
-      const dir = parseInt(btn.dataset.dir || '1', 10);
-      const row = document.getElementById(targetId);
-
-      if (!row) return;
-
-      // scroll by ~60% of visible width (RTL-aware flip handled in HTML/CSS)
-      const chunk = row.clientWidth * 0.6;
-      // dir is -1 or 1; multiply by -1 if needed for RTL (HTML sets arr-start/arr-end)
-      row.scrollBy({ left: dir * chunk * -1, behavior: 'smooth' });
-    });
-  });
-})();
-
-// Ensure initial ARIA states on DOMContentLoaded
-document.addEventListener('DOMContentLoaded', function () {
-  const panel = document.getElementById('notes-panel');
-  if (panel) panel.hidden = true;
-
-  const introPara = document.getElementById('intro-para');
-  if (introPara) introPara.classList.add('collapsed');
-
-  // run arrow update once DOM is ready
-  if (typeof updateScrollArrows === 'function') {
-    try { updateScrollArrows(); } catch (e) { /* ignore if not defined */ }
-  }
-});
-
-
-// ---------- Improved Sticky total bar behavior for mobile ----------
-(function () {
-  const MOBILE_BREAK = 900; // px
-  let stickyEl = null;
-  let io = null;
-  let mutation = null;
-
-  function createSticky() {
-    if (stickyEl) return stickyEl;
-
-    stickyEl = document.createElement('div');
-    stickyEl.className = 'price-sticky';
-    stickyEl.innerHTML =
-      '<div class="total">' +
-        '<span class="lbl">الإجمالي</span>' +
-        '<span class="val" id="sticky-total">— EGP</span>' +
-      '</div>' +
-      '<div class="sticky-actions">' +
-        '<button class="sticky-reset" id="sticky-reset">إعادة</button>' +
-        '<button class="sticky-order" id="sticky-order">اطلب الآن</button>' +
-      '</div>';
-
-    document.body.appendChild(stickyEl);
-
-    const orderBtn = document.getElementById('sticky-order');
-    if (orderBtn) {
-      orderBtn.addEventListener('click', function () {
-        if (typeof orderWA === 'function') orderWA();
-        else document.querySelector('.btn-order')?.click();
-      });
-    }
-
-    const resetBtn = document.getElementById('sticky-reset');
-    if (resetBtn) {
-      resetBtn.addEventListener('click', function () {
-        if (typeof resetAll === 'function') resetAll();
-        else document.querySelector('.btn-reset')?.click();
-      });
-    }
-
-    stickyEl.style.display = 'none';
-    return stickyEl;
-  }
-
-  function destroySticky() {
-    if (io) { io.disconnect(); io = null; }
-    if (mutation) { mutation.disconnect(); mutation = null; }
-    if (stickyEl) { stickyEl.remove(); stickyEl = null; }
-  }
-
-function updateStickyValue() {
-  const total = document.getElementById('total-price')?.textContent?.trim() || '— EGP';
-  const stickyVal = document.getElementById('sticky-total');
-  if (stickyVal) {
-    stickyVal.textContent = total;
-    pulsePrice(stickyVal);
-  }
-}
-
-  function showSticky() {
-    if (!stickyEl) createSticky();
-    stickyEl.style.display = 'flex';
-    updateStickyValue();
-  }
-
-  function hideSticky() {
-    if (stickyEl) stickyEl.style.display = 'none';
-  }
-
-  function isElementPositionedFixedOrSticky(el) {
-    if (!el) return false;
-    const cs = window.getComputedStyle(el);
-    return cs.position === 'fixed' || cs.position === 'sticky';
-  }
-
-function setupObservers() {
-    const target = document.getElementById('sbar') || document.querySelector('.price-column.sbar');
-    if (!target) {
-      showSticky();
-      return;
-    }
-
-    if (isElementPositionedFixedOrSticky(target)) {
-      destroySticky();
-      return;
-    }
-
-    createSticky();
-
-    if (io) io.disconnect();
-    
-    // استخدام مراقب لتحديد موقع سكشن الأسعار الأصلي بالنسبة للشاشة
-    io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (ent) {
-        // إذا كان السكشن الأصلي مرئياً في الشاشة أو تم تجاوزه (مختفي لأعلى)، نُخفي الشريط العائم.
-        // أي أنه لا يظهر إلا عندما يكون السكشن الأصلي أسفل شاشة العضو (في بداية الصفحة للأعلى).
-        if (ent.isIntersecting || ent.boundingClientRect.top < 0) {
-          hideSticky();
-        } else {
-          showSticky();
-        }
-      });
-    }, {
-      root: null,
-      threshold: 0
-    });
-    
-    io.observe(target);
-  }
-
-  function enableIfMobile() {
-    if (window.innerWidth > MOBILE_BREAK) {
-      destroySticky();
-      return;
-    }
-
-    const target = document.getElementById('sbar') || document.querySelector('.price-column.sbar');
-
-    // If original price-column is styled fixed/sticky via CSS, avoid creating duplicate sticky
-    if (target && isElementPositionedFixedOrSticky(target)) {
-      destroySticky();
-      return;
-    }
-
-    setupObservers();
-  }
-
-  window.addEventListener('load', enableIfMobile);
-  window.addEventListener('resize', function () {
-    clearTimeout(window._priceStickyResize);
-    window._priceStickyResize = setTimeout(enableIfMobile, 120);
-  });
-  window.addEventListener('orientationchange', function () {
-    setTimeout(enableIfMobile, 300);
-  });
-
-  window.updateStickyValue = updateStickyValue;
-
-})();
-
-function pulsePrice(el) {
-  if (!el) return;
-  const text = el.textContent?.trim() || '';
-  if (text === '— EGP' || text === '') return;
-  el.classList.remove('price-pulse');
-  void el.offsetWidth;
-  el.classList.add('price-pulse');
-}
-
-// دالة لتحديث الـ Stepper وتغيير الشكل (عن طريق إضافة أو إزالة الكلاسات المباشرة)
-function updateStepperProgress() {
-  const stepDesign = document.getElementById('st-design');
-  const stepSinkType = document.getElementById('st-sink-type');
-  const stepSize = document.getElementById('st-size');
-  const stepPartition = document.getElementById('st-partition');
-  const stepHandle = document.getElementById('st-handle');
-  const stepLocation = document.getElementById('st-location');
-
-  // فحص التصميم: شملنا جميع حالات الكارد (سواء معلق أو رجل كاملة أو أي خصائص مرتبطة به)
-  const hasDesign = (typeof S !== 'undefined' && S.design && (S.design.id || S.design.name || S.design.type));
-  const hasSinkType = (typeof S !== 'undefined' && S.sinkType);
-  const hasSize = (typeof S !== 'undefined' && S.size);
-  const hasDiv = (typeof S !== 'undefined' && S.div);
-  
-  const noH = (typeof S !== 'undefined' && S.design && S.design.hc === 0);
-  const hasHandle = (typeof S !== 'undefined' && (S.handle || noH));
-
-    if (stepSinkType) {
-      if (hasSinkType) {
-        stepSinkType.classList.add('completed');
-      } else {
-        stepSinkType.classList.remove('completed');
-      }
-    }
-  
-  if (stepDesign) {
-    if (hasDesign) {
-      stepDesign.classList.add('completed');
-    } else {
-      stepDesign.classList.remove('completed');
-    }
-  }
-
-  if (stepSize) {
-    if (hasSize) {
-      stepSize.classList.add('completed');
-    } else {
-      stepSize.classList.remove('completed');
-    }
-  }
-
-  if (stepPartition) {
-    if (hasDiv) {
-      stepPartition.classList.add('completed');
-    } else {
-      stepPartition.classList.remove('completed');
-    }
-  }
-
-  if (stepHandle) {
-    if (hasHandle) {
-      stepHandle.classList.add('completed');
-    } else {
-      stepHandle.classList.remove('completed');
-    }
-  }
-
-  if (stepLocation) {
-    const errorMsgElement = document.body.innerText.includes('خارج نطاق خدمتنا');
-    const isOutOfRange = (typeof locationError !== 'undefined' && locationError === true) || errorMsgElement;
-    
-    const hasLocation = (typeof installCost !== 'undefined' && installCost !== null && !isOutOfRange);
-
-    if (hasLocation) {
-      stepLocation.classList.add('completed');
-      stepLocation.classList.remove('out-of-range');
-    } else if (isOutOfRange) {
-      stepLocation.classList.remove('completed');
-      stepLocation.classList.add('out-of-range'); // ستتلون بالبرتقالي فوراً
-    } else {
-      stepLocation.classList.remove('completed', 'out-of-range');
-    }
-  }
-}
-
-
-// نظام الـ Sticky والخلفية البيضاء عند التمرير
-(function () {
-  let io = null;
-
-  function setupStepperSticky() {
-    const stepperEl = document.getElementById('design-stepper');
-    const targetSection = document.getElementById('sbar') || document.querySelector('.price-column.sbar') || document.querySelector('.details-section');
-
-    if (!stepperEl || !targetSection) return;
-
-    if (io) io.disconnect();
-
-    io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (ent) {
-        if (ent.boundingClientRect.top < 0 && !ent.isIntersecting) {
-          stepperEl.style.opacity = '0';
-          stepperEl.style.pointerEvents = 'none';
-        } else {
-          stepperEl.style.opacity = '1';
-          stepperEl.style.pointerEvents = 'auto';
-        }
-      });
-    }, {
-      root: null,
-      threshold: 0
-    });
-
-    io.observe(targetSection);
-
-    window.addEventListener('scroll', function() {
-      if (window.scrollY > 150) {
-        stepperEl.classList.add('is-sticky');
-      } else {
-        stepperEl.classList.remove('is-sticky');
-      }
-    });
-  }
-
-  window.addEventListener('load', setupStepperSticky);
-  window.addEventListener('resize', setupStepperSticky);
-})();
-
-// تحديث تلقائي عند النقر مع تأمين ضد أخطاء الـ DOM
-document.addEventListener('click', function(e) {
-  if (e.target.closest('.card') || e.target.closest('.option') || e.target.closest('button')) {
-    setTimeout(updateStepperProgress, 120);
-  }
-});
-
-// تشغيل أولي عند تحميل الصفحة
-window.addEventListener('DOMContentLoaded', updateStepperProgress);
-
-// التشغيل الفوري عند تحميل الصفحة
-window.addEventListener('DOMContentLoaded', function() {
-  updateStepperProgress();
-});
-
-
-</script>
 
 </body>
 </html>
