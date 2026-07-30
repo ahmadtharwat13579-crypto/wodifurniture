@@ -1091,7 +1091,7 @@ details[open] summary::after {
 }
 .cards-row > div,
 .cards-row > a,
-.cards-row .card .product-skeleton{
+.cards-row .card {
   flex: 0 0 39vw;
   max-width: 280px;
   background: #f8fafc;
@@ -2331,37 +2331,6 @@ details[open] summary::after {
   color: #9caf88;
 }
 
-/* Cat Skeleton */
-.cat-skeleton {
-  pointer-events: none;
-}
-.cat-skeleton .cat-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 2px;
-  background: rgba(255,255,255,.08);
-}
-.cat-text {
-  width: 55px;
-  height: 10px;
-  border-radius: 2px;
-  background: rgba(255,255,255,.08);
-}
-.skel-shimmer {
-  animation: shimmer 1.3s infinite;
-}
-@keyframes shimmer {
-  0% {
-    opacity: .35;
-  }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    opacity: .35;
-  }
-}
-
 /* Product List */
 .prod-list {
   padding: 8px 16px 60px;
@@ -2563,57 +2532,6 @@ details[open] summary::after {
   fill: currentColor;
 }
 
-/* Skeleton Loading */
-.prod-skeleton {
-  flex: 0 0 38vw;
-  max-width: 270px;
-  min-width: 150px;
-  background: #f8fafc;
-  border: 1px solid #cbd5e1;
-  border-radius: 2px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  box-sizing: border-box;
-  pointer-events: none;
-}
-
-.skel-img {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  background: rgba(0, 0, 0, 0.06);
-  animation: skelPulse 1.5s infinite ease-in-out;
-}
-
-.skel-info {
-  padding: 10px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  align-items: flex-start; /* لضمان محاذاة السطور لليمين مثل الموقع العربي */
-}
-
-.skel-line {
-  height: 10px;
-  background: rgba(0, 0, 0, 0.08);
-  border-radius: 2px;
-  animation: skelPulse 1.5s infinite ease-in-out;
-}
-
-.skel-line.w-80 {
-  width: 70%; /* مطابق لعرض عنوان المنتج مثل "تخزين مفتوح" */
-}
-
-.skel-line.w-40 {
-  width: 45%; /* مطابق لعرض السطر الثاني مثل السعر */
-  height: 8px;
-}
-
-@keyframes skelPulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.9; }
-}
 
 /* Loading box */
 .loading-box {
@@ -2844,3 +2762,113 @@ details[open] summary::after {
 /* Allow main column & flex children to shrink (prevents overflow) */ .main-column, .cards-row, .conf { min-width: 0 !important; overflow-wrap: break-word; word-break: break-word; }
 /* Horizontal carousels: make cards narrower on small screens */ .cards-row { padding-inline: 6px; gap: 12px; }
 
+/* ===========================
+   Skeleton Cards
+=========================== */
+
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.skeleton .skel-img,
+.skeleton .skel-line {
+  position: relative;
+  overflow: hidden;
+  background: #ececec;
+}
+
+.skeleton .skel-img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+}
+
+.skeleton .cinfo{
+  padding:12px;
+}
+
+.skeleton .skel-line{
+  height:12px;
+  border-radius:2px;
+  margin-top:10px;
+}
+
+.skeleton .skel-line.w80{
+  width:80%;
+}
+
+.skeleton .skel-line.w45{
+  width:45%;
+}
+
+.skeleton::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  transform:translateX(-100%);
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(255,255,255,.65),
+      transparent
+    );
+  animation:skeletonShimmer 1.2s infinite;
+}
+
+@keyframes skeletonShimmer{
+  100%{
+    transform:translateX(100%);
+  }
+}
+
+.section-loading{
+
+  display:none;
+
+  align-items:center;
+
+  justify-content:center;
+
+  gap:10px;
+
+  padding:8px 0 14px;
+
+  color:#666;
+
+  font-size:14px;
+
+}
+
+.section-loading.show{
+
+  display:flex;
+
+}
+
+.spinner{
+
+  width:18px;
+
+  height:18px;
+
+  border:2px solid rgba(156,175,136,.25);
+
+  border-top-color:#9caf88;
+
+  border-radius:50%;
+
+  animation:spin .8s linear infinite;
+
+}
+
+@keyframes spin{
+
+  to{
+
+    transform:rotate(360deg);
+
+  }
+
+}

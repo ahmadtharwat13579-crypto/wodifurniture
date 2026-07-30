@@ -237,27 +237,16 @@
 
       </button>
 
+      <div class="section-loading" id="loading-dc">
+        <div class="spinner"></div>
+        <span>جاري تحميل بيانات التصميمات...</span>
+      </div>
+
       <div
         class="cards-row"
         id="dc"
         role="list"
         aria-label="Design cards">
-
-        <div class="prod-skeleton">
-          <div class="skel-img"></div>
-          <div class="skel-info">
-            <div class="skel-line w-80"></div>
-            <div class="skel-line w-40"></div>
-          </div>
-        </div>
-
-        <div class="prod-skeleton">
-          <div class="skel-img"></div>
-          <div class="skel-info">
-            <div class="skel-line w-80"></div>
-            <div class="skel-line w-40"></div>
-          </div>
-        </div>
 
       </div>
 
@@ -290,7 +279,7 @@
       اختر نوع الحوض أولاً
     </div>
 
-    <!-- مجموعة التقسيمات المشتركة: معلق / سقط رخام / فوق سطح -->
+    <!-- تقسيمات الوحدات المعلقة -->
     <div class="scroll-wrap hidden" data-group="vc-wall" id="vc-wall-wrap">
 
       <button
@@ -302,6 +291,11 @@
           <path d="M9 18l6-6-6-6"/>
         </svg>
       </button>
+
+      <div class="section-loading" id="loading-vc-wall">
+        <div class="spinner"></div>
+        <span>جاري تحميل بيانات التقسيمات...</span>
+      </div>
 
       <div class="cards-row" id="vc-wall" role="list" aria-label="Wall-hung division cards"></div>
 
@@ -317,7 +311,7 @@
 
     </div>
 
-    <!-- مجموعة تقسيمات الرجل الكاملة -->
+    <!-- تقسيمات الوحدات الأرضية -->
     <div class="scroll-wrap hidden" data-group="vc-floor" id="vc-floor-wrap">
 
       <button
@@ -329,6 +323,11 @@
           <path d="M9 18l6-6-6-6"/>
         </svg>
       </button>
+
+      <div class="section-loading" id="loading-vc-floor">
+        <div class="spinner"></div>
+        <span>جاري تحميل بيانات التقسيمات...</span>
+      </div>
 
       <div class="cards-row" id="vc-floor" role="list" aria-label="Floor-standing division cards"></div>
 
@@ -349,42 +348,61 @@
 
 <!-- 3. Handle cards -->
 <div class="grid-item">
-  <div class="step" style="margin-bottom: 0;">
+
+  <div class="step" style="margin-bottom:0;">
+
     <div class="step-header">
       <span class="step-title">خطوة 5: نوع المقبض</span>
     </div>
 
     <div class="sub-title" id="handle-group-title">
-  اختر نوع الحوض أولاً
-</div>
+      اختر نوع الحوض أولاً
+    </div>
 
-<div class="dynamic-desc" id="handle-desc"></div>
+    <div class="dynamic-desc" id="handle-desc"></div>
 
     <div class="scroll-wrap" data-group="hc">
-      <button class="scroll-arrow arr-start hidden" data-target="hc" data-dir="-1" aria-label="Scroll right">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+
+      <button
+        class="scroll-arrow arr-start hidden"
+        data-target="hc"
+        data-dir="-1"
+        aria-label="Scroll right">
+
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 18l6-6-6-6"/>
+        </svg>
+
       </button>
-      <div class="cards-row" id="hc" role="list" aria-label="Handle cards">
-        <div class="prod-skeleton" role="status" aria-label="جاري التحميل...">
-          <div class="skel-img"></div>
-          <div class="skel-info">
-            <div class="skel-line w-80"></div>
-            <div class="skel-line w-40"></div>
-          </div>
-        </div>
-        <div class="prod-skeleton" role="status" aria-label="جاري التحميل...">
-          <div class="skel-img"></div>
-          <div class="skel-info">
-            <div class="skel-line w-80"></div>
-            <div class="skel-line w-40"></div>
-          </div>
-        </div>
+
+      <div class="section-loading" id="loading-hc">
+        <div class="spinner"></div>
+        <span>جاري تحميل بيانات المقابض...</span>
       </div>
-      <button class="scroll-arrow arr-end hidden" data-target="hc" data-dir="1" aria-label="Scroll left">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+
+      <div
+        class="cards-row"
+        id="hc"
+        role="list"
+        aria-label="Handle cards">
+      </div>
+
+      <button
+        class="scroll-arrow arr-end hidden"
+        data-target="hc"
+        data-dir="1"
+        aria-label="Scroll left">
+
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M15 18l-6-6 6-6"/>
+        </svg>
+
       </button>
+
     </div>
+
   </div>
+
 </div>
 
 <!-- 4. Location (separate card) -->

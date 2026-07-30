@@ -41,24 +41,6 @@ function parseCSV(t){
   return ls.slice(1).map(l=>{const v=l.split(',').map(x=>x.trim().replace(/^"|"$/g,''));const o={};hs.forEach((h,i)=>o[h]=v[i]||'');return o;});
 }
 
-function showAllSkeletons() {
-  // إنشاء كارتين أو ثلاثة كـ Skeleton لكل صف بداخل الـ HTML النظيف
-  const skeletonCardHtml = `
-    <div class="prod-skeleton" role="status">
-      <div class="skel-img"></div>
-      <div class="skel-info">
-        <div class="skel-line w-80"></div>
-        <div class="skel-line w-40"></div>
-      </div>
-    </div>
-  `.repeat(2); // تكرار كارتين وهميين في كل صف
-
-  ['dc-wall', 'dc-floor', 'vc-wall', 'vc-floor', 'hc'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.innerHTML = skeletonCardHtml;
-  });
-}
-
 // returns group id like '4b_wh_cic01' from '4b_wh_cic01_45cm' or leaves '4b_fp_cic00' as-is
 function divisionBase(id){
   if(!id) return id;
@@ -174,31 +156,6 @@ let S={
 let dt=null;
 let dataLoaded=false;
 
-// Placeholder data — cards show immediately, prices show — until data loads
-const PLACEHOLDER={
-  designs:[
-    {id:'4a_wh_sc01',name:'تخزين مفتوح',hc:0,sizes:[{id:'4a_wh_sc01_45cm',size:'40–50 cm',price:null},{id:'4a_wh_sc01_60cm',size:'55–65 cm',price:null}]},
-    {id:'4a_wh_sc02',name:'ضلفة واحدة',hc:1,sizes:[{id:'4a_wh_sc02_45cm',size:'40–50 cm',price:null}]},
-    {id:'4a_wh_sc03',name:'ضلفتين',hc:2,sizes:[{id:'4a_wh_sc03_60cm',size:'55–65 cm',price:null},{id:'4a_wh_sc03_80cm',size:'70–85 cm',price:null}]},
-    {id:'4a_wh_sc04',name:'ضلفتين مع رف مفتوح',hc:2,sizes:[{id:'4a_wh_sc04_60cm',size:'55–65 cm',price:null},{id:'4a_wh_sc04_80cm',size:'70–85 cm',price:null}]},
-    {id:'4a_wh_sc05',name:'ضلفتين مع رف جانبي مفتوح',hc:2,sizes:[{id:'4a_wh_sc05_80cm',size:'70–85 cm',price:null},{id:'4a_wh_sc05_100cm',size:'90–105 cm',price:null}]}
-  ],
-  divisions:[
-    {id:'4b_cic00',name:'بدون تقسيمة',sizes:[{id:'4b_cic00',size:'any',price:0}]},
-    {id:'4b_cic01',name:'رف كامل',sizes:[{id:'4b_cic01_45cm',size:'40–50 cm',price:null},{id:'4b_cic01_65cm',size:'55–65 cm',price:null},{id:'4b_cic01_85cm',size:'70–85 cm',price:null}]},
-    {id:'4b_cic02',name:'رف خلفي صغير',sizes:[{id:'4b_cic02_45cm',size:'40–50 cm',price:null},{id:'4b_cic02_65cm',size:'55–65 cm',price:null},{id:'4b_cic02_85cm',size:'70–85 cm',price:null}]},
-    {id:'4b_cic03',name:'تقسيم جانبي مزدوج',sizes:[{id:'4b_cic03_45cm',size:'40–50 cm',price:null},{id:'4b_cic03_65cm',size:'55–65 cm',price:null},{id:'4b_cic03_85cm',size:'70–85 cm',price:null}]},
-    {id:'4b_cic04',name:'تقسيمات خلفية متعددة',sizes:[{id:'4b_cic04_45cm',size:'40–50 cm',price:null},{id:'4b_cic04_65cm',size:'55–65 cm',price:null},{id:'4b_cic04_85cm',size:'70–85 cm',price:null}]}
-  ],
-  handles:[
-    {id:'4c_h&k01',name:'مقبض سحابي',price:null},
-    {id:'4c_h&k02',name:'مقبض دائري',price:null},
-    {id:'4c_h&k03',name:'بدون مقبض',price:null}
-  ]
-};
-
-D=PLACEHOLDER;
-
 function mkImg(id, cardEl){
   const w = document.createElement('div'); w.className = 'cimg';
   const img = document.createElement('img');
@@ -267,6 +224,7 @@ const unavailableDesigns = {
 
 function rDes() {
 
+  console.log("rDes", dataLoaded);
   const box = document.getElementById("dc");
   const title = document.getElementById("design-group-title");
 
@@ -434,6 +392,61 @@ function createDesignCard(d) {
   };
 
   return el;
+}
+
+function showConfiguratorLoading(){
+
+    console.log("showConfiguratorLoading");
+    document.getElementById("loading-dc")?.classList.add("show");
+    document.getElementById("loading-vc-wall")?.classList.add("show");
+    document.getElementById("loading-vc-floor")?.classList.add("show");
+    document.getElementById("loading-hc")?.classList.add("show");
+
+    showSkeleton("dc","design-card",4);
+
+    showSkeleton("vc-wall","div-card",4);
+
+    showSkeleton("vc-floor","div-card",4);
+
+    showSkeleton("hc","handle-card",4);
+
+}
+
+function hideConfiguratorLoading(){
+
+    document.getElementById("loading-dc")?.classList.remove("show");
+    document.getElementById("loading-vc-wall")?.classList.remove("show");
+    document.getElementById("loading-vc-floor")?.classList.remove("show");
+    document.getElementById("loading-hc")?.classList.remove("show");
+
+}
+
+function showSkeleton(containerId, cardClass, count = 4) {
+
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  for (let i = 0; i < count; i++) {
+
+    const card = document.createElement("div");
+    card.className = `${cardClass} skeleton`;
+
+    card.innerHTML = `
+      <div class="cimg">
+        <div class="skel-img"></div>
+      </div>
+
+      <div class="cinfo">
+        <div class="skel-line w-80"></div>
+        <div class="skel-line w-40"></div>
+      </div>
+    `;
+
+    container.appendChild(card);
+  }
+
 }
 
 function rSz() {
@@ -1132,44 +1145,6 @@ fetch(LOCATION_SHEET)
   .catch(()=>{console.log('Using default location settings');});
 
 
-fetch(SHEET)
-  .then(r => r.json())
-  .then(data => {
-
-    const rows = data.configurator;
-
-    if (rows && rows.length > 5) {
-
-        // حفظ الاختيارات القديمة
-        const oldDesignId = S.design?.id;
-        const oldSizeId = S.size?.id;
-        const oldDivId = S.div?.id;
-        const oldHandleId = S.handle?.id;
-
-        D = build(rows);
-        dataLoaded = true;
-
-        // ريستور الاختيارات
-        if (oldDesignId) S.design = D.designs.find(d => d.id === oldDesignId) || null;
-        if (oldSizeId && S.design) S.size = S.design.sizes.find(s => s.id === oldSizeId) || null;
-        if (oldDivId) S.div = D.divisions.find(d => d.id === oldDivId) || null;
-        if (oldHandleId) S.handle = D.handles.find(h => h.id === oldHandleId) || null;
-
-        rDes();
-        rSz();
-        rDiv();
-        rHnd();
-        upd();
-
-        console.log("✅ Loaded fresh data from Apps Script");
-    }
-
-});
-
-// Render cards immediately with placeholder data
-rDes();rSz();rDiv();rHnd();upd();
-
-// تشغيل عند التحميل
 
 window.addEventListener('DOMContentLoaded', function () {
 
@@ -1181,22 +1156,28 @@ window.addEventListener('DOMContentLoaded', function () {
   }
 
   // كروت نوع الحوض
-  document.querySelectorAll('.sink-type-card').forEach(card => {
+document.querySelectorAll('.sink-type-card').forEach(card => {
 
-    card.addEventListener('click', function () {
+  card.addEventListener('click', function () {
 
-      document.querySelectorAll('.sink-type-card').forEach(c => {
-        c.classList.remove('selected');
-      });
+    document.querySelectorAll('.sink-type-card').forEach(c => {
+      c.classList.remove('selected');
+    });
 
-      this.classList.add('selected');
+    this.classList.add('selected');
 
-      S.sinkType = this.dataset.type;
+    S.sinkType = this.dataset.type;
 
-      S.design = null;
-      S.size = null;
-      S.div = null;
-      S.handle = null;
+    S.design = null;
+    S.size = null;
+    S.div = null;
+    S.handle = null;
+
+    if (!dataLoaded) {
+
+      loadConfiguratorData();
+
+    } else {
 
       rDes();
       rSz();
@@ -1204,9 +1185,11 @@ window.addEventListener('DOMContentLoaded', function () {
       rHnd();
       upd();
 
-    });
+    }
 
   });
+
+});
 
   // Scroll arrows الخاصة بنوع الحوض
   updateArrows('sink-types');
@@ -1217,6 +1200,93 @@ window.addEventListener('DOMContentLoaded', function () {
   }
 
 });
+
+function loadConfiguratorData() {
+
+  showConfiguratorLoading();
+
+  fetch(SHEET)
+    .then(r => r.json())
+    .then(data => {
+
+      const rows = data.configurator;
+
+      if (rows && rows.length > 5) {
+
+        // حفظ الاختيارات القديمة
+        const oldDesignId = S.design?.id;
+        const oldSizeId = S.size?.id;
+        const oldDivId = S.div?.id;
+        const oldHandleId = S.handle?.id;
+
+        D = build(rows);
+        dataLoaded = true;
+
+        hideConfiguratorLoading();
+
+        // استرجاع الاختيارات
+        if (oldDesignId)
+          S.design = D.designs.find(d => d.id === oldDesignId) || null;
+
+        if (oldSizeId && S.design)
+          S.size = S.design.sizes.find(s => s.id === oldSizeId) || null;
+
+        if (oldDivId)
+          S.div = D.divisions.find(d => d.id === oldDivId) || null;
+
+        if (oldHandleId)
+          S.handle = D.handles.find(h => h.id === oldHandleId) || null;
+
+        rDes();
+        rSz();
+        rDiv();
+        rHnd();
+        upd();
+
+        console.log("✅ Loaded fresh data from Apps Script");
+
+      } else {
+
+        hideConfiguratorLoading();
+
+      }
+
+    })
+    .catch(err => {
+
+      hideConfiguratorLoading();
+
+      console.error(err);
+
+    });
+
+}
+
+function showConfiguratorLoading(){
+
+  // التصميمات
+  document.querySelector('[data-group="dc"]').classList.remove("hidden");
+  showSkeleton("dc","design-card","التصميمات",4);
+
+  // المقابض
+  document.querySelector('[data-group="hc"]').classList.remove("hidden");
+  showSkeleton("hc","handle-card","المقابض",4);
+
+  // التقسيمات
+  const wall = document.getElementById("vc-wall-wrap");
+  const floor = document.getElementById("vc-floor-wrap");
+
+  if(wall){
+    wall.classList.remove("hidden");
+    showSkeleton("vc-wall","div-card","التقسيمات الداخلية",4);
+  }
+
+  if(floor){
+    floor.classList.remove("hidden");
+    showSkeleton("vc-floor","div-card","التقسيمات الداخلية",4);
+  }
+
+}
 
 // Intro collapse toggle
 (function () {
@@ -1627,3 +1697,4 @@ function saveConfig() {
   }));
 
 }
+
