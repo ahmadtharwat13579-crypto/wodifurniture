@@ -203,7 +203,8 @@ function mkImg(id, cardEl){
   const w = document.createElement('div'); w.className = 'cimg';
   const img = document.createElement('img');
   img.alt = '';
-  img.loading = 'lazy';
+  img.loading = 'eager';
+  img.decoding = 'async';
 
   // determine which base id to use for image files
   let imgBaseId = id;
