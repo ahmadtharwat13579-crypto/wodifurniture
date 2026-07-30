@@ -260,6 +260,11 @@ function mkImg(id, cardEl){
   return w;
 }
 
+const unavailableDesigns = {
+  'drop-in': ['4a_wh_sc02'],
+  'bowl': ['4a_wh_sc02']
+};
+
 function rDes() {
 
   const box = document.getElementById("dc");
@@ -269,35 +274,28 @@ function rDes() {
 
   box.innerHTML = "";
 
-      const desc = document.getElementById("design-desc");
+  const desc = document.getElementById("design-desc");
 
-    if(desc){
+  const sharedTypes = ['wall-hung', 'drop-in', 'bowl'];
+  const effectiveType = sharedTypes.includes(S.sinkType) ? 'wall-hung' : S.sinkType;
+  const excluded = unavailableDesigns[S.sinkType] || [];
 
-        if(!S.sinkType){
+  // تحديث النص الوصفي فقط (بدون بناء كروت هنا)
+  if (desc) {
+    if (!S.sinkType) {
+      desc.innerHTML = "";
+    } else if (!S.size) {
+      desc.innerHTML = 'اختر <strong>عرض الحوض</strong> لعرض التصميمات المتوافقة.';
+    } else {
+      const count = D.designs.filter(d =>
+        d.type === effectiveType &&
+        !excluded.includes(d.id) &&
+        d.sizes.some(s => s.size === S.size.size)
+      ).length;
 
-            desc.innerHTML = "";
-
-        }
-        else if(!S.size){
-
-            desc.innerHTML = 'اختر <strong>عرض الحوض</strong> لعرض التصميمات المتوافقة.';
-
-        }
-        else{
-
-              const sharedTypes = ['wall-hung', 'drop-in', 'bowl'];
-              const effectiveType = sharedTypes.includes(S.sinkType) ? 'wall-hung' : S.sinkType;
-
-              const count = D.designs.filter(d =>
-                  d.type === effectiveType &&
-                  d.sizes.some(s => s.size === S.size.size)
-              ).length;
-
-            desc.innerHTML = `تم العثور على <strong>${count}</strong> تصميمات مناسبة.`;
-
-        }
-
+      desc.innerHTML = `تم العثور على <strong>${count}</strong> تصميمات مناسبة.`;
     }
+  }
 
   if (!S.sinkType) {
     title.textContent = "اختر نوع الحوض أولاً";
@@ -314,11 +312,9 @@ function rDes() {
 
   title.textContent = titleMap[S.sinkType];
 
-  const sharedTypes = ['wall-hung', 'drop-in', 'bowl'];
-  const effectiveType = sharedTypes.includes(S.sinkType) ? 'wall-hung' : S.sinkType;
-
+  // بناء الكروت مرة واحدة بس، هنا
   D.designs
-    .filter(d => d.type === effectiveType)
+    .filter(d => d.type === effectiveType && !excluded.includes(d.id))
     .forEach(d => {
       box.appendChild(createDesignCard(d));
     });

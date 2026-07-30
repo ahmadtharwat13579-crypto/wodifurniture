@@ -725,8 +725,8 @@ details[open] summary::after {
     background:#ffffff;
     border:1px solid #f0f0f0;
     border-radius:8px;
-    margin-right: 10px;
-    margin-left: 10px;
+    margin-right: 15px;
+    margin-left: 15px;
     margin-bottom: 60px;
     padding:4px;
     box-shadow:0 2px 8px rgba(0,0,0,.05);
@@ -827,7 +827,7 @@ details[open] summary::after {
   margin-bottom:10px;
 
   border-bottom: 1px solid #e5e7eb;
-  margin-inline: 24px;
+  margin-inline: 6px;
   padding-bottom: 40px;
 }
 #location-section{
@@ -934,7 +934,7 @@ details[open] summary::after {
   overflow-x: auto;
   gap: 10px;
   padding: 10px 14px;
-  max-width: 100%;
+  max-width: 1200px;
 }
 .config-stepper .stepper-title {
   display: none;
@@ -943,7 +943,7 @@ details[open] summary::after {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 10px;
+  font-size: 11px;
   color: #71717a;
   white-space: nowrap;
 }
@@ -957,7 +957,6 @@ details[open] summary::after {
 }
 .step-desc{
     margin:0 0 18px;
-    font-size:14px;
     color:#777;
     line-height:1.6;
     transition:.25s;
@@ -1809,7 +1808,7 @@ details[open] summary::after {
 }
 
 .compact-stepper .stepper-title {
-  font-size:10px;
+  font-size:11px;
   font-weight: 600;
   line-height: 1.4;
   color: #6b7280;
@@ -1878,6 +1877,8 @@ details[open] summary::after {
   background: #fafaf9;
   padding: 20px 20px 20px 16px;
   border-radius: 4px;
+  margin-right: 24px;
+  margin-left: 24px;
   margin-bottom: 24px;
 }
 
