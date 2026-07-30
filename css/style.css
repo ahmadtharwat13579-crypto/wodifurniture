@@ -827,6 +827,7 @@ details[open] summary::after {
   margin-bottom:10px;
 
   border-bottom: 1px solid #e5e7eb;
+  margin-inline: 24px;
   padding-bottom: 40px;
 }
 #location-section{
@@ -960,6 +961,7 @@ details[open] summary::after {
     color:#777;
     line-height:1.6;
     transition:.25s;
+    margin-right: 15px;
 }
 
 .step-desc strong{
@@ -1031,7 +1033,7 @@ details[open] summary::after {
   font-size: 16px;
   font-weight: 700;
   color: #2c3e50;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   text-align: center;
   display: inline-block; /* 1. خليها inline-block عشان تاخد عرض الكلام بس */
   position: relative;
@@ -1056,6 +1058,7 @@ details[open] summary::after {
   font-size: 13px;
   font-weight: 500;
   color: #666666;
+  margin-right: 15px;
   margin-bottom: 15px;
   position: relative;
 }

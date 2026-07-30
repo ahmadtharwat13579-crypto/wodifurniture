@@ -2,7 +2,7 @@ const WA='201556840368';
 const LOCATION_SHEET='https://script.google.com/macros/s/AKfycbz1Dj9QB3rlz_sZoLwC-kdfZiMUBsHheGT62dIgajmzqffFm7Z_XiQ9sH558XW9sgDZ/exec?pwd=double-protection-password';
 let LOC={workshop_lat:30.061113,workshop_lng:31.394701,correction_factor:0,price_per_km:0,fixed_cost:0};
 let userLat=null,userLng=null,installCost=null;
-const GH = 'https://raw.githubusercontent.com/ahmadtharwat13579-crypto/wodifurniture/main/website/images/conf/';
+const GH = 'https://raw.githubusercontent.com/ahmadtharwat13579-crypto/wodifurniture/main/images/conf/';
 const SHEET='https://script.google.com/macros/s/AKfycbz3xuCuZ6sU9QVo2nTRaItWFLplEhG7bKuzeZSQpk4DseShYrzycpRhyO2u2kuwPVkY/exec?pwd=double-protection-password';
 
 const r5=n=>Math.round(n/5)*5;
@@ -215,7 +215,14 @@ function mkImg(id, cardEl){
     imgBaseId = base(id);
   }
 
-  const encoded = encodeURIComponent(imgBaseId);
+  const isDivision = id && typeof id === 'string' && id.includes('_cic');
+
+  const typeCodeMap = { 'drop-in': 'di', 'bowl': 'bw' };
+  let finalImgId = imgBaseId;
+  if (!isDivision && S.sinkType && typeCodeMap[S.sinkType]) {
+    finalImgId = finalImgId.replace(/_wh_/, '_' + typeCodeMap[S.sinkType] + '_');
+  }
+  const encoded = encodeURIComponent(finalImgId);
   img.src = GH + encoded + '.webp';
   img.onerror = function(){
     if(this.src.endsWith('.webp')){
@@ -277,10 +284,13 @@ function rDes() {
         }
         else{
 
-            const count = D.designs.filter(d =>
-                d.type === S.sinkType &&
-                d.sizes.some(s => s.size === S.size.size)
-            ).length;
+              const sharedTypes = ['wall-hung', 'drop-in', 'bowl'];
+              const effectiveType = sharedTypes.includes(S.sinkType) ? 'wall-hung' : S.sinkType;
+
+              const count = D.designs.filter(d =>
+                  d.type === effectiveType &&
+                  d.sizes.some(s => s.size === S.size.size)
+              ).length;
 
             desc.innerHTML = `تم العثور على <strong>${count}</strong> تصميمات مناسبة.`;
 
@@ -303,8 +313,11 @@ function rDes() {
 
   title.textContent = titleMap[S.sinkType];
 
+  const sharedTypes = ['wall-hung', 'drop-in', 'bowl'];
+  const effectiveType = sharedTypes.includes(S.sinkType) ? 'wall-hung' : S.sinkType;
+
   D.designs
-    .filter(d => d.type === S.sinkType)
+    .filter(d => d.type === effectiveType)
     .forEach(d => {
       box.appendChild(createDesignCard(d));
     });
@@ -445,11 +458,14 @@ if (!S.sinkType) {
 
   title.textContent = "اختر عرض الحوض لديك";
 
+  const sharedTypes = ['wall-hung', 'drop-in', 'bowl'];
+  const effectiveType = sharedTypes.includes(S.sinkType) ? 'wall-hung' : S.sinkType;
+
   // جمع المقاسات بدون تكرار
   const sizesMap = new Map();
 
   D.designs
-    .filter(d => d.type === S.sinkType)
+    .filter(d => d.type === effectiveType)
     .forEach(d => {
       d.sizes.forEach(s => {
         if (!sizesMap.has(s.size)) {
@@ -755,18 +771,15 @@ totalEl.textContent =
   // تحديث النوع
 const sdTypeEl = document.getElementById('sd-type');
 if (sdTypeEl) {
-  if (S.design) {
-    sdTypeEl.textContent =
-      S.design.type === 'floor-standing'
-        ? 'حوض رجل كاملة'
-        : 'حوض معلق / سقط رخام';
-  } else {
-    sdTypeEl.textContent = '—';
-  }
+  const sinkTypeNames = {
+    'wall-hung': 'حوض معلق',
+    'drop-in': 'حوض ساقط',
+    'bowl': 'حوض فوق الكاونتر',
+    'floor-standing': 'حوض برجل كاملة'
+  };
+  sdTypeEl.textContent = S.sinkType ? sinkTypeNames[S.sinkType] : '—';
   updateStepperProgress()
-  if (typeof updateStickyValue === 'function') updateStickyValue();
 }
-
 
 // تحديث اسم التصميم
 const sdEl = document.getElementById('sd');
