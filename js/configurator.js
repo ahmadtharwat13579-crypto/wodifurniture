@@ -255,21 +255,6 @@ function rDes() {
     }
   }
 
-  if (!S.sinkType) {
-    title.textContent = "اختر نوع الحوض أولاً";
-    updateArrows("dc");
-    return;
-  }
-
-  const titleMap = {
-    "wall-hung": "تصميمات وحدات الحوض المعلق",
-    "drop-in": "تصميمات وحدات الحوض الساقط",
-    "bowl": "تصميمات وحدات الحوض فوق الكاونتر",
-    "floor-standing": "تصميمات وحدات الحوض برجل كاملة"
-  };
-
-  title.textContent = titleMap[S.sinkType];
-
   // بناء الكروت مرة واحدة بس، هنا
   D.designs
     .filter(d => d.type === effectiveType && !excluded.includes(d.id))
@@ -394,26 +379,41 @@ function createDesignCard(d) {
   return el;
 }
 
-function showConfiguratorLoading(){
+function showConfiguratorLoading() {
 
-    console.log("showConfiguratorLoading");
+    // إظهار رسائل التحميل
+    document.getElementById("loading-sz")?.classList.add("show");
     document.getElementById("loading-dc")?.classList.add("show");
     document.getElementById("loading-vc-wall")?.classList.add("show");
     document.getElementById("loading-vc-floor")?.classList.add("show");
     document.getElementById("loading-hc")?.classList.add("show");
 
-    showSkeleton("dc","design-card",4);
+    // إظهار الحاويات (لو كانت مخفية)
+    document.getElementById("sz")?.classList.remove("hidden");
+    document.getElementById("dc")?.classList.remove("hidden");
+    document.getElementById("vc-wall")?.classList.remove("hidden");
+    document.getElementById("vc-floor")?.classList.remove("hidden");
+    document.getElementById("hc")?.classList.remove("hidden");
 
-    showSkeleton("vc-wall","div-card",4);
+    // رسم الـ Skeletons
+    document.getElementById("vc-wall-wrap")?.classList.remove("hidden");
+    
+    showSizeSkeleton();
 
-    showSkeleton("vc-floor","div-card",4);
+    showSkeleton("dc", "design-card", 4);
 
-    showSkeleton("hc","handle-card",4);
+    showSkeleton("vc-wall", "div-card", 4);
+
+    showSkeleton("vc-floor", "div-card", 4);
+
+    showSkeleton("hc", "handle-card", 4);
 
 }
 
 function hideConfiguratorLoading(){
 
+    document.getElementById("loading-sz")?.classList.remove("show");
+    document.getElementById("loading-dc")?.classList.remove("show");
     document.getElementById("loading-dc")?.classList.remove("show");
     document.getElementById("loading-vc-wall")?.classList.remove("show");
     document.getElementById("loading-vc-floor")?.classList.remove("show");
@@ -449,24 +449,52 @@ function showSkeleton(containerId, cardClass, count = 4) {
 
 }
 
-function rSz() {
+function showSizeSkeleton(count = 4){
 
-  const c = document.getElementById("sb");
-  c.innerHTML = "";
-  const title = document.getElementById("size-group-title");
+    const box = document.getElementById("sz");
+    if(!box) return;
 
-if (!S.sinkType) {
+    box.innerHTML = "";
 
-    S.size = null;
+    for(let i=0;i<count;i++){
 
-    title.textContent = "اختر نوع الحوض أولاً";
+        const item = document.createElement("div");
 
-    c.innerHTML = "";
+        item.className = "size-btn skeleton";
 
-    return;
+        item.innerHTML = `
+            <span class="skel-text"></span>
+        `;
+
+        box.appendChild(item);
+
+    }
+
 }
 
-  title.textContent = "اختر عرض الحوض لديك";
+function hidePlaceholders() { 
+  
+  document.getElementById("placeholder-sz")?.classList.add("hidden");
+  document.getElementById("placeholder-dc")?.classList.add("hidden");
+  document.getElementById("placeholder-div")?.classList.add("hidden");
+  document.getElementById("placeholder-hc")?.classList.add("hidden");
+
+}
+
+function showPlaceholders() {
+
+    document.getElementById("placeholder-sz")?.classList.remove("hidden");
+    document.getElementById("placeholder-dc")?.classList.remove("hidden");
+    document.getElementById("placeholder-div")?.classList.remove("hidden");
+    document.getElementById("placeholder-hc")?.classList.remove("hidden");
+
+}
+
+function rSz() {
+
+  const box = document.getElementById("sz");
+  box.innerHTML = "";
+  const title = document.getElementById("size-group-title");
 
   const sharedTypes = ['wall-hung', 'drop-in', 'bowl'];
   const effectiveType = sharedTypes.includes(S.sinkType) ? 'wall-hung' : S.sinkType;
@@ -513,7 +541,7 @@ if (!S.sinkType) {
 
     };
 
-    c.appendChild(b);
+    box.appendChild(b);
 
   });
 
@@ -521,70 +549,93 @@ if (!S.sinkType) {
 
 function rDiv() {
 
-  const wall = document.getElementById('vc-wall');
-  const floor = document.getElementById('vc-floor');
+  const wall = document.getElementById("vc-wall");
+  const floor = document.getElementById("vc-floor");
+
+  const wallWrap = document.getElementById("vc-wall-wrap");
+  const floorWrap = document.getElementById("vc-floor-wrap");
+
   const title = document.getElementById("division-group-title");
 
-  if (!wall || !floor) return;
+  if (!wall || !floor || !wallWrap || !floorWrap) return;
 
-  wall.innerHTML = '';
-  floor.innerHTML = '';
+  wall.innerHTML = "";
+  floor.innerHTML = "";
 
-    if (!S.sinkType) {
-      title.textContent = "اختر نوع الحوض أولاً";
-      updateArrows('vc-wall');
-      updateArrows('vc-floor');
-      return;
-    }
+  // لم يتم اختيار نوع الحوض
+  if (!S.sinkType) {
 
-    const titleMap = {
-      "wall-hung": "التقسيمة الداخلية للحوض المعلق",
-      "drop-in": "التقسيمة الداخلية للحوض السقط رخام",
-      "bowl": "التقسيمة الداخلية للحوض فوق سطح أفقي",
-      "floor-standing": "التقسيمة الداخلية للحوض برجل كاملة"
-    };
+    S.div = null;
 
-    title.textContent = titleMap[S.sinkType];
+    title.textContent = "ما هي التقسيمة الداخلية المناسبة لك؟";
 
-  // تحديد القسم الذي سيظهر
+    wallWrap.classList.add("hidden");
+    floorWrap.classList.add("hidden");
+
+    updateArrows("vc-wall");
+    updateArrows("vc-floor");
+
+    return;
+  }
+
+  // تحديد المجموعة المناسبة
   const divisionType =
-    (S.sinkType === 'floor-standing')
-      ? 'floor-standing'
-      : 'wall-hung';
+    S.sinkType === "floor-standing"
+      ? "floor-standing"
+      : "wall-hung";
+
+  // إظهار المجموعة المناسبة فقط
+  if (divisionType === "wall-hung") {
+
+    wallWrap.classList.remove("hidden");
+    floorWrap.classList.add("hidden");
+
+  } else {
+
+    floorWrap.classList.remove("hidden");
+    wallWrap.classList.add("hidden");
+
+  }
+
+  title.textContent = "ما هي التقسيمة الداخلية المناسبة لك؟";
 
   D.divisions
     .filter(d => d.type === divisionType)
     .forEach(d => {
 
-      const el = document.createElement('div');
+      const el = document.createElement("div");
 
       el.className =
-        'div-card' +
-        (S.div && S.div.id === d.id ? ' selected' : '');
+        "div-card" +
+        (S.div && S.div.id === d.id ? " selected" : "");
 
       el.appendChild(mkImg(d.id, el));
 
-      const info = document.createElement('div');
-      info.className = 'cinfo';
+      const info = document.createElement("div");
+      info.className = "cinfo";
 
       const sg = S.size ? sgr(S.size.size) : null;
       const divP = sg ? dvp(d, sg) : null;
 
-      info.innerHTML =
-        '<div class="cname">' + d.name + '</div>' +
-        '<div class="cprice">' +
-        ((divP !== null && divP !== undefined) ? ('+' + divP + ' EGP') : '—') +
-        '</div>';
+      info.innerHTML = `
+        <div class="cname">${d.name}</div>
+        <div class="cprice">
+          ${divP != null ? `+ ${divP} EGP` : "—"}
+        </div>
+      `;
 
       el.appendChild(info);
 
       el.onclick = () => {
+
         S.div = d;
+
         rDiv();
         upd();
+
       };
 
-      if (divisionType === 'wall-hung') {
+      if (divisionType === "wall-hung") {
         wall.appendChild(el);
       } else {
         floor.appendChild(el);
@@ -592,8 +643,12 @@ function rDiv() {
 
     });
 
-  updateArrows('vc-wall');
-  updateArrows('vc-floor');
+  setTimeout(() => {
+
+    updateArrows("vc-wall");
+    updateArrows("vc-floor");
+
+  }, 50);
 
 }
 
@@ -1168,6 +1223,8 @@ document.querySelectorAll('.sink-type-card').forEach(card => {
 
     S.sinkType = this.dataset.type;
 
+    hidePlaceholders();
+
     S.design = null;
     S.size = null;
     S.div = null;
@@ -1259,32 +1316,6 @@ function loadConfiguratorData() {
       console.error(err);
 
     });
-
-}
-
-function showConfiguratorLoading(){
-
-  // التصميمات
-  document.querySelector('[data-group="dc"]').classList.remove("hidden");
-  showSkeleton("dc","design-card","التصميمات",4);
-
-  // المقابض
-  document.querySelector('[data-group="hc"]').classList.remove("hidden");
-  showSkeleton("hc","handle-card","المقابض",4);
-
-  // التقسيمات
-  const wall = document.getElementById("vc-wall-wrap");
-  const floor = document.getElementById("vc-floor-wrap");
-
-  if(wall){
-    wall.classList.remove("hidden");
-    showSkeleton("vc-wall","div-card","التقسيمات الداخلية",4);
-  }
-
-  if(floor){
-    floor.classList.remove("hidden");
-    showSkeleton("vc-floor","div-card","التقسيمات الداخلية",4);
-  }
 
 }
 

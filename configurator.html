@@ -185,6 +185,7 @@
   </div>
 </div>
 
+<!-- 0. Size cards -->
 <div class="grid-item size-section-box">
   <div class="step">
 
@@ -196,10 +197,35 @@
       ما هو عرض الحوض؟
     </div>
 
-    <div class="sizes-grid" id="sb" aria-live="polite">
-      <button class="size-btn disabled" disabled>
-        — اختر تصميم أولاً —
-      </button>
+    <div class="section-placeholder" id="placeholder-sz">
+
+      <div class="placeholder-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="8" width="18" height="8" rx="1"/>
+                    <path d="M7 8v3M10 8v2M13 8v3M16 8v2"/>
+                  </svg>
+      </div>
+
+      <div class="placeholder-title">
+        اختر نوع الحوض أولاً
+      </div>
+
+      <div class="placeholder-text">
+        سيتم عرض المقاسات المتاحة بعد اختيار نوع الحوض.
+      </div>
+
+    </div>
+
+    <div class="section-loading" id="loading-sz">
+      <div class="spinner"></div>
+      <span>جاري تحميل بيانات المقاسات...</span>
+    </div>
+
+    <div
+      class="sizes-row hidden"
+      id="sz"
+      role="list"
+      aria-label="Sink sizes">
     </div>
 
   </div>
@@ -214,14 +240,29 @@
     </div>
 
     <div class="sub-title" id="design-group-title">
-      اختر التصميم المناسب
+      ما هو التصميم المناسب لك؟
     </div>
 
-    <div class="step-desc" id="design-desc">
-      اختر نوع الحوض أولاً.
+    <div class="section-placeholder" id="placeholder-dc">
+
+      <div class="placeholder-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="4" y="4" width="16" height="16" rx="1.5"/>
+                      <line x1="12" y1="4" x2="12" y2="20"/>
+                      <circle cx="9.5" cy="12" r="0.5"/>
+                      <circle cx="14.5" cy="12" r="0.5"/>
+                    </svg>
+      </div>
+
+      <div class="placeholder-title">
+        اختر نوع الحوض أولاً
+      </div>
+
+      <div class="placeholder-text">
+        سيتم عرض التصميمات المناسبة بعد اختيار نوع الحوض.
+      </div>
+
     </div>
-
-
 
     <div class="scroll-wrap" data-group="dc">
 
@@ -276,7 +317,24 @@
     </div>
 
     <div class="sub-title" id="division-group-title">
-      اختر نوع الحوض أولاً
+      ما هي التقسيمة الداخلية المناسبة لك؟
+    </div>
+
+    <div class="section-placeholder" id="placeholder-div">
+
+      <div class="placeholder-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+
+      </div>
+
+      <div class="placeholder-title">
+        اختر نوع الحوض أولاً
+      </div>
+
+      <div class="placeholder-text">
+        سيتم عرض التقسيمات الداخلية المتوافقة مع نوع الحوض.
+      </div>
+
     </div>
 
     <!-- تقسيمات الوحدات المعلقة -->
@@ -356,7 +414,24 @@
     </div>
 
     <div class="sub-title" id="handle-group-title">
-      اختر نوع الحوض أولاً
+      كيف تفضل فتح الوحدة؟
+    </div>
+
+    <div class="section-placeholder" id="placeholder-hc">
+
+      <div class="placeholder-icon">
+       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="8"/><line x1="12" y1="16" x2="12" y2="22"/></svg>
+
+      </div>
+
+      <div class="placeholder-title">
+        اختر نوع الحوض أولاً
+      </div>
+
+      <div class="placeholder-text">
+        سيتم عرض أنواع المقابض المناسبة بعد اختيار نوع الحوض.
+      </div>
+
     </div>
 
     <div class="dynamic-desc" id="handle-desc"></div>

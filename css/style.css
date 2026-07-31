@@ -956,11 +956,12 @@ details[open] summary::after {
   border: none;
 }
 .step-desc{
-    margin:0 0 18px;
+    margin:0 0 16px;
     color:#777;
-    line-height:1.6;
+    line-height:1;
     transition:.25s;
     margin-right: 15px;
+    font-size: 14px;
 }
 
 .step-desc strong{
@@ -2779,9 +2780,13 @@ details[open] summary::after {
   background: #ececec;
 }
 
-.skeleton .skel-img {
-  width: 100%;
-  aspect-ratio: 1 / 1;
+.skeleton .cimg{
+    aspect-ratio: 1 / 1;
+}
+
+.skeleton .skel-img{
+    width:100%;
+    height:100%;
 }
 
 .skeleton .cinfo{
@@ -2871,4 +2876,124 @@ details[open] summary::after {
 
   }
 
+}
+
+.size-btn.skeleton{
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    pointer-events:none;
+    color:transparent;
+
+}
+
+.size-btn.skeleton .skel-text{
+
+    display:block;
+
+    width:70px;
+    height:14px;
+
+    border-radius:4px;
+
+    background:#ececec;
+
+    position:relative;
+
+    overflow:hidden;
+
+    margin:0;
+
+}
+
+.size-btn.skeleton .skel-text::after{
+
+    content:"";
+    position:absolute;
+    inset:0;
+    transform:translateX(-100%);
+    background:linear-gradient(
+        90deg,
+        transparent,
+        rgba(255,255,255,.65),
+        transparent
+    );
+    animation:skeletonShimmer 1.2s infinite;
+
+}
+
+.section-placeholder{
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+
+    gap:12px;
+
+    min-height:220px;
+
+    text-align:center;
+
+    padding:24px;
+
+}
+
+.placeholder-icon{
+
+    width:60px;
+    height:60px;
+
+    color:#9caf88;
+
+    opacity:.55;
+
+}
+
+.placeholder-icon svg{
+
+    width:100%;
+    height:100%;
+
+}
+
+.placeholder-title{
+
+    font-size:17px;
+    font-weight:700;
+
+    color:#333028;
+
+}
+
+.placeholder-text{
+
+    max-width:260px;
+
+    font-size:14px;
+
+    line-height:1.7;
+
+    color:#777;
+
+}
+
+.section-placeholder{
+
+    transition:.25s;
+
+}
+
+.section-placeholder.hide{
+
+    opacity:0;
+    transform:translateY(-8px);
+    pointer-events:none;
+
+}
+
+.hidden{
+    display:none !important;
 }
