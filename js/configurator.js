@@ -10,6 +10,19 @@ const toAr=n=>String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g,',').replace
 const cur='ج.م.';
 const base = id => (id && typeof id.toString === 'function') ? id.toString().replace(/_\d+[\-\.]?\d*cm$/i, '') : '';
 
+function toggleSideNav() {
+  console.log("تم الضغط على زر القائمة!"); // دي عشان تفتح الـ Console وتتأكد هل الضغطة بتوصل أصلاً ولا لأ
+  const sideNav = document.getElementById('sideNav');
+  const backdrop = document.getElementById('sideNavBackdrop');
+  
+  if (sideNav && backdrop) {
+    sideNav.classList.toggle('open');
+    backdrop.classList.toggle('open');
+  } else {
+    console.log("خطأ: عناصر الـ sideNav أو الـ backdrop غير مشروطة في الصفحة!");
+  }
+}
+
 function toggleNotes(){
   document.getElementById('notes-box').classList.toggle('open');
 }

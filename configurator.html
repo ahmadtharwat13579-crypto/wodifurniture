@@ -9,19 +9,20 @@
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
+  
+<div id="nav-placeholder"></div>
 
-<nav class="navbar-2" id="navbar">
-  <div class="nav-right">
-    <a href="index.html">الرئيسية</a>
-    <a href="products.html">منتجاتنا</a>
-    <a href="configurator.html" class="active">وحدات الحوض</a>
-  </div>
-  <div class="nav-left">
-    <a href="index.html" class="logo-link">
-      <img id="navLogo" src="images/logos/logo-white.png" alt="WODI" class="nav-logo" />
-    </a>
-  </div>
-</nav>
+<link rel="stylesheet" href="css/style.css">
+<script src="js/nav.js"></script>
+<script>
+  fetch('nav.html')
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById('nav-placeholder').innerHTML = html;
+      initNavbar(); // فانكشن بتشغل سكربت الإخفاء/الإظهار بعد ما الـ HTML يتحمل
+    });
+</script>
+
 
 <main class="conf-page">
   <div class="conf config-layout">
@@ -608,23 +609,23 @@
 
   <details class="faq-item">
     <summary>ماذا يحدث بعد الضغط على "إرسال الطلب"؟</summary>
-    <p>بعد إرسال الطلب، سيتواصل معك فريق WODI عبر واتساب لمراجعة التفاصيل والتأكد من توافق الوحدة مع حوضك، كما يمكنك طلب أي تعديلات خاصة. بعد ذلك، نرسل لك تصميمًا ثلاثي الأبعاد للشكل النهائي للمراجعة، ولا يبدأ التصنيع إلا بعد موافقتك النهائية.</p>
+    <p>بعد الضغط على "اطلب الآن"، سيتواصل معك فريق WODI عبر واتساب لتأكيد التفاصيل، وسيصلك تصميم ثلاثي الأبعاد للموافقة عليه قبل بدء التصنيع.</p>
   </details>
 
   <details class="faq-item">
   <summary>هل السعر المعروض هو السعر النهائي؟</summary>
-  <p>السعر المعروض يتم تحديثه تلقائياً حسب اختياراتك، ويشمل وحدة الحوض والإضافات التي قمت باختيارها. يتم إضافة تكلفة النقل تلقائياً حسب موقع التركيب.</p>
+  <p>نعم، يعكس السعر المعروض جميع اختياراتك من الوحدة والإضافات، ويُحدَّث تلقائيًا مع كل تعديل. أما تكلفة النقل فتُضاف بشكل منفصل بناءً على موقع التركيب بعد تحديده.</p>
 </details>
 
 <details class="faq-item">
   <summary>هل الحوض ضمن السعر؟</summary>
-  <p>لا، الحوض غير مشمول ضمن السعر، لأن WODI متخصصة في تصميم وتصنيع وحدات الحوض ولا تقوم ببيع الأحواض. يتم تصنيع الوحدة لتتناسب مع نوع ومقاس الحوض الذي لديك أو الذي ستقوم بشرائه.</p>
+  <p>لا، الحوض غير مشمول ضمن السعر. نحن نصنّع الوحدة فقط لتناسب نوع ومقاس الحوض الذي تختاره، ولا نقوم ببيع الأحواض.</p>
 </details>
 
 
 <details class="faq-item">
-  <summary>إذا كان مقاس الحوض غير موجود؟</summary>
-  <p>إذا لم تجد مقاس الحوض الخاص بك ضمن الخيارات المتاحة، يمكنك التواصل معنا مباشرة. سنراجع إمكانية تنفيذ المقاس المطلوب أو نرشح لك أقرب بديل مناسب.</p>
+  <summary>ماذا لو لم أجد مقاس حوضي ضمن الخيارات؟</summary>
+  <p>يمكنك التواصل معنا مباشرة عبر واتساب، وسنتحقق من إمكانية تنفيذ المقاس المطلوب أو نقترح عليك أقرب بديل مناسب.</p>
 </details>
 
   
@@ -717,6 +718,9 @@
 
 
 <script src="js/configurator.js"></script>
+
+<script type="module" src="js/auth.js"></script>
+<script src="https://www.google.com/recaptcha/enterprise.js?render=6Lde4nktAAAAAAPAlUeMAGT4Ki99VV9yNW56TuVw"></script>
 
 </body>
 </html>

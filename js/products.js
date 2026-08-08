@@ -1,66 +1,201 @@
-const categoryIcons = {
-  all: `<svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>`,
-
-      "4d": `
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" stroke-width="2"
-      stroke-linecap="round" stroke-linejoin="round">
-      <path d="M3 6h3"/>
-      <path d="M17 6h.01"/>
-      <rect x="3" y="2" width="18" height="20" rx="2"/>
-      <circle cx="12" cy="13" r="5"/>
-      <path d="M12 18a2.5 2.5 0 0 0 0-5 2.5 2.5 0 0 1 0-5"/>
-      </svg>`,
-
-      "4e": `
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" stroke-width="2"
-      stroke-linecap="round" stroke-linejoin="round">
-      <path d="M11 6 8 9"/>
-      <path d="m16 7-8 8"/>
-      <rect x="4" y="2" width="16" height="20" rx="2"/>
-      </svg>`,
-
-      "4f": `
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" stroke-width="2"
-      stroke-linecap="round" stroke-linejoin="round">
-      <path d="M12 12V9a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3"/>
-      <path d="M16 20v-3a1 1 0 0 0-1-1h-2a1 1 0 0 0-1 1v3"/>
-      <path d="M20 22V2"/>
-      <path d="M4 12h16"/>
-      <path d="M4 20h16"/>
-      <path d="M4 2v20"/>
-      <path d="M4 4h16"/>
-      </svg>`, 
-
-      "4g": `
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" stroke-width="2"
-      stroke-linecap="round" stroke-linejoin="round">
-      <path d="M7 12h13a1 1 0 0 1 1 1 5 5 0 0 1-5 5h-.598a.5.5 0 0 0-.424.765l1.544 2.47a.5.5 0 0 1-.424.765H5.402a.5.5 0 0 1-.424-.765L7 18"/>
-      <path d="M8 18a5 5 0 0 1-5-5V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8"/>
-      </svg>`,
-
-};
-
 const API_URL = "https://script.google.com/macros/s/AKfycbz3xuCuZ6sU9QVo2nTRaItWFLplEhG7bKuzeZSQpk4DseShYrzycpRhyO2u2kuwPVkY/exec?pwd=double-protection-password";
 const WA = '201556840368';
-const GH = 'https://raw.githubusercontent.com/ahmadtharwat13579-crypto/wodifurniture/main/website/images/';
+const GH = 'https://raw.githubusercontent.com/ahmadtharwat13579-crypto/wodifurniture/main/images/products/';
 
+const categoryIcons = {
+  'all': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>',
+  '4d': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h3"/><path d="M17 6h.01"/><rect x="3" y="2" width="18" height="20" rx="2"/><circle cx="12" cy="13" r="5"/><path d="M12 18a2.5 2.5 0 0 0 0-5 2.5 2.5 0 0 1 0-5"/></svg>',
+  '4e': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 6 8 9"/><path d="m16 7-8 8"/><rect x="4" y="2" width="16" height="20" rx="2"/></svg>',
+  '4f': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12V9a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3"/><path d="M16 20v-3a1 1 0 0 0-1-1h-2a1 1 0 0 0-1 1v3"/><path d="M20 22V2"/><path d="M4 12h16"/><path d="M4 20h16"/><path d="M4 2v20"/><path d="M4 4h16"/></svg>',
+  '4g': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 12h13a1 1 0 0 1 1 1 5 5 0 0 1-5 5h-.598a.5.5 0 0 0-.424.765l1.544 2.47a.5.5 0 0 1-.424.765H5.402a.5.5 0 0 1-.424-.765L7 18"/><path d="M8 18a5 5 0 0 1-5-5V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8"/></svg>'
+};
 
 let products = [];
 let categories = [];
 let categoryMap = {};
 let currentCat = 'all';
 
+function toggleSideNav() {
+  console.log("تم الضغط على زر القائمة!"); // دي عشان تفتح الـ Console وتتأكد هل الضغطة بتوصل أصلاً ولا لأ
+  const sideNav = document.getElementById('sideNav');
+  const backdrop = document.getElementById('sideNavBackdrop');
+  
+  if (sideNav && backdrop) {
+    sideNav.classList.toggle('open');
+    backdrop.classList.toggle('open');
+  } else {
+    console.log("خطأ: عناصر الـ sideNav أو الـ backdrop غير مشروطة في الصفحة!");
+  }
+}
+
+window.addEventListener("load", () => {
+
+    if(localStorage.getItem("accountHintShown"))
+        return;
+
+    const hint = document.getElementById("accountHint");
+
+    setTimeout(() => {
+        hint.classList.add("show");
+    }, 800);
+
+    setTimeout(() => {
+        hint.classList.remove("show");
+        localStorage.setItem("accountHintShown","true");
+    }, 3500);
+
+});
+
+window.addEventListener("load", () => {
+
+    const hint = document.getElementById("accountHint");
+    const profileBtn = document.querySelector(".profile-nav-btn");
+
+    if (localStorage.getItem("accountHintShown"))
+        return;
+
+    setTimeout(() => {
+        hint.classList.add("show");
+        profileBtn.classList.add("attention");
+    }, 800);
+
+    setTimeout(() => {
+        hint.classList.remove("show");
+        profileBtn.classList.remove("attention");
+
+        localStorage.setItem("accountHintShown", "true");
+    }, 3500);
+
+});
+
 // Lightbox
 function openLB(src) {
-  document.getElementById('prod-lb-img').src = src;
-  document.getElementById('prod-lb').classList.add('open');
+  const lbImg = document.getElementById('prod-lb-img');
+  const lb = document.getElementById('prod-lb');
+  if (lbImg && lb) {
+    lbImg.src = src;
+    lb.style.display = 'flex';
+  }
 }
+
 function closeLB() {
-  document.getElementById('prod-lb').classList.remove('open');
+  const lb = document.getElementById('prod-lb');
+  if (lb) lb.style.display = 'none';
+}
+
+let searchQuery = "";
+
+// فتح القائمة المنسدلة
+function openSearchDropdown() {
+  const dropdown = document.getElementById('search-dropdown');
+  const backdrop = document.getElementById('search-backdrop');
+  if (dropdown && backdrop) {
+    dropdown.style.display = 'flex';
+    backdrop.style.display = 'block';
+  }
+}
+
+// قفل القائمة المنسدلة
+function closeSearchDropdown() {
+  const dropdown = document.getElementById('search-dropdown');
+  const backdrop = document.getElementById('search-backdrop');
+  if (dropdown) dropdown.style.display = 'none';
+  if (backdrop) backdrop.style.display = 'none';
+}
+
+// دالة لتنظيف وتوحيد الحروف العربية لتجاهل الأخطاء الإملائية والهمزات
+function normalizeArabic(text) {
+  if (!text) return '';
+  return text
+    .toLowerCase()
+    .trim()
+    // توحيد الألفات (أ, إ, آ -> ا)
+    .replace(/[أإآا]/g, 'ا')
+    // توحيد الهاء والتاء المربوطة (ة -> ه)
+    .replace(/ة/g, 'ه')
+    // توحيد الياء والألف المقصورة (ى -> ي)
+    .replace(/ى/g, 'ي')
+    // إزالة التشكيل لو موجود
+    .replace(/[\u064b-\u065f]/g, '');
+}
+
+// دالة البحث المتقدم المحدثة (تدعم البحث الاستباقي وتوقع الأخطاء الإملائية)
+function handleAdvancedSearch(query) {
+  openSearchDropdown();
+  const rawQuery = query.trim();
+  const q = normalizeArabic(rawQuery); // تنظيف كلمة البحث
+  
+  const suggestionsEl = document.getElementById('search-suggestions-list');
+  const productsEl = document.getElementById('search-products-grid');
+
+  if (!rawQuery) {
+    suggestionsEl.innerHTML = '<div style="padding: 10px; color: #888; font-size: 13px; text-align: center;">ابحث عن فئة أو منتج...</div>';
+    productsEl.innerHTML = '';
+    return;
+  }
+
+  // 1. فلترة الفئات (بتوقع الأخطاء الإملائية والهمزات)
+  const matchedCategories = categories.filter(c => {
+    const normalizedCategoryName = normalizeArabic(c.display_name);
+    return normalizedCategoryName.includes(q);
+  });
+
+  let suggestionsHtml = '';
+  matchedCategories.forEach(cat => {
+    const iconSvg = categoryIcons[cat.category_id] || categoryIcons['all'];
+
+    suggestionsHtml += `
+      <div class="suggestion-item" onclick="filterCat('${cat.category_id}'); closeSearchDropdown();">
+        <div class="suggestion-right">
+          <span class="suggestion-icon">${iconSvg}</span>
+          <span>${cat.display_name}</span>
+        </div>
+        <svg class="suggestion-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+    `;
+  });
+  
+  suggestionsEl.innerHTML = suggestionsHtml || '<div style="padding: 8px; color: #aaa; font-size: 13px;">لا توجد فئات مطابقة</div>';
+
+  // 2. فلترة المنتجات (بتوقع الأخطاء الإملائية والهمزات)
+  const matchedProducts = products.filter(p => {
+    if (!p.visible) return false;
+    const normalizedName = normalizeArabic(p.display_name);
+    const normalizedId = normalizeArabic(p.product_id || '');
+    return normalizedName.includes(q) || normalizedId.includes(q);
+  });
+
+  let productsHtml = '';
+  matchedProducts.forEach(p => {
+    const basePrice = Math.round(p.base_price || 0).toLocaleString('en-US');
+    const salePrice = p.sale_price && p.sale_price !== '' ? Math.round(p.sale_price).toLocaleString('en-US') : null;
+    const priceDisplay = salePrice ? salePrice : basePrice;
+    const imgSrc = GH + p.product_id + '_1.webp';
+
+    productsHtml += `
+      <div class="search-product-card" onclick="location.href='product-detail.html?id=${p.product_id}'">
+        <img class="search-product-img" src="${imgSrc}" alt="${p.display_name}" onerror="this.src='${GH + p.product_id}.webp'">
+        <div class="search-product-info">
+          <div class="search-product-name">${p.display_name}</div>
+          <div class="search-product-price">EGP ${priceDisplay}</div>
+        </div>
+      </div>
+    `;
+  });
+
+  // حالة "لا توجد نتائج" ذكية ومريحة للعميل
+  if (matchedCategories.length === 0 && matchedProducts.length === 0) {
+    productsHtml = `
+      <div style="padding: 20px; text-align: center; color: #666; font-size: 14px;">
+        <p style="margin-bottom: 8px;">عذراً، لم نجد نتائج مطابقة لـ "${rawQuery}"</p>
+        <a href="https://wa.me/20YOUR_PHONE_NUMBER" target="_blank" style="color: #2e7d32; font-weight: bold; text-decoration: underline; display: inline-block; margin-top: 5px;">
+          مش لاقي اللي بتدور عليه؟ استفسر عبر واتساب
+        </a>
+      </div>
+    `;
+  }
+
+  productsEl.innerHTML = productsHtml;
 }
 
 function contactWA(productId, name, price) {
@@ -68,220 +203,168 @@ function contactWA(productId, name, price) {
   window.open('https://wa.me/' + WA + '?text=' + encodeURIComponent(msg), '_blank');
 }
 
-function showSkeleton() {
-    const container = document.getElementById("prod-list");
-
-    // 1. هيكل التحميل (منطقة النصوص فقط)
-    let loadingHtml = `
-    <div class="loading-box">
-
-        <div id="text1" class="loading-text-item">
-            جاري تحميل المنتجات
-            <span class="dots">
-                <span>.</span><span>.</span><span>.</span>
-            </span>
-        </div>
-
-        <div id="text2" class="loading-text-item hidden-bottom">
-            نعتذر على التأخير، جاري تجهيز القائمة لك
-            <span class="dots">
-                <span>.</span><span>.</span><span>.</span>
-            </span>
-        </div>
-
-        <div id="text3" class="loading-text-item hidden-bottom">
-            شكراً لصبرك، نحن بصدد عرض أفضل الوحدات لك
-            <span class="dots">
-                <span>.</span><span>.</span><span>.</span>
-            </span>
-        </div>
-
-    </div>
-    `;
-
-    // 2. هيكل السكليتون (منطقة الكروت)
-    let skeletonHtml = '';
-    for (let i = 0; i < 5; i++) {
-        skeletonHtml += `
-            <div class="prod-skeleton">
-                <div class="skel-img"></div>
-                <div class="skel-body">
-                    <div class="skel-line w40"></div>
-                    <div class="skel-line w80"></div>
-                    <div class="skel-line w60"></div>
-                    <div class="skel-line w40"></div>
-                </div>
-            </div>
-        `;
-    }
-
-    // 3. دمجهم معاً وتعيينهم للـ container
-    container.innerHTML = loadingHtml + skeletonHtml;
-
-    // 4. تشغيل اللوب الخاص بالنصوص فقط
-    const texts = ["text1", "text2", "text3"];
-    let currentIndex = 0;
-
-    function loopTexts() {
-        const current = document.getElementById(texts[currentIndex]);
-        const nextIndex = (currentIndex + 1) % texts.length;
-        const next = document.getElementById(texts[nextIndex]);
-
-        if(!current || !next) return; // حماية للكود لو تم مسح العناصر
-
-        current.classList.add("slide-up-out");
-        
-        setTimeout(() => {
-            current.classList.remove("slide-up-out", "slide-up-in");
-            current.classList.add("hidden-bottom");
-
-            next.classList.remove("hidden-bottom");
-            next.classList.add("slide-up-in");
-            
-            currentIndex = nextIndex;
-            setTimeout(loopTexts, 3000);
-        }, 400);
-    }
-
-    setTimeout(loopTexts, 3000);
+const breadcrumbCatEl = document.getElementById('current-breadcrumb-cat');
+if (breadcrumbCatEl) {
+  breadcrumbCatEl.textContent = (currentCat === 'all') ? 'الكل' : (categoryMap[currentCat]?.display_name || currentCat);
 }
 
-function getCategoryIcon(id) {
-  return categoryIcons[id] || categoryIcons.all;
+function renderIcon(catId) {
+  const icon = categoryIcons[catId] || '';
+  if (icon.trim().startsWith('<svg')) {
+    return icon; // SVG جاهز، يترجع زي ما هو
+  }
+  return `<img src="${icon}" alt="">`; // مسار صورة، يتلف في img tag
+}
+
+function countByCategory(catId) {
+  if (catId === 'all') return products.filter(p => p.visible).length;
+  return products.filter(p => p.visible && p.category === catId).length;
 }
 
 function renderCategories() {
   const container = document.getElementById('cat-scroll');
-  container.innerHTML = `
-    <div class="cat-chip active" data-cat="all" onclick="filterCat('all')">
-      <div class="cat-icon">${getCategoryIcon('all')}</div>
-      <span class="cat-label">الكل</span>
-    </div>`;
+  if (!container) return;
+
+  let html = `
+    <button class="cat-grid-item ${currentCat === 'all' ? 'active' : ''}" data-cat="all" onclick="filterCat('all')">
+      <span class="cat-icon">${renderIcon('all')}</span>
+      الكل
+      <span class="cat-count">(${countByCategory('all')})</span>
+    </button>
+  `;
 
   categories.sort((a, b) => a.order - b.order).forEach(cat => {
-    container.innerHTML += `
-      <div class="cat-chip" data-cat="${cat.category_id}" onclick="filterCat('${cat.category_id}')">
-        <div class="cat-icon">${getCategoryIcon(cat.category_id)}</div>
-        <span class="cat-label">${cat.display_name}</span>
-      </div>`;
+    const isActive = currentCat === cat.category_id ? 'active' : '';
+    html += `
+      <button class="cat-grid-item ${isActive}" data-cat="${cat.category_id}" onclick="filterCat('${cat.category_id}')">
+        <span class="cat-icon">${renderIcon(cat.category_id)}</span>
+        ${cat.display_name}
+        <span class="cat-count">(${countByCategory(cat.category_id)})</span>
+      </button>
+    `;
   });
-}
-
-function renderProducts() {
-  const container = document.getElementById('prod-list');
-  let html = '';
-
-console.log("Products count before filter:", products.length);
-console.log("Sample product visibility:", products[0]?.visible); // لرؤية هل هي صحيحة أم لا
-  products
-
-    .filter(p => p.visible)
-    .forEach((p, index) => { // أضفنا index هنا للتحكم في تأخير الأنيميشن
-        const catId = p.category || '';
-        const imgSrc = GH + p.product_id + '.webp';
-        const catName = categoryMap[catId]?.display_name || '';
-        
-        // حساب السعر بأمان
-        const basePrice = Math.round(p.base_price || 0);
-        const salePrice = p.sale_price && p.sale_price !== '' ? Math.round(p.sale_price) : null;
-        const priceText = `${salePrice || basePrice} EGP`;
-
-        // منطق عرض السعر
-        let priceHtml = salePrice 
-            ? `<div class="prod-price"><span class="old-price">${basePrice} EGP</span><span class="new-price">${salePrice} EGP</span></div>`
-            : `<div class="prod-price"><span class="new-price">${basePrice} EGP</span></div>`;
-
-        // مقاسات
-        const hasDims = p.width && p.height && p.depth;
-        const sizeHtml = hasDims
-        ? `
-          <div class="prod-size">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 2 3 7l9 5 9-5-9-5Z"/>
-              <path d="M3 7v10l9 5 9-5V7"/>
-              <path d="M12 12v10"/>
-            </svg>
-            ${p.width} × ${p.depth} × ${p.height} سم
-          </div>`
-        : '';
-        const descHtml = p.description ? `<div class="prod-desc">${p.description}</div>` : '';
-        const materialHtml = `
-          <div class="prod-spec">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 3 3 8l9 5 9-5-9-5Z"/>
-              <path d="M3 12l9 5 9-5"/>
-              <path d="M3 16l9 5 9-5"/>
-            </svg>
-              <span>بورديوم مقاوم للرطوبة</span>
-          </div>`;
-
-        // البادجات
-        const badges = [];
-        if (p.featured) badges.push(`<span class="prod-badge featured"><svg viewBox="0 0 24 24"><path d="M12 2l2.9 6 6.6.6-5 4.3 1.5 6.5L12 16.8 6 19.4l1.5-6.5-5-4.3 6.6-.6z"/></svg>الأكثر طلبًا</span>`);
-        if (p.new) badges.push(`<span class="prod-badge new"><svg viewBox="0 0 24 24"><path d="M12 2v20"/><path d="M2 12h20"/></svg>جديد</span>`);
-
-        // دمج الكارت مع الأنيميشن
-        html += `
-            <div class="prod-card" data-cat="${catId}" style="animation-delay: ${index * 0.1}s;">
-                <div class="prod-img-wrap">
-                    <img class="prod-img" src="${imgSrc}" alt="${p.display_name}" onerror="this.style.visibility='hidden'">
-                    <button class="prod-zoom-btn" onclick="openLB('${imgSrc}')">
-                        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
-                    </button>
-                </div>
-                <div class="prod-body">
-                    <div class="prod-header">
-                        <div class="prod-badges">${badges.join("")}</div>
-                        <div class="prod-name">${p.display_name}</div>
-                    </div>
-                    <span class="prod-cat-tag">${catName}</span>
-                    ${sizeHtml}
-                    ${materialHtml}
-                    ${descHtml}
-                    ${priceHtml}
-                    <button class="prod-wa-btn" onclick="contactWA('${p.product_id}','${p.display_name}','${priceText}')">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.533 5.858L.054 23.25a.75.75 0 0 0 .916.916l5.392-1.479A11.954 11.954 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.933 0-3.742-.524-5.287-1.437l-.378-.225-3.924 1.077 1.077-3.924-.225-.378A9.953 9.953 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
-                        استفسر الآن
-                    </button>
-                </div>
-            </div>
-        `;
-    });
 
   container.innerHTML = html;
 }
 
 function filterCat(cat) {
   currentCat = cat;
-  document.querySelectorAll('.cat-chip').forEach(c => {
-    c.classList.toggle('active', c.dataset.cat === cat);
+
+  document.querySelectorAll('#cat-scroll .cat-grid-item').forEach(btn => {
+    btn.classList.remove('active');
   });
-  document.querySelectorAll('.prod-card').forEach(card => {
-    card.classList.toggle('hidden', cat !== 'all' && card.dataset.cat !== cat);
-  });
+
+  const activeBtn = document.querySelector(`#cat-scroll .cat-grid-item[data-cat="${cat}"]`);
+  if (activeBtn) activeBtn.classList.add('active');
+
+  renderProducts();
 }
 
+function renderProducts() {
+  const container = document.getElementById('prod-list');
+  if (!container) return;
+
+  const titleEl = document.getElementById('current-category-title');
+  const breadcrumbCatEl = document.getElementById('current-breadcrumb-cat');
+
+  const categoryName = (currentCat === 'all') ? 'جميع المنتجات' : (categoryMap[currentCat]?.display_name || currentCat);
+
+  if (titleEl) titleEl.textContent = categoryName;
+  if (breadcrumbCatEl) breadcrumbCatEl.textContent = categoryName;
+
+  let html = '';
+
+  products
+    .filter(p => p.visible && (currentCat === 'all' || p.category === currentCat)) // تم إضافة الفلترة هنا
+    .forEach((p, index) => {
+      const catId = p.category || '';
+      const imgSrc = GH + p.product_id + '_1.webp';
+      const catName = categoryMap[catId]?.display_name || '';
+
+      const basePrice = Math.round(p.base_price || 0).toLocaleString('en-US');
+      const salePrice = p.sale_price && p.sale_price !== '' ? Math.round(p.sale_price).toLocaleString('en-US') : null;
+      const priceText = `${salePrice || basePrice} EGP`;
+
+let priceHtml = salePrice
+  ? `<div class="prod-price"><span class="new-price">${salePrice} EGP</span><span class="old-price">${basePrice} EGP</span></div>`
+  : `<div class="prod-price"><span class="new-price">${basePrice} EGP</span></div>`;
+
+      const hasDims = p.width && p.height && p.depth;
+      const sizeHtml = hasDims
+        ? `<div class="prod-size">${p.width} × ${p.depth} × ${p.height} سم</div>`
+        : '';
+
+      const badges = [];
+      if (p.featured) badges.push(`<span class="prod-badge featured">الأكثر طلبًا</span>`);
+      if (p.new) badges.push(`<span class="prod-badge new">جديد</span>`);
+
+      html += `
+        <div class="prod-card" data-cat="${catId}" onclick="location.href='product-detail.html?id=${p.product_id}'">
+          <div class="prod-img-col">
+            <div class="prod-img-wrap">
+              <img class="prod-img" src="${imgSrc}" alt="${p.display_name}" onerror="this.src='${GH + p.product_id}.webp'">
+            </div>
+            <div class="prod-dots">
+              <span class="active"></span>
+              <span></span>
+              <span></span>
+            </div>
+          </div>
+
+          <div class="prod-body">
+            <div class="prod-header">
+              <div class="prod-badges">${badges.join("")}</div>
+              <div class="prod-name">${p.display_name}</div>
+            </div>
+            <div class="prod-cat-tag">${catName}</div>
+            ${sizeHtml}
+            
+            <div class="prod-footer-area">
+              ${priceHtml}
+              <div class="prod-actions">
+                <button class="btn-order" onclick="event.stopPropagation(); contactWA('${p.product_id}','${p.display_name}','${priceText}')">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+                  استفسر عبر واتساب
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+
+  container.innerHTML = html || '<p class="prod-empty">لا توجد منتجات متاحة حالياً في هذه الفئة.</p>';
+}
+
+
 async function loadData() {
-  showSkeleton();
+  const container = document.getElementById('prod-list');
+  if (container) {
+    container.innerHTML = '<p style="text-align:center; color:rgba(51,48,40,0.6); grid-column:1/-1; padding:40px;">جاري تحميل المنتجات...</p>';
+  }
+
   try {
     const res = await fetch(API_URL);
     const data = await res.json();
     products = data.products.map(p => ({
-    ...p,
-    visible: String(p.visible).trim().toUpperCase() === "TRUE",
-    featured: String(p.featured).trim().toUpperCase() === "TRUE",
-    new: String(p.new).trim().toUpperCase() === "TRUE"
-}));
+      ...p,
+      visible: String(p.visible).trim().toUpperCase() === "TRUE",
+      featured: String(p.featured).trim().toUpperCase() === "TRUE",
+      new: String(p.new).trim().toUpperCase() === "TRUE"
+    }));
     categories = data.categories;
     categoryMap = {};
     categories.forEach(c => { categoryMap[c.category_id] = c; });
+    
     renderCategories();
     renderProducts();
   } catch (err) {
     console.error(err);
-    document.getElementById('prod-list').innerHTML =
-      '<p style="color:rgba(255,255,255,0.5);text-align:center;padding:40px">تعذّر تحميل المنتجات، يرجى المحاولة لاحقاً.</p>';
+    if (container) {
+      container.innerHTML = '<p style="color:#d9534f; text-align:center; grid-column:1/-1; padding:40px;">تعذّر تحميل المنتجات، يرجى المحاولة لاحقاً.</p>';
+    }
   }
 }
 
 document.addEventListener('DOMContentLoaded', loadData);
+
