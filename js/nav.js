@@ -1,55 +1,22 @@
 function initNavbar() {
-  let lastScrollY = window.scrollY;
-  let ticking = false;
 
+  // --- 1. سلوك إخفاء/إظهار الـ Nav عند السكرول ---
   const navbar = document.querySelector('.navbar');
-  if (!navbar) return;
-
-  function updateNavbar() {
-    const currentScrollY = window.scrollY;
-
-    if (currentScrollY > lastScrollY && currentScrollY > 80) {
-      navbar.style.setProperty('transform', 'translateY(-100%)', 'important');
-    } else {
-      navbar.style.setProperty('transform', 'translateY(0)', 'important');
-    }
-
-    lastScrollY = currentScrollY;
-    ticking = false;
-  }
-
-  window.addEventListener('scroll', () => {
-    if (!ticking) {
-      requestAnimationFrame(updateNavbar);
-      ticking = true;
-    }
-  }, { passive: true });
-}
-
-function initNavbar() {
-
-  // --- 1. سلوك الإخفاء/الإظهار عند السكرول ---
-  let lastScrollY = window.scrollY;
-  let ticking = false;
-  const navbar = document.querySelector('.navbar');
+  const HIDE_THRESHOLD = 150; // بعد كام بيكسل من فوق تختفي
 
   if (navbar) {
     function updateNavbar() {
       const currentScrollY = window.scrollY;
-      if (currentScrollY > lastScrollY && currentScrollY > 80) {
+
+      if (currentScrollY > HIDE_THRESHOLD) {
         navbar.style.setProperty('transform', 'translateY(-100%)', 'important');
       } else {
         navbar.style.setProperty('transform', 'translateY(0)', 'important');
       }
-      lastScrollY = currentScrollY;
-      ticking = false;
     }
 
     window.addEventListener('scroll', () => {
-      if (!ticking) {
-        requestAnimationFrame(updateNavbar);
-        ticking = true;
-      }
+      requestAnimationFrame(updateNavbar);
     }, { passive: true });
   }
 

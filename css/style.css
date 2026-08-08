@@ -37,7 +37,7 @@ body {
 
   padding: 8px 20px;
 
-  background: transparent;
+  background: #FFFFFF;
 
   z-index: 1000;
   box-sizing: border-box;
@@ -2875,7 +2875,7 @@ details[open] summary::after {
   direction: rtl;
   position: sticky;
   top: 0px;
-  z-index: 99;
+  z-index: 9999;
   transition: all 0.3s ease;
 }
 
