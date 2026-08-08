@@ -218,5 +218,31 @@
     </div>
 </aside>
 
+<!-- مودال تسجيل الخروج -->
+<div
+    id="logoutModal"
+    class="logout-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="logoutModalTitle"
+>
+    <div class="logout-modal-box">
+        <button id="closeLogoutModal" class="close-logout-modal" type="button" onclick="closeLogoutModal()">&times;</button>
+        <div class="modal-brand-icon">
+            <img src="images/logos/logo-white.png" alt="WODI">
+        </div>
+        <h3 id="logoutModalTitle">تأكيد تسجيل الخروج</h3>
+        <p>يمكنك تسجيل الدخول مرة أخرى في أي وقت.</p>
+        <div class="modal-actions">
+            <button id="confirmLogout" class="btn-confirm-logout" type="button">
+                تسجيل الخروج
+            </button>
+            <button id="cancelLogout" class="btn-cancel-logout" type="button" onclick="closeLogoutModal()">
+                إلغاء
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- الخلفية الشفافة -->
 <div class="side-nav-backdrop" id="sideNavBackdrop" onclick="toggleSideNav()"></div>
