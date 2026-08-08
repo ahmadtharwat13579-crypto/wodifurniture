@@ -13,13 +13,24 @@
 <div id="nav-placeholder"></div>
 
 <link rel="stylesheet" href="css/style.css">
+
 <script src="js/nav.js"></script>
+<script src="js/auth.js"></script>
+
 <script>
-  fetch('nav.html')
+fetch('nav.html')
     .then(res => res.text())
     .then(html => {
-      document.getElementById('nav-placeholder').innerHTML = html;
-      initNavbar(); // فانكشن بتشغل سكربت الإخفاء/الإظهار بعد ما الـ HTML يتحمل
+
+        document.getElementById('nav-placeholder').innerHTML = html;
+
+        // بعد تحميل الـ HTML
+        initNavbar();
+        initLogoutSystem();
+
+    })
+    .catch(err => {
+        console.error('Failed to load navbar:', err);
     });
 </script>
 
