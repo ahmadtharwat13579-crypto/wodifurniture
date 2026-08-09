@@ -6,82 +6,36 @@
   <title>WODI Furniture | منتجاتنا</title>
   <link rel="icon" type="image/png" href="images/logos/favicon-v1.png" />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/variable.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/products.css">
+  <link rel="stylesheet" href="css/footer.css">
 </head>
 <body>
 
-<nav class="navbar" id="navbar">
-  <!-- الأيقونات على اليمين (بروفايل + مفضلة + عربة + 3 شرط) -->
-  <div class="nav-right">
+<div id="nav-placeholder"></div>
 
-    <!-- زر القائمة الجانبية (3 شرط) -->
-    <button class="menu-toggle-btn" onclick="toggleSideNav()" aria-label="Open Menu">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="3" y1="12" x2="21" y2="12"></line>
-        <line x1="3" y1="6" x2="21" y2="6"></line>
-        <line x1="3" y1="18" x2="21" y2="18"></line>
-      </svg>
-    </button>
+<link rel="stylesheet" href="css/nav.css">
 
-    <!-- أيقونة عربة الشراء -->
-    <div class="cart-icon-container" onclick="toggleCartDrawer()" aria-label="Cart">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="9" cy="21" r="1"></circle>
-        <circle cx="20" cy="21" r="1"></circle>
-        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-      </svg>
-      <span id="cart-badge" class="cart-badge">0</span>
-    </div>
+<script src="js/nav.js"></script>
+<script src="js/auth.js"></script>
 
-    <!-- أيقونة المفضلة (Wishlist) -->
-    <a href="wishlist.html" class="nav-icon-btn" aria-label="Wishlist">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-      </svg>
-    </a>
+<script>
+fetch('nav.html')
+    .then(res => res.text())
+    .then(html => {
 
-  <!-- أيقونة حساب المستخدم / البروفايل بعد التعديل -->
-  <a href="#" class="profile-nav-btn" aria-label="Profile" onclick="loginWithGoogle()">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-      <circle cx="12" cy="7" r="4"></circle>
-    </svg>
+        document.getElementById('nav-placeholder').innerHTML = html;
 
-        <div class="account-wrapper">
-        <a href="login.html" class="account-btn">
-            <i class="fa-regular fa-user"></i>
-        </a>
+        // بعد تحميل الـ HTML
+        initNavbar();
+        initLogoutSystem();
 
-        <div id="accountHint" class="account-hint">
-           سجّل دخولك لحفظ منتجاتك
-        </div>
-    </div>
-  </a>
-  </div>
-
-  <!-- اللوجو على الشمال -->
-  <div class="nav-left">
-    <a href="index.html" class="logo-link">
-      <img id="navLogo" src="images/logos/logo-white.png" alt="WODI" class="nav-logo" />
-    </a>
-  </div>
-</nav>
-
-<!-- القائمة الجانبية -->
-<div class="side-nav" id="sideNav">
-  <div class="side-nav-header">
-    <h3>القائمة</h3>
-    <button class="close-side-nav" onclick="toggleSideNav()">&times;</button>
-  </div>
-  <div class="side-nav-links">
-    <a href="index.html">الرئيسية</a>
-    <a href="products.html">منتجاتنا</a>
-    <a href="configurator.html">وحدات الحوض</a>
-  </div>
-</div>
-
-<!-- الخلفية الشفافة -->
-<div class="side-nav-backdrop" id="sideNavBackdrop" onclick="toggleSideNav()"></div>
+    })
+    .catch(err => {
+        console.error('Failed to load navbar:', err);
+    });
+</script>
 
 <main class="conf-page">
   <div class="conf config-layout">

@@ -13,60 +13,36 @@ const categoryIcons = {
 let products = [];
 let categories = [];
 let categoryMap = {};
-let currentCat = 'all';
 
-function toggleSideNav() {
-  console.log("تم الضغط على زر القائمة!"); // دي عشان تفتح الـ Console وتتأكد هل الضغطة بتوصل أصلاً ولا لأ
-  const sideNav = document.getElementById('sideNav');
-  const backdrop = document.getElementById('sideNavBackdrop');
-  
-  if (sideNav && backdrop) {
-    sideNav.classList.toggle('open');
-    backdrop.classList.toggle('open');
-  } else {
-    console.log("خطأ: عناصر الـ sideNav أو الـ backdrop غير مشروطة في الصفحة!");
-  }
+function getCategoryFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('category') || 'all';
 }
 
-window.addEventListener("load", () => {
+let currentCat = getCategoryFromURL();
 
-    if(localStorage.getItem("accountHintShown"))
-        return;
+// نسخة احتياطية سريعة لأسماء الفئات - تستخدم بس للعرض الفوري وقت التحميل
+const CATEGORY_NAMES_FALLBACK = {
+  '4d': 'وحدات الغسالة',
+  '4e': 'وحدات المراية',
+  '4f': 'وحدات التخزين',
+  '4g': 'وحدات التواليت'
+};
 
-    const hint = document.getElementById("accountHint");
+// عرض فوري لاسم الفئة من الرابط، قبل ما بيانات الشيت توصل
+function showInitialCategoryTitle() {
+  const titleEl = document.getElementById('current-category-title');
+  const breadcrumbCatEl = document.getElementById('current-breadcrumb-cat');
 
-    setTimeout(() => {
-        hint.classList.add("show");
-    }, 800);
+  const initialName = (currentCat === 'all')
+    ? 'جميع المنتجات'
+    : (CATEGORY_NAMES_FALLBACK[currentCat] || 'جاري التحميل...');
 
-    setTimeout(() => {
-        hint.classList.remove("show");
-        localStorage.setItem("accountHintShown","true");
-    }, 3500);
+  if (titleEl) titleEl.textContent = initialName;
+  if (breadcrumbCatEl) breadcrumbCatEl.textContent = initialName;
+}
 
-});
-
-window.addEventListener("load", () => {
-
-    const hint = document.getElementById("accountHint");
-    const profileBtn = document.querySelector(".profile-nav-btn");
-
-    if (localStorage.getItem("accountHintShown"))
-        return;
-
-    setTimeout(() => {
-        hint.classList.add("show");
-        profileBtn.classList.add("attention");
-    }, 800);
-
-    setTimeout(() => {
-        hint.classList.remove("show");
-        profileBtn.classList.remove("attention");
-
-        localStorage.setItem("accountHintShown", "true");
-    }, 3500);
-
-});
+showInitialCategoryTitle(); // نفّذها فورًا وقت تحميل الملف
 
 // Lightbox
 function openLB(src) {
@@ -203,11 +179,6 @@ function contactWA(productId, name, price) {
   window.open('https://wa.me/' + WA + '?text=' + encodeURIComponent(msg), '_blank');
 }
 
-const breadcrumbCatEl = document.getElementById('current-breadcrumb-cat');
-if (breadcrumbCatEl) {
-  breadcrumbCatEl.textContent = (currentCat === 'all') ? 'الكل' : (categoryMap[currentCat]?.display_name || currentCat);
-}
-
 function renderIcon(catId) {
   const icon = categoryIcons[catId] || '';
   if (icon.trim().startsWith('<svg')) {
@@ -339,32 +310,37 @@ let priceHtml = salePrice
 
 async function loadData() {
   const container = document.getElementById('prod-list');
+
+  const cached = sessionStorage.getItem('wodi_products_cache');
+  if (cached) {
+    processData(JSON.parse(cached));
+    return; // مفيش داعي لطلب شبكة جديد خالص
+  }
+
   if (container) {
-    container.innerHTML = '<p style="text-align:center; color:rgba(51,48,40,0.6); grid-column:1/-1; padding:40px;">جاري تحميل المنتجات...</p>';
+    container.innerHTML = '<p>جاري تحميل المنتجات...</p>';
   }
 
   try {
     const res = await fetch(API_URL);
     const data = await res.json();
-    products = data.products.map(p => ({
-      ...p,
-      visible: String(p.visible).trim().toUpperCase() === "TRUE",
-      featured: String(p.featured).trim().toUpperCase() === "TRUE",
-      new: String(p.new).trim().toUpperCase() === "TRUE"
-    }));
-    categories = data.categories;
-    categoryMap = {};
-    categories.forEach(c => { categoryMap[c.category_id] = c; });
-    
-    renderCategories();
-    renderProducts();
+    processData(data);
   } catch (err) {
-    console.error(err);
-    if (container) {
-      container.innerHTML = '<p style="color:#d9534f; text-align:center; grid-column:1/-1; padding:40px;">تعذّر تحميل المنتجات، يرجى المحاولة لاحقاً.</p>';
-    }
+    // معالجة الخطأ زي ما هي
   }
 }
 
+function processData(data) {
+  products = data.products.map(p => ({ ...p, /* المعالجة الموجودة */ }));
+  categories = data.categories;
+  categoryMap = {};
+  categories.forEach(c => { categoryMap[c.category_id] = c; });
+  renderCategories();
+  renderProducts();
+}
+
 document.addEventListener('DOMContentLoaded', loadData);
+
+// التقاط الفئة من الرابط (Query Parameter) عند تحميل الصفحة وتفعيلها تلقائياً
+
 

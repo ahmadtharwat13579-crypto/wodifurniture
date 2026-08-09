@@ -1,6 +1,6 @@
 <nav class="navbar" id="navbar">
   <!-- الأيقونات على اليمين (بروفايل + مفضلة + عربة + 3 شرط) -->
-  <div class="nav-right">
+ <div class="nav-right">
 
     <!-- زر القائمة الجانبية -->
     <button
@@ -44,26 +44,27 @@
     </a>
 
     <!-- الحساب -->
-  <a href="#" class="account-btn" id="accountBtn" aria-label="Profile" onclick="loginWithGoogle()">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-      <circle cx="12" cy="7" r="4"></circle>
-    </svg>
-  </a>
+    <div class="account-wrapper">
+        <a href="#" class="account-btn" id="accountBtn" aria-label="Profile" onclick="loginWithGoogle()">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+        </a>
 
         <div id="accountHint" class="account-hint">
             سجل دخولك لحفظ المفضلة
         </div>
     </div>
-  </a>
-  </div>
 
-  <!-- اللوجو على الشمال -->
-  <div class="nav-left">
+</div>
+
+<!-- اللوجو على الشمال -->
+<div class="nav-left">
     <a href="index.html" class="logo-link">
-      <img id="navLogo" src="images/logos/logo-white.png" alt="WODI" class="nav-logo" />
+    <img id="navLogo" src="images/logos/logo-white.png" alt="WODI" class="nav-logo" />
     </a>
-  </div>
+</div>
 </nav>
 
 <!-- الخلفية -->
@@ -111,8 +112,12 @@
                 onclick="toggleProductsDropdown()"
             >
                 <div class="dropdown-title-wrapper">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-                    <span>منتجاتنا</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
+                    <path d="M3 6h18"/>
+                    <path d="M16 10a4 4 0 0 1-8 0"/>
+                    </svg>                   
+                <span>منتجاتنا</span>
                 </div>
                 <svg
                     class="dropdown-arrow"
@@ -128,15 +133,20 @@
                 class="side-nav-dropdown-menu"
                 id="productsDropdown"
             >
-                <a href="#" class="side-nav-dropdown-item">الفئة الأولى</a>
-                <a href="#" class="side-nav-dropdown-item">الفئة الثانية</a>
-                <a href="#" class="side-nav-dropdown-item">الفئة الثالثة</a>
-                <a href="#" class="side-nav-dropdown-item">الفئة الرابعة</a>
+                <!-- سيتم تعبئتها ديناميكيًا من nav.js -->
             </div>
         </div>
 
         <a href="configurator.html" class="side-nav-link">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            <svg width="20" height="20" viewBox="0 0 520 500" fill="none" stroke="currentColor" stroke-width="18" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M235 20 H285 V80" />
+            <path d="M110 110 H410 C410 110 400 175 260 175 C120 175 110 110 110 110 Z" />
+            <line x1="15" y1="180" x2="505" y2="180" />
+            <rect x="55" y="215" width="410" height="255" />
+            <line x1="260" y1="215" x2="260" y2="470" />
+            <line x1="230" y1="295" x2="230" y2="380" />
+            <line x1="290" y1="295" x2="290" y2="380" />
+            </svg>
             <span>صمم وحدة حوضك</span>
         </a>
     </nav>
@@ -195,23 +205,24 @@
         </div>
 
         <div class="side-nav-contact">
-            <span class="side-nav-footer-title">تواصل معنا</span>
-            <div class="side-nav-socials">
+            <div class="footer-col">
+            <h4>تواصل معنا</h4>
+            <div class="social-icons-wrapper">
                 <!-- إيميل -->
                 <a href="mailto:wodifurniture@outlook.com" aria-label="Email">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
                 </a>
                 <!-- إنستجرام -->
-                <a href="https://www.instagram.com/wodifurniture" aria-label="Instagram" target="_blank">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
+                <a href="https://www.instagram.com/wodifurniture" aria-label="Instagram">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
                 </a>
                 <!-- فيسبوك -->
-                <a href="https://www.facebook.com/wodifurniture" aria-label="Facebook" target="_blank">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                <a href="https://www.facebook.com/wodifurniture" aria-label="Facebook">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
                 </a>
                 <!-- واتساب -->
-                <a href="https://wa.me/201556840368" aria-label="WhatsApp" target="_blank">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.533 5.858L.054 23.25a.75.75 0 0 0 .916.916l5.392-1.479A11.954 11.954 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.933 0-3.742-.524-5.287-1.437l-.378-.225-3.924 1.077 1.077-3.924-.225-.378A9.953 9.953 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+                <a href="https://wa.me/201556840368" aria-label="WhatsApp">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.533 5.858L.054 23.25a.75.75 0 0 0 .916.916l5.392-1.479A11.954 11.954 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.933 0-3.742-.524-5.287-1.437l-.378-.225-3.924 1.077 1.077-3.924-.225-.378A9.953 9.953 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
                 </a>
             </div>
         </div>

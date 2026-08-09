@@ -1,0 +1,119 @@
+/* ==========================================
+   WODI Furniture - Product Detail CSS
+   ========================================== */
+
+.product-detail-layout {
+  max-width: 900px;
+  margin: 0 auto;
+  background: var(--color-bg-light, #faf9f6);
+  border: 1px solid var(--color-border, #e7e3da);
+  border-radius: 2px;
+  padding: 30px;
+}
+
+.prod-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  align-items: start;
+}
+
+.product-gallery {
+  position: relative;
+  width: 100%;
+  height: 380px;
+  background: var(--color-bg-white, #fff);
+  border: 1px solid var(--color-border, #e7e3da);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.product-thumbnails {
+  display: flex;
+  gap: 10px;
+}
+
+.product-thumbnails img {
+  width: 70px;
+  height: 70px;
+  object-fit: cover;
+  border: 1px solid var(--color-border, #e7e3da);
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.product-info-section {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.product-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-text-main, #333028);
+  margin-bottom: 12px;
+  font-family: var(--font-family, 'Cairo', sans-serif);
+}
+
+.product-price-wrapper {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text-main, #333028);
+  margin-bottom: 16px;
+  font-family: var(--font-family, 'Cairo', sans-serif);
+}
+
+.product-description {
+  font-size: 14px;
+  color: rgba(51, 48, 40, 0.8);
+  line-height: 1.7;
+  margin-bottom: 20px;
+  font-family: var(--font-family, 'Cairo', sans-serif);
+}
+
+.product-dimensions {
+  background: var(--color-bg-white, #fff);
+  border: 1px solid var(--color-border, #e7e3da);
+  padding: 12px;
+  border-radius: 2px;
+  margin-bottom: 20px;
+  font-size: 13px;
+  color: var(--color-text-main, #333028);
+}
+
+.product-actions-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.btn-whatsapp-order {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px;
+  background: #9caf88;
+  color: var(--color-bg-white, #fff);
+  border: none;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: var(--font-family, 'Cairo', sans-serif);
+  cursor: pointer;
+  transition: 0.3s;
+  width: 100%;
+  border-radius: 2px;
+}
+
+.btn-whatsapp-order:hover {
+  background: #8a9e78;
+}
+
+@media (max-width: 768px) {
+  .prod-detail-grid {
+    grid-template-columns: 1fr;
+  }
+}

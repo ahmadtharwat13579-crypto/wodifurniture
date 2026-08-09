@@ -1,0 +1,555 @@
+/* index.css */
+
+/* Hero */
+.hero {
+  position: relative;
+  overflow: hidden;
+  min-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  text-align: right;
+  animation: heroFadeIn 1s ease-out forwards;
+  will-change: transform;
+}
+
+.hero-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: var(--z-base-layer);
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.20);
+  z-index: var(--z-overlay);
+}
+
+.hero-content {
+  position: relative;
+  z-index: var(--z-nav-item);
+  padding: 100px 60px 60px;
+}
+
+.hero h1 {
+  font-size: clamp(32px, 5vw, 56px);
+  font-weight: 800;
+  line-height: 1.3;
+  margin-bottom: 16px;
+  color: var(--color-bg-white);
+  text-shadow: none;
+}
+
+.hero p {
+  font-size: clamp(18px, 2vw, 17px);
+  color: var(--color-bg-white);
+  margin-bottom: 28px;
+  max-width: 480px;
+  text-shadow: none;
+}
+
+.btn-outline {
+  display: inline-block;
+  padding: 10px 20px;
+  border: 1px solid var(--color-bg-white);
+  color: var(--color-bg-white);
+  text-decoration: none;
+  font-weight: 600;
+  transition: var(--transition-base);
+  margin-left: auto;
+  margin-right: 0;
+}
+
+.btn-outline:hover {
+  background: #333;
+  color: var(--color-bg-white);
+  border: 1px solid #333;
+}
+
+.btn-primary {
+  display: inline-block;
+  background: var(--color-primary);
+  color: var(--color-bg-white);
+  text-decoration: none;
+  padding: 10px 28px;
+  border: none;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  font-size: var(--font-size-lg);
+  font-family: var(--font-family-main);
+  font-weight: 600;
+  transition: background var(--transition-fast);
+}
+
+.btn-primary:hover {
+  background: var(--color-primary-hover);
+}
+
+/* Features Section */
+.why-wodi-section {
+  padding: 60px 35px 50px;
+  background: var(--color-bg-white);
+  color: var(--color-text-main);
+  direction: rtl;
+}
+
+.why-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.why-text-content {
+  display: grid;
+  grid-template-columns: 0.8fr 1fr;
+  gap: 40px;
+  align-items: center;
+}
+
+.why-text-content h2 {
+  margin: 0;
+  font-size: clamp(32px, 5vw, 50px);
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--color-text-main);
+  margin-right: 60px;
+  display: flex;
+  align-items: center;
+}
+
+.why-text-content p {
+  margin: 0;
+  font-size: clamp(16px, 4vw, 20px);
+  max-width: 700px;
+  width: 90%;
+  line-height: 1.7;
+  color: #4a4a4a;
+  text-align: justify;
+  display: flex;
+  align-items: center;
+}
+
+/* Why section - mobile adjustments */
+@media (max-width: 768px) {
+  .why-text-content {
+    grid-template-columns: 1fr;
+    gap: 35px;
+  }
+  .why-text-content h2 {
+    width: 70%;
+    justify-content: flex-start;
+    font-size: 34px;
+    text-align: right;
+  }
+  .why-text-content p {
+    width: 75%;
+    margin-right: auto;
+    text-align: right;
+    font-size: 18px;
+  }
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Features list */
+.features-section {
+  padding: 80px 60px;
+  background: var(--color-bg-white);
+  color: var(--color-text-main);
+}
+
+.features-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 50px;
+  gap: 40px;
+}
+
+.features-header h2 {
+  font-size: 48px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.features-header p {
+  max-width: 450px;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xl);
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 30px;
+}
+
+.feature-item img {
+  width: 100%;
+  height: 400px;
+  object-fit: cover;
+  border-radius: var(--radius-xs);
+  margin-bottom: 20px;
+}
+
+.feature-item h3 {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.feature-item p {
+  color: var(--color-text-muted);
+  margin-bottom: 15px;
+  line-height: 1.6;
+}
+
+.more-link {
+  color: var(--color-text-main);
+  font-weight: bold;
+  text-decoration: none;
+  border-bottom: 1px solid var(--color-text-main);
+}
+
+/* Section Titles */
+.section-title {
+  text-align: center;
+  margin: 56px auto 32px;
+  font-size: clamp(22px, 4vw, 32px);
+  font-weight: 700;
+  color: var(--color-bg-white);
+}
+
+/* Products Grid */
+.products-section {
+  max-width: 1200px;
+  margin: 0 auto;
+  direction: rtl;
+}
+
+.products-grid {
+  overflow-x: auto;
+  overflow-y: hidden;
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: flex-start;
+  scroll-behavior: smooth;
+  gap: 20px;
+  padding-bottom: 20px;
+  width: 100%;
+  max-width: 100%;
+}
+
+.bar.active {
+  background: #333;
+  transform: scaleY(1.5);
+}
+
+.product-card img {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  border-radius: var(--radius-xs);
+  margin-bottom: 20px;
+  display: block;
+}
+
+/* Product Cards Animation */
+.product-card {
+  flex: 0 0 260px;
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+  direction: rtl;
+  opacity: 0;
+  transform: scale(.86) translateY(40px);
+  transition: opacity .7s ease, transform .7s ease;
+}
+
+.product-card.show {
+  opacity: 1;
+  transform: scale(.86) translateY(0);
+}
+
+.scroll-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.product-card h3 {
+  font-size: 25px;
+  text-align: right;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.product-card p {
+  font-size: 15px;
+  line-height: 1.6;
+  text-align: right;
+  color: var(--color-text-muted);
+  margin-bottom: 15px;
+  max-width: 100%;
+  flex-grow: 1;
+}
+
+.btn-more {
+  display: inline-block;
+  padding: 7px 20px;
+  border: 1px solid #333;
+  color: #333;
+  text-decoration: none;
+  font-weight: 600;
+  transition: 0.3s;
+  margin-left: auto;
+  margin-right: 0;
+}
+
+.btn-more:hover {
+  background: #333;
+  color: var(--color-bg-white);
+}
+
+/* Why WODI (list) */
+.why-section {
+  padding: 20px 40px 60px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.why-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.why-list li {
+  font-size: 15px;
+  color: rgba(51, 48, 40, 0.85);
+  line-height: 1.6;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.why-list li::before {
+  content: '–';
+  color: var(--color-primary);
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* Collections */
+.collections-section {
+  padding: 40px 10px;
+  max-width: 1200px;
+  margin: auto;
+}
+
+.collections-grid {
+  display: flex;
+  flex-direction: row-reverse;
+  scroll-snap-type: x mandatory;
+  padding-inline: 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-padding-inline: 40px;
+  scroll-behavior: smooth;
+  gap: 18px;
+  width: 100%;
+  max-width: 100%;
+}
+
+.collection-card {
+  flex: 0 0 86%;
+  scroll-snap-align: center;
+  transition: transform .45s ease, opacity .45s ease;
+  transform: scale(.92) translateY(20px);
+  opacity: .45;
+}
+
+.collection-card.active {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+}
+
+.collection-mosaic {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 14px;
+}
+
+.collection-mosaic .main-img {
+  width: 100%;
+  aspect-ratio: 16/16;
+  object-fit: cover;
+  border-radius: var(--radius-xs);
+}
+
+.collection-bottom {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+}
+
+.collection-bottom img {
+  width: 100%;
+  aspect-ratio: 1/1;
+  object-fit: cover;
+  border-radius: var(--radius-xs);
+}
+
+.collection-card h3 {
+  font-size: 28px;
+  color: var(--color-text-main);
+  margin-bottom: 10px;
+}
+
+.collection-card p {
+  color: var(--color-text-muted);
+  line-height: 1.7;
+  margin-bottom: 16px;
+  flex-grow: 1;
+}
+
+.collection-price {
+  font-size: 17px;
+  margin-bottom: 20px;
+  color: var(--color-text-muted);
+}
+
+.collection-price span {
+  color: var(--color-primary);
+  font-weight: 700;
+  font-size: 22px;
+}
+
+/* =========================================
+   Buttons Styling (Integrated from configurator.css)
+========================================= */
+
+.action-btn,
+.config-btn,
+.step-next-btn,
+.step-prev-btn,
+.summary-checkout-btn,
+.modal-submit-btn,
+.contact-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: var(--color-primary);
+  color: var(--color-bg-white);
+  border: none;
+  border-radius: var(--radius-xs);
+  padding: 12px 24px;
+  font-size: var(--font-size-base);
+  font-family: var(--font-family-main);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color var(--transition-fast), transform 0.1s ease;
+}
+
+.action-btn:hover,
+.config-btn:hover,
+.step-next-btn:hover,
+.step-prev-btn:hover,
+.summary-checkout-btn:hover,
+.modal-submit-btn:hover,
+.contact-btn:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.action-btn:active,
+.config-btn:active,
+.step-next-btn:active,
+.step-prev-btn:active,
+.summary-checkout-btn:active,
+.modal-submit-btn:active,
+.contact-btn:active {
+  transform: scale(0.98);
+}
+
+.btn-secondary {
+  background-color: var(--color-bg-alt);
+  color: var(--color-text-main);
+  border: 1px solid var(--color-border);
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-border);
+}
+
+/* =========================================
+   Scroll Arrows Styling (Integrated from configurator.css)
+========================================= */
+
+.cards-row > * { 
+  scroll-snap-align: center; 
+  flex: 0 0 220px; 
+}
+
+.scroll-arrow { 
+  position: absolute; 
+  top: 50%; 
+  transform: translateY(-50%); 
+  width: 34px; 
+  height: 34px; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  border-radius: var(--radius-xs); 
+  background: var(--color-bg-white); 
+  box-shadow: var(--shadow-scroll-arrow); 
+  border: 1px solid rgba(0, 0, 0, 0.04); 
+  cursor: pointer; 
+  z-index: 10; 
+}
+
+.scroll-arrow.hidden { 
+  opacity: 0; 
+  pointer-events: none; 
+  transform: translateY(-50%) scale(.95); 
+}
+
+.scroll-arrow.arr-start { 
+  right: 6px; /* RTL: start is right */
+} 
+
+.scroll-arrow.arr-end { 
+  left: 6px; 
+}
+
+.scroll-arrow svg { 
+  width: 18px; 
+  height: 18px; 
+  stroke: var(--color-text-main); 
+}
+
+.scroll-arrow:hover {
+  background: var(--color-text-main);
+}
+
+.scroll-arrow:hover svg {
+  stroke: var(--color-bg-white);
+}

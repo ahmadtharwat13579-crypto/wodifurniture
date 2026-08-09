@@ -1,24 +1,35 @@
 function initNavbar() {
 
   // --- 1. سلوك إخفاء/إظهار الـ Nav عند السكرول ---
-  const navbar = document.querySelector('.navbar');
-  const HIDE_THRESHOLD = 150; // بعد كام بيكسل من فوق تختفي
+  (function () {
+    let lastScrollY = window.scrollY;
+    let ticking = false;
 
-  if (navbar) {
+    const navbar = document.querySelector('.navbar');
+    if (!navbar) return;
+
     function updateNavbar() {
       const currentScrollY = window.scrollY;
 
-      if (currentScrollY > HIDE_THRESHOLD) {
+      if (currentScrollY > lastScrollY && currentScrollY > 80) {
+        // نازل تحت وعدى مسافة معينة (80px) → إخفاء
         navbar.style.setProperty('transform', 'translateY(-100%)', 'important');
       } else {
+        // طالع فوق (في أي مكان) → إظهار
         navbar.style.setProperty('transform', 'translateY(0)', 'important');
       }
+
+      lastScrollY = currentScrollY;
+      ticking = false;
     }
 
     window.addEventListener('scroll', () => {
-      requestAnimationFrame(updateNavbar);
+      if (!ticking) {
+        requestAnimationFrame(updateNavbar);
+        ticking = true;
+      }
     }, { passive: true });
-  }
+  })();
 
   // --- 2. القائمة الجانبية (Side Nav) ---
   window.toggleSideNav = function () {
@@ -113,11 +124,97 @@ function initNavbar() {
     }
   };
 
+  loadAndRenderCategoryLinks();
+  initAccountHint();
+
 }
 
-// استدعاء الدالة الأصلية فور تحميل الصفحة لتتפعل القائمة بشكل طبيعي
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initNavbar);
-} else {
-  initNavbar();
+  // --- 8. بناء الفئات من الJSON لعرضها في الSide Menu--
+async function loadAndRenderCategoryLinks() {
+  const CACHE_KEY = 'wodi_categories_cache';
+
+  const cached = localStorage.getItem(CACHE_KEY);
+  if (cached) {
+    renderCategoryLinksFromData(JSON.parse(cached));
+  }
+
+  try {
+    const res = await fetch("https://script.google.com/macros/s/AKfycbz3xuCuZ6sU9QVo2nTRaItWFLplEhG7bKuzeZSQpk4DseShYrzycpRhyO2u2kuwPVkY/exec?pwd=double-protection-password");
+    const data = await res.json();
+    const categories = (data.categories || []).filter(cat => cat.visible === true);
+
+    localStorage.setItem(CACHE_KEY, JSON.stringify(categories));
+    renderCategoryLinksFromData(categories); // تحديث العرض بأحدث نسخة
+  } catch (err) {
+    console.error('فشل تحديث الفئات:', err);
+  }
 }
+
+function renderCategoryLinksFromData(categories) {
+  categories.sort((a, b) => a.order - b.order);
+
+  const sideMenuContainer = document.getElementById('productsDropdown');
+  if (sideMenuContainer) {
+    sideMenuContainer.innerHTML = `
+      <a href="products.html" class="side-nav-dropdown-item">جميع المنتجات</a>
+    ` + categories
+      .map(cat => `<a href="products.html?category=${cat.category_id}" class="side-nav-dropdown-item">${cat.display_name}</a>`)
+      .join('');
+  }
+
+  const footerContainer = document.getElementById('footerCategoryLinks');
+  if (footerContainer) {
+    footerContainer.innerHTML = `
+      <li><a href="products.html">جميع المنتجات</a></li>
+    ` + categories
+      .map(cat => `<li><a href="products.html?category=${cat.category_id}">${cat.display_name}</a></li>`)
+      .join('');
+  }
+}
+
+  // --- 9. تهيئة تلميح الحساب ---
+function initAccountHint() {
+  const hint = document.getElementById("accountHint");
+  const profileBtn = document.querySelector(".account-btn");
+  if (!hint || !profileBtn) return;
+
+  const currentUrl = window.location.href;
+  const path = window.location.pathname;
+  
+  // استبعاد الصفحة الرئيسية
+  const isHomePage = path === '/' || path.endsWith('index.html') || path === '' || currentUrl.endsWith('/');
+  if (isHomePage) return;
+
+  const messages = {
+    'products.html': 'سجل دخولك لحفظ منتجاتك المفضلة',
+    'configurator.html': 'سجل دخولك لحفظ تصميمك والرجوع له لاحقًا',
+  };
+
+  const pageKey = Object.keys(messages).find(key => path.includes(key));
+  if (!pageKey) return; // لو الصفحة مش مدرجة في القائمة، متظهرش
+
+  // إنشاء مفتاح فريد لكل صفحة في الـ localStorage (مثلاً: accountHintShown_products.html)
+  const storageKey = `accountHintShown_${pageKey}`;
+
+  // لو ظهرت في الصفحة دي قبل كده، متظهرش تاني فيها
+  if (localStorage.getItem(storageKey)) return;
+
+  hint.textContent = messages[pageKey] || 'سجل دخولك لحفظ المفضلة';
+
+  setTimeout(() => {
+    hint.classList.add("show");
+    profileBtn.classList.add("attention");
+  }, 1600);
+
+  setTimeout(() => {
+    hint.classList.remove("show");
+    profileBtn.classList.remove("attention");
+    // تسجيل أن الرسالة ظهرت في هذه الصفحة فقط
+    localStorage.setItem(storageKey, "true");
+  }, 3500);
+}
+
+// تشغيل الدالة فور تحميل الصفحة (أو استدعائها بعد تحميل الـ Navbar لو بتستخدم Fetch)
+document.addEventListener('DOMContentLoaded', () => {
+  initAccountHint();
+});
