@@ -1,5 +1,4 @@
 function initNavbar() {
-
   // --- 1. سلوك إخفاء/إظهار الـ Nav عند السكرول ---
   (function () {
     let lastScrollY = window.scrollY;
@@ -47,12 +46,17 @@ function initNavbar() {
   // --- 3. مودال تسجيل الخروج (معدل ومتاح عالمياً وضمن initNavbar) ---
   window.openLogoutModal = function () {
     const logoutModal = document.getElementById('logoutModal');
-    if (!logoutModal) return;
+    if (!logoutModal) {
+      console.error('logoutModal غير موجود في DOM');
+      return;
+    }
 
     const sideNav = document.getElementById('sideNav');
     const backdrop = document.getElementById('sideNavBackdrop');
+
     if (sideNav) sideNav.classList.remove('active');
     if (backdrop) backdrop.classList.remove('active');
+
     document.body.classList.remove('side-nav-open');
 
     logoutModal.classList.add('is-visible');
@@ -60,6 +64,7 @@ function initNavbar() {
 
   window.closeLogoutModal = function () {
     const logoutModal = document.getElementById('logoutModal');
+
     if (logoutModal) {
       logoutModal.classList.remove('is-visible');
     }
@@ -94,10 +99,14 @@ function initNavbar() {
   });
 
   // --- 6. ربط زرار تسجيل الخروج (بالكود الأصلي مع تأمين العنصر) ---
-  const logoutBtn = document.getElementById('sideNavLogoutBtn');
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', openLogoutModal);
-  }
+  document.addEventListener('click', function (event) {
+    const logoutBtn = event.target.closest('#sideNavLogoutBtn');
+
+    if (logoutBtn) {
+      event.preventDefault();
+      openLogoutModal();
+    }
+  });
 
   // --- 7. عرض بيانات المستخدم (لو موجود نظام حسابات) ---
   window.updateSideNavAccount = function (user) {
@@ -132,19 +141,39 @@ function initNavbar() {
   // --- 8. بناء الفئات من الJSON لعرضها في الSide Menu--
 async function loadAndRenderCategoryLinks() {
   const CACHE_KEY = 'wodi_categories_cache';
-
+  const SHEET = 'https://script.google.com/macros/s/AKfycbz3xuCuZ6sU9QVo2nTRaItWFLplEhG7bKuzeZSQpk4DseShYrzycpRhyO2u2kuwPVkY/exec?pwd=double-protection-password';
   const cached = localStorage.getItem(CACHE_KEY);
+
   if (cached) {
-    renderCategoryLinksFromData(JSON.parse(cached));
+    try {
+      renderCategoryLinksFromData(JSON.parse(cached));
+    } catch (err) {
+      console.warn('تعذر قراءة cache الفئات:', err);
+      localStorage.removeItem(CACHE_KEY);
+    }
   }
 
   try {
-    const res = await fetch("https://script.google.com/macros/s/AKfycbz3xuCuZ6sU9QVo2nTRaItWFLplEhG7bKuzeZSQpk4DseShYrzycpRhyO2u2kuwPVkY/exec?pwd=double-protection-password");
-    const data = await res.json();
-    const categories = (data.categories || []).filter(cat => cat.visible === true);
+    const res = await fetch(SHEET);
 
-    localStorage.setItem(CACHE_KEY, JSON.stringify(categories));
-    renderCategoryLinksFromData(categories); // تحديث العرض بأحدث نسخة
+    if (!res.ok) {
+      console.error('Categories response status:', res.status);
+      console.error('Categories response URL:', res.url);
+      return;
+    }
+
+    const data = await res.json();
+
+    const categories = (data.categories || [])
+      .filter(cat => cat.visible === true);
+
+    localStorage.setItem(
+      CACHE_KEY,
+      JSON.stringify(categories)
+    );
+
+    renderCategoryLinksFromData(categories);
+
   } catch (err) {
     console.error('فشل تحديث الفئات:', err);
   }

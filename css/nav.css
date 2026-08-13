@@ -237,18 +237,26 @@ body.home-page .navbar .nav-right div {
     right: 0;
     width: 280px;
     max-width: 85vw;
-    height: 100vh;
+
+    height: 100dvh;
+    max-height: 100dvh;
+    box-sizing: border-box;
+
     background-color: var(--color-bg-white);
     box-shadow: -5px 0 25px rgba(0, 0, 0, 0.08);
     z-index: 10000;
+
     display: flex;
     flex-direction: column;
+
     overflow-y: auto;
+    overflow-x: hidden;
+
     transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     transform: translateX(100%);
+
     font-family: inherit;
 }
-
 .side-nav.active {
     transform: translateX(0);
 }
@@ -515,8 +523,13 @@ body.side-nav-open {
 
 .side-nav-footer-group {
     margin-top: auto;
+
+    flex-shrink: 0;
+
     background-color: var(--color-footer-bg);
     padding: 20px 16px;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
+
     display: flex;
     flex-direction: column;
     align-items: center;

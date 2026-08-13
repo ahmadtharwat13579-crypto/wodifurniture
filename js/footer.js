@@ -3,8 +3,6 @@
 // ==========================================
 
 function initFooter() {
-  console.log("تم تحميل الفوتر بنجاح!");
-
   // استدعاء دالة جلب الفئات الديناميكية المعرفة في nav.js لتعبئة #footerCategoryLinks
   if (typeof loadAndRenderCategoryLinks === 'function') {
     loadAndRenderCategoryLinks();

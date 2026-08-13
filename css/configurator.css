@@ -59,13 +59,6 @@
   box-sizing: border-box;
   align-items: start;
 }
-.price-column {
-  width: 320px;
-  box-sizing: border-box;
-  /* use sticky on desktop only (not fixed) */
-  position: sticky;
-  top: 100px;
-}
 .main-header {
   font-size: 22px;
   font-weight: 700;
@@ -76,29 +69,140 @@
   text-align: right;
   max-width: 100%;
 }
-.intro-para {
-  font-size: 12px;
-  line-height: 1.8;
-  color: rgba(51,48,40,0.7);
-  margin-bottom: 18px;
-  margin-right: 16px;
-  margin-top: 15px;
-  text-align: right;
-}
-.intro-line {
-  font-size: 13px;
-  color: rgba(51,48,40,0.65);
-  margin-top: 8px;
-  text-align: right;
+
+/* =========================================
+   Stepper Section Styling 
+========================================= */
+
+.compact-stepper {
+  background: transparent;
+  padding: 1px 8px;
+  margin-bottom: 25px;
+  direction: rtl;
+  position: sticky;
+  top: 0px;
+  z-index: var(--z-stepper);
+  transition: all 0.3s ease;
 }
 
-/* Grid / Cards */
-.wodi-grid-container {
+/* الحالة الـ Sticky: خلفية بيضاء مستطيلة وظل خفيف عند التمرير */
+.compact-stepper.is-sticky {
+  background: var(--color-bg-white);
+  padding: 12px 12px;
+  border-radius: var(--radius-xl);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #f3f4f6;
+  top: 0px;
+}
+
+.compact-stepper ol {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  list-style: none;
+  padding: 0 10px;
+  margin: 0;
+  position: relative;
+}
+
+/* الخط الرابط الخلفي المتصل */
+.compact-stepper ol::before {
+  content: '';
+  position: absolute;
+  top: 18px;
+  right: 45px;
+  left: 45px;
+  height: 2px;
+  background: #e5e7eb;
+  z-index: 1;
+}
+
+.compact-stepper .stepper-item {
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  width: 100%;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+  background: transparent;
+  padding: 0 8px;
+  text-align: center;
+  align-self: flex-start;
 }
+
+/* شكل الأيقونة والـ SVG بداخله */
+.compact-stepper .stepper-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-full);
+  background: var(--color-bg-white);
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+  border: 2px solid #e5e7eb;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+  transition: all 0.3s ease;
+}
+
+.compact-stepper .stepper-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.compact-stepper .stepper-title {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  line-height: 1.4;
+  color: #6b7280;
+}
+
+/* حالة الاكتمال (باللون الأخضر الزيتوني المطلوب #9caf88) */
+.compact-stepper .stepper-item.completed .stepper-icon {
+  background: var(--color-primary);
+  color: var(--color-bg-white);
+  border-color: var(--color-primary);
+}
+
+/* علامة الصح الهندسية الحادة المينيملست (Straight checkmark) */
+.compact-stepper .stepper-item.completed .stepper-icon svg {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='square' stroke-linejoin='miter'%3E%3Cpolyline points='4 12 10 18 20 6'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 16px;
+}
+
+.compact-stepper .stepper-item.completed .stepper-icon svg > * {
+  display: none;
+}
+
+.compact-stepper .stepper-item.completed .stepper-title {
+  color: #111827;
+}
+
+/* حالة فشل تحديد الموقع أو خارج النطاق (برتقالي / أصفر) */
+.compact-stepper .stepper-item.out-of-range .stepper-icon {
+  background: #f59e0b;
+  color: var(--color-bg-white);
+  border-color: #f59e0b;
+}
+
+/* =========================================
+   Sticky Price Bar Styling 
+========================================= */
+
+.price-column {
+  width: 320px;
+  box-sizing: border-box;
+  /* use sticky on desktop only (not fixed) */
+  position: sticky;
+  top: 100px;
+}
+
+/* =========================================
+   Configurator Section Styling 
+========================================= */
+
 .grid-item {
   background: transparent;
   border: none;
@@ -115,176 +219,6 @@
 #location-section{
   border-bottom: none;
   padding-bottom: 20px; /* أو القيمة اللي تناسبك */
-}
-/* Notes box */
-.notes-box {
-  border: 2px solid rgba(51,48,40,0.12);
-  background: rgba(0,0,0,0.02);
-  padding: 0;
-  overflow: hidden;
-}
-.notes-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 12px;
-  cursor: pointer;
-  background: var(--color-warning);
-  transition: all var(--transition-fast);
-}
-.notes-header-left {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.notes-icon {
-  width: 18px;
-  height: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.notes-icon svg {
-  width: 16px;
-  height: 16px;
-  stroke: #1a1a2a;
-  stroke-width: 2.5;
-}
-.notes-title {
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  color: #1a1a2a;
-  flex-shrink: 0;
-}
-.notes-toggle {
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform var(--transition-base);
-  flex-shrink: 0;
-}
-.notes-toggle svg {
-  width: 14px;
-  height: 14px;
-  stroke: #1a1a2a;
-  opacity: 0.9;
-}
-.notes-box.open .notes-toggle {
-  transform: rotate(180deg);
-}
-.notes-content {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1);
-}
-.notes-box.open .notes-content {
-  max-height: 400px;
-}
-.notes-list {
-  list-style: none;
-  padding: 12px;
-  margin: 0;
-}
-.notes-list li {
-  font-size: var(--font-size-xs);
-  line-height: 1.7;
-  color: rgba(51,48,40,0.7);
-  padding: 2px 0;
-  display: flex;
-  gap: 6px;
-  text-align: right;
-}
-.notes-list li::before {
-  content: "";
-  width: 6px;
-  height: 6px;
-  border: 1.5px solid rgba(51,48,40,0.5);
-  border-radius: var(--radius-full);
-  flex-shrink: 0;
-  margin-top: 6px;
-}
-
-/* Stepper (mobile) */
-.config-stepper {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  overflow-x: auto;
-  gap: 10px;
-  padding: 10px 14px;
-  max-width: 1200px;
-}
-.config-stepper .stepper-title {
-  display: none;
-}
-.step-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: var(--font-size-xs);
-  color: #71717a;
-  white-space: nowrap;
-}
-.step {
-  background: transparent;
-  border-radius: 0;
-  padding: 0;
-  margin-bottom: 0;
-  box-shadow: none;
-  border: none;
-}
-.step-desc{
-    margin:0 0 16px;
-    color:#777;
-    line-height:1;
-    transition: var(--transition-fast);
-    margin-right: 15px;
-    font-size: var(--font-size-xl);
-}
-
-.step-desc strong{
-    color: var(--color-text-main);
-    font-weight:700;
-}
-.step-num {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  border-radius: var(--radius-full);
-  background: var(--accent-color, var(--color-primary));
-  color: var(--color-bg-white);
-  font-weight: 600;
-  margin-left: 5px;
-}
-.step.locked { background: #fafafa; opacity: 0.6; }
-.step.active { border: 1.5px solid var(--accent-color); }
-.step.completed { border-left: 3px solid #4caf50; }
-.step-check {
-  width: 16px;
-  height: 16px;
-  border: 1px solid #cbd5e1;
-  border-radius: var(--radius-full);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 9px;
-  color: transparent;
-  transition: all var(--transition-base);
-}
-.step-item.completed .step-check {
-  background: #657c59;
-  border-color: #657c59;
-  color: var(--color-bg-white);
-}
-.step-item.completed .step-text {
-  color: var(--color-text-main);
-  font-weight: 700;
 }
 
 /* Step cards */
@@ -328,11 +262,6 @@
   text-align: right;
   width: 100%;
   justify-content: flex-start;
-}
-
-.step-title-container {
-  position: relative;
-  display: inline-block;
 }
 
 .step > .sub-title {
@@ -400,46 +329,8 @@
 }
 .cards-row img { max-width: 100%; height: auto; display: block; object-fit: cover; }
 
-.empty-state.large{
-    width:100%;
-    min-height:240px;
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    align-items:center;
-    text-align:center;
-    border:1px dashed #e5e7eb;
-    border-radius: var(--radius-lg);
-    background:#fafafa;
-    color:#6b7280;
-}
-
-.empty-state.large svg{
-    width:42px;
-    height:42px;
-    color: var(--color-primary);
-    margin-bottom:14px;
-}
-
-.empty-title{
-    font-size: 17px;
-    font-weight:700;
-    color: var(--color-text-main);
-    margin-bottom:6px;
-}
-
-.empty-subtitle{
-    font-size: var(--font-size-base);
-    color:#8b8b8b;
-}
 
 /* Scroll arrows & cards container */
-.cards-container {
-  display: flex;
-  overflow-x: auto;
-  gap: 20px;
-  padding: 10px 0;
-}
 .design-card {
   flex: 0 0 170px;
   border: 2px solid rgba(51,48,40,0.12);
@@ -464,65 +355,7 @@
   cursor: not-allowed;
   filter: grayscale(40%);
 }
-.design-overlay{
-    position:absolute;
-    inset:0;
-    z-index:5;
 
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    align-items:center;
-
-    background:rgba(255,255,255,.75);
-    backdrop-filter:blur(2px);
-
-    padding:16px;
-    text-align:center;
-}
-
-.design-overlay svg{
-    width:20px;
-    height:20px;
-    margin-bottom:8px;
-    color:#555;
-}
-
-.overlay-title{
-    color: var(--color-text-main);
-    font-size: var(--font-size-md);
-    font-weight:700;
-    line-height:1.5;
-}
-
-.overlay-sizes{
-    margin-top:10px;
-    color: var(--color-text-main);
-}
-
-.overlay-sizes span{
-    display:block;
-    margin-bottom:2px;
-}
-
-.overlay-sizes-title{
-    font-size: var(--font-size-sm);
-    font-weight:600;
-    color: var(--color-text-muted);
-    margin-bottom:6px;
-}
-
-.overlay-sizes-list{
-    color: var(--color-text-main);
-    font-size: var(--font-size-md);
-    font-weight:600;
-    line-height:1.7;
-}
-
-.overlay-sizes strong{
-    font-weight:600;
-    color: var(--color-text-main);
-}
 .design-card.loading-lock {
   opacity: 0.5;
   cursor: not-allowed;
@@ -597,16 +430,7 @@
     justify-content:center;
     pointer-events:none;
 }
-.card-msg{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:6px;
-    margin-top:8px;
-    font-size: var(--font-size-sm);
-    color: var(--color-text-muted);
-    font-weight:600;
-}
+
 .card-sizes{
     margin-top:6px;
     font-size: var(--font-size-sm);
@@ -614,10 +438,12 @@
     color: var(--color-text-muted);
     text-align:right !important;
 }
+
 .card-sizes .value{
     color: var(--color-text-main);
     font-weight:550;
 }
+
 .cimg {
   width: 100%;
   padding-top: 100%;
@@ -718,12 +544,6 @@
   color: var(--color-bg-white);
   border-color: var(--color-primary);
 }
-
-/* sizes grid */
-.sizes-grid { display:flex; gap:8px; flex-wrap:wrap; margin-top:6px; }
-.sizes-grid .size-btn { min-width:84px; padding:4px 4px; border-radius: var(--radius-xs); border:1px solid rgba(51,48,40,0.08); background: var(--color-bg-white); font-weight:700; cursor:pointer; }
-.sizes-grid .size-btn.disabled { opacity:.6; cursor:not-allowed; background:#fafafa; }
-.sizes-grid .size-btn.selected { background: var(--color-primary); color: var(--color-bg-white); border-color: var(--color-primary); }
 
 .miss {
   font-size: var(--font-size-sm);
@@ -1010,119 +830,88 @@
 .notes-panel { padding:12px; border-top: 1px solid rgba(51,48,40,0.04); }
 .notes-sidebar[aria-expanded="true"] .notes-caret { transform: rotate(180deg); }
 
-/* compact stepper */
-.compact-stepper {
-  background: transparent;
-  padding: 1px 8px;
-  margin-bottom: 25px;
-  direction: rtl;
-  position: sticky;
-  top: 0px;
-  z-index: var(--z-stepper);
-  transition: all 0.3s ease;
+
+/* =========================================
+   Inquire Section Styling 
+========================================= */
+
+.inquire-section {
+  margin: 35px 0 60px;
+  padding: var(--space-4) 5px var(--space-4);
+  background: var(--color-bg-light);
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
 }
 
-/* الحالة الـ Sticky: خلفية بيضاء مستطيلة وظل خفيف عند التمرير */
-.compact-stepper.is-sticky {
-  background: var(--color-bg-white);
-  padding: 12px 12px;
-  border-radius: var(--radius-xl);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  border: 1px solid #f3f4f6;
-  top: 0px;
-}
-
-.compact-stepper ol {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  list-style: none;
-  padding: 0 10px;
-  margin: 0;
-  position: relative;
-}
-
-/* الخط الرابط الخلفي المتصل */
-.compact-stepper ol::before {
-  content: '';
-  position: absolute;
-  top: 18px;
-  right: 45px;
-  left: 45px;
-  height: 2px;
-  background: #e5e7eb;
-  z-index: 1;
-}
-
-.compact-stepper .stepper-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-  z-index: 2;
-  background: transparent;
-  padding: 0 8px;
+.inquire-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-xs);
+  padding: 28px var(--space-6);
   text-align: center;
-  align-self: flex-start;
+  transition: border-color var(--transition-fast);
 }
 
-/* شكل الأيقونة والـ SVG بداخله */
-.compact-stepper .stepper-icon {
-  width: 38px;
-  height: 38px;
+.inquire-icon {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 14px;
   border-radius: var(--radius-full);
-  background: var(--color-bg-white);
-  color: #9ca3af;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 8px;
-  border: 2px solid #e5e7eb;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-  transition: all 0.3s ease;
+  background: rgba(156, 175, 136, 0.12);
+  color: var(--color-primary);
 }
 
-.compact-stepper .stepper-icon svg {
-  width: 18px;
-  height: 18px;
+.inquire-icon svg {
+  width: 24px;
+  height: 24px;
 }
 
-.compact-stepper .stepper-title {
-  font-size: var(--font-size-xs);
+.inquire-card h2 {
+  margin: 0;
+  font-size: var(--font-size-title);
+  color: var(--color-text-main);
+  font-weight: 700;
+}
+
+.inquire-card p {
+  margin: 10px auto 20px;
+  max-width: 520px;
+  font-size: var(--font-size-md);
+  line-height: 1.7;
+  color: var(--color-text-main);
+}
+
+.inquire-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 8px var(--space-4);
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--color-primary);
+  background: none;
+  color: var(--color-primary);
+  font-family: var(--font-family-main);
+  font-size: var(--font-size-md);
   font-weight: 600;
-  line-height: 1.4;
-  color: #6b7280;
+  cursor: pointer;
+  transition: var(--transition-fast);
 }
 
-/* حالة الاكتمال (باللون الأخضر الزيتوني المطلوب #9caf88) */
-.compact-stepper .stepper-item.completed .stepper-icon {
+.inquire-btn:hover {
   background: var(--color-primary);
   color: var(--color-bg-white);
-  border-color: var(--color-primary);
+  box-shadow: 0 10px 25px rgba(156, 175, 136, 0.28);
+  transform: translateY(-2px);
 }
 
-/* علامة الصح الهندسية الحادة المينيملست (Straight checkmark) */
-.compact-stepper .stepper-item.completed .stepper-icon svg {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='square' stroke-linejoin='miter'%3E%3Cpolyline points='4 12 10 18 20 6'%3E%3C/polyline%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: 16px;
+.inquire-btn svg {
+  width: 16px;
+  height: 16px;
 }
 
-.compact-stepper .stepper-item.completed .stepper-icon svg > * {
-  display: none;
-}
-
-.compact-stepper .stepper-item.completed .stepper-title {
-  color: #111827;
-}
-
-/* حالة فشل تحديد الموقع أو خارج النطاق (برتقالي / أصفر) */
-.compact-stepper .stepper-item.out-of-range .stepper-icon {
-  background: #f59e0b;
-  color: var(--color-bg-white);
-  border-color: #f59e0b;
-}
 
 /* scroll wrap & arrows — show arrows only when needed */
 .cards-row > * { scroll-snap-align: center; flex: 0 0 220px; } /* card width */

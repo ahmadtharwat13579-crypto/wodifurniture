@@ -1,8 +1,8 @@
-// 1. استيراد المكتبات الأساسية من الـ CDN (عشان يشتغلوا من المتصفح مباشرة من غير تعقيد)
+// 1. استيراد المكتبات الأساسية من الـ CDN
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 
-// 2. حط بيانات مشروعك اللي جبتها من الفايربيس هنا
+// 2. بيانات الفايربيس
 const firebaseConfig = {
   apiKey: "AIzaSyCS6kK1nV0FMy_Pk44aImJJTF2zQf3_8sI",
   authDomain: "wodi-furniture.firebaseapp.com",
@@ -13,26 +13,18 @@ const firebaseConfig = {
   measurementId: "G-YZ76X4QNC7"
 };
 
-// تهيئة الفايربيس
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
-// 3. دالة تسجيل الدخول بحساب جوجل (تظل كما هي)
+// تسجيل الدخول بحساب جوجل
 window.loginWithGoogle = function() {
-  // 1. اطلب التوكن من ريكابتشا أولاً
   grecaptcha.enterprise.ready(async () => {
     const token = await grecaptcha.enterprise.execute('6Lde4nktAAAAAAPAlUeMAGT4Ki99VV9yNW56TuVw', {action: 'login'});
-    
-    // 2. إذا التوكن تمام، كمل عملية تسجيل الدخول
     if (token) {
       signInWithPopup(auth, provider)
-        .then((result) => {
-          window.location.reload();
-        })
-        .catch((error) => {
-          console.error("خطأ: ", error.message);
-        });
+        .then(() => { window.location.reload(); })
+        .catch((error) => { console.error("خطأ: ", error.message); });
     }
   });
 };
@@ -42,211 +34,139 @@ function updateSideNavAccount(user) {
     const userSection = document.getElementById('sideNavUser');
     if (!loginSection || !userSection) return;
 
+    const userName = document.getElementById('sideNavUserName');
+    const userEmail = document.getElementById('sideNavUserEmail');
+    const userImage = document.getElementById('sideNavUserImage');
+
     if (user) {
         loginSection.style.display = 'none';
         userSection.style.display = 'flex';
-        
-        const userName = document.getElementById('sideNavUserName');
-        const userImage = document.getElementById('sideNavUserImage');
-        if (userName) userName.textContent = user.displayName || 'حسابي';
-        if (userImage && user.photoURL) userImage.src = user.photoURL;
+        if (userName) userName.textContent = user.displayName || user.email?.split('@')[0] || 'مستخدم WODI';
+        if (userEmail) userEmail.textContent = user.email || '';
+        if (userImage) userImage.src = user.photoURL || '';
     } else {
         loginSection.style.display = 'flex';
         userSection.style.display = 'none';
     }
-      // داخل دالة تحديث القائمة الجانبية للمستخدم المسجل
-  document.getElementById('sideNavUserName').textContent = user.displayName || 'مستخدم WODI';
-  document.getElementById('sideNavUserEmail').textContent = user.email || ''; // ده السطر اللي بيحط الإيميل الحقيقي
-  document.getElementById('sideNavUserImage').src = user.photoURL || '';
 }
-
-// 6. مراقبة حالة المستخدم وتحديث شكل أيقونة البروفايل تلقائياً
-// 6. مراقبة حالة المستخدم وتحديث شكل أيقونة البروفايل تلقائياً
-onAuthStateChanged(auth, (user) => {
-
-    updateSideNavAccount(user);
-    updateNavbarAccount(user);
-
-    const accountBtn = document.querySelector('.account-btn');
-    if (!accountBtn) return;
-
-    if (user) {
-        // المستخدم مسجل دخول
-        accountBtn.innerHTML = `
-            <img
-                class="account-profile-image"
-                src="${user.photoURL || ''}"
-                alt="Profile"
-                title="تسجيل الخروج"
-                style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;"
-            >
-        `;
-        accountBtn.href = '#';
-        accountBtn.onclick = function(event) {
-            event.preventDefault();
-            openLogoutModal();
-        };
-    } else {
-        // المستخدم غير مسجل دخول
-        accountBtn.innerHTML = `
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-              <circle cx="12" cy="7" r="4"></circle>
-            </svg>
-        `;
-        accountBtn.href = '#';
-        accountBtn.onclick = function(event) {
-            event.preventDefault();
-            loginWithGoogle(); // تفتح نافذة جوجل المنبثقة مباشرة
-        };
-    }
-
-});
 
 function updateNavbarAccount(user) {
-
-    const accountBtn = document.querySelector('.account-btn');
+    const accountBtn = document.getElementById('accountBtn');
     const accountHint = document.getElementById('accountHint');
-
     if (!accountBtn) return;
 
     if (user) {
-        accountBtn.innerHTML = `
-            <img
-                class="account-profile-image"
-                src="${user.photoURL || ''}"
-                alt="صورة الحساب"
-                style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;"
-            >
-        `;
+        accountBtn.innerHTML = `<img class="account-profile-image" src="${user.photoURL || ''}" alt="صورة الحساب">`;
         accountBtn.href = '#';
-        accountBtn.onclick = function(event) {
+        accountBtn.onclick = function (event) {
             event.preventDefault();
-            openLogoutModal();
+            if (typeof window.openLogoutModal === 'function') {
+                window.openLogoutModal();
+            }
         };
-
-        if (accountHint) {
-            accountHint.textContent = 'اضغط لتسجيل الخروج';
-        }
+        if (accountHint) accountHint.textContent = 'اضغط لتسجيل الخروج';
     } else {
         accountBtn.innerHTML = `
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-              <circle cx="12" cy="7" r="4"></circle>
-            </svg>
-        `;
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+            </svg>`;
         accountBtn.href = '#';
-        accountBtn.onclick = function(event) {
+        accountBtn.onclick = function (event) {
             event.preventDefault();
-            loginWithGoogle(); // تفتح نافذة جوجل المنبثقة مباشرة
+            window.loginWithGoogle();
         };
-
-        if (accountHint) {
-            accountHint.textContent = 'سجل دخولك لحفظ المفضلة';
-        }
+        if (accountHint) accountHint.textContent = 'سجل دخولك لحفظ المفضلة';
     }
-
 }
 
-/* =========================================
-   LOGOUT
-========================================= */
+onAuthStateChanged(auth, (user) => {
+    updateSideNavAccount(user);
+    updateNavbarAccount(user);
+});
 
-function initLogoutSystem() {
+// نظام إدارة الـ Logout Modal بشكل آمن بدون Duplicate Listeners
+window.initLogoutSystem = function () {
+    const logoutModal = document.getElementById('logoutModal');
+    const cancelLogoutBtn = document.getElementById('cancelLogout');
+    const closeLogoutModalBtn = document.getElementById('closeLogoutModal');
+    const confirmLogoutBtn = document.getElementById('confirmLogout');
+    const sideNavLogoutBtn = document.getElementById('sideNavLogoutBtn');
+    const cancelLogout = document.getElementById('cancelLogout');
+    const confirmLogout = document.getElementById('confirmLogout');
+    const closeLogoutModal = document.getElementById('closeLogoutModal');
 
-    const logoutModal =
-        document.getElementById('logoutModal');
-
-    const cancelLogout =
-        document.getElementById('cancelLogout');
-
-    const confirmLogout =
-        document.getElementById('confirmLogout');
-
-    const closeLogoutModal =
-        document.getElementById('closeLogoutModal');
-
-    const sideNavLogoutBtn =
-        document.getElementById('sideNavLogoutBtn');
-
-
-    if (!logoutModal) {
-        console.warn('logoutModal غير موجود في الصفحة');
-        return;
-    }
-
-
-    /* فتح نافذة تأكيد تسجيل الخروج */
-
-    window.handleProfileClick = function () {
-
-        logoutModal.classList.add('is-visible');
-
+    // تأكيد فتح المودال من أي زر خروج
+    window.openLogoutModal = function () {
+        if (logoutModal) {
+            const sideNav = document.getElementById('sideNav');
+            const backdrop = document.getElementById('sideNavBackdrop');
+            if (sideNav) sideNav.classList.remove('active');
+            if (backdrop) backdrop.classList.remove('active');
+            document.body.classList.remove('side-nav-open');
+            logoutModal.classList.add('active');
+        }
     };
 
-
-    /* إغلاق النافذة */
-function closeLogoutConfirmation() {
-    const logoutModal = document.getElementById('logoutModal');
-    if (logoutModal) {
-        logoutModal.style.display = 'none';
-        logoutModal.classList.remove('is-visible');
-    }
-}
-    
-
-
-
-
-    /* تأكيد تسجيل الخروج */
-
-    confirmLogout?.addEventListener(
-        'click',
-        async function () {
-
-            try {
-
-                await signOut(auth);
-
-                closeLogoutConfirmation();
-
-                window.location.reload();
-
-            } catch (error) {
-
-                console.error(
-                    'حدث خطأ أثناء تسجيل الخروج:',
-                    error
-                );
-
-            }
-
+    window.closeLogoutConfirmation = function () {
+        if (logoutModal) {
+            logoutModal.classList.remove('active');
         }
-    );
+    };
 
-}
+    // ربط الأحداث مرة واحدة فقط لكل عنصر
+    if (cancelLogoutBtn && !cancelLogoutBtn.dataset.listenerAttached) {
+        cancelLogoutBtn.dataset.listenerAttached = 'true';
+        cancelLogoutBtn.addEventListener('click', window.closeLogoutConfirmation);
+    }
 
+    if (closeLogoutModalBtn && !closeLogoutModalBtn.dataset.listenerAttached) {
+        closeLogoutModalBtn.dataset.listenerAttached = 'true';
+        closeLogoutModalBtn.addEventListener('click', window.closeLogoutConfirmation);
+    }
 
-/* تشغيل النظام بعد تحميل الـ HTML */
+    if (logoutModal && !logoutModal.dataset.listenerAttached) {
+        logoutModal.dataset.listenerAttached = 'true';
+        logoutModal.addEventListener('click', function (event) {
+            if (event.target === logoutModal) {
+                window.closeLogoutConfirmation();
+            }
+        });
+    }
 
+    if (confirmLogoutBtn && !confirmLogoutBtn.dataset.listenerAttached) {
+        confirmLogoutBtn.dataset.listenerAttached = 'true';
+        confirmLogoutBtn.addEventListener('click', async function () {
+            try {
+                await signOut(auth);
+                window.closeLogoutConfirmation();
+                window.location.reload();
+            } catch (error) {
+                console.error('حدث خطأ أثناء تسجيل الخروج:', error);
+            }
+        });
+    }
+
+    if (sideNavLogoutBtn && !sideNavLogoutBtn.dataset.listenerAttached) {
+        sideNavLogoutBtn.dataset.listenerAttached = 'true';
+        sideNavLogoutBtn.addEventListener('click', function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            window.openLogoutModal();
+        });
+    }
+};
+
+// تشغيل نظام الـ Logout بعد التأكد من تحميل محتوى الصفحة بالكامل أو الـ Navbar
 if (document.readyState === 'loading') {
-
-    document.addEventListener(
-        'DOMContentLoaded',
-        initLogoutSystem
-    );
-
+    document.addEventListener('DOMContentLoaded', () => window.initLogoutSystem());
 } else {
-
-    initLogoutSystem();
-
+    window.initLogoutSystem();
 }
 
-  function handleLogoutClick(event) {
-      // يمنع القائمة إنها تتقفل
-      event.stopPropagation();
-      event.preventDefault();
-      
-      // يفتح الـ Modal بتاعك (تأكد إن اسم الدالة هو اللي بتستخدمه فعلاً)
-      openLogoutModal(); 
-  }
+// محاولة ثانية احترازية في حال كان الـ Navbar يتم حقنه ديناميكياً عبر fetch تأخذ وقتاً إضافياً
+setTimeout(() => {
+    if (typeof window.initLogoutSystem === 'function') {
+        window.initLogoutSystem();
+    }
+}, 1000);

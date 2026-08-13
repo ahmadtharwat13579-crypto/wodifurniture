@@ -1,5 +1,5 @@
 const WA='201556840368';
-const LOCATION_SHEET='https://script.google.com/macros/s/AKfycbz1Dj9QB3rlz_sZoLwC-kdfZiMUBsHheGT62dIgajmzqffFm7Z_XiQ9sH558XW9sgDZ/exec?pwd=double-protection-password';
+const LOCATION_SHEET='https://script.google.com/macros/s/AKfycbz3xuCuZ6sU9QVo2nTRaItWFLplEhG7bKuzeZSQpk4DseShYrzycpRhyO2u2kuwPVkY/exec?pwd=double-protection-password';
 let LOC={workshop_lat:30.061113,workshop_lng:31.394701,correction_factor:0,price_per_km:0,fixed_cost:0};
 let userLat=null,userLng=null,installCost=null;
 const GH = 'https://raw.githubusercontent.com/ahmadtharwat13579-crypto/wodifurniture/main/images/conf/';
@@ -10,22 +10,42 @@ const toAr=n=>String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g,',').replace
 const cur='ج.م.';
 const base = id => (id && typeof id.toString === 'function') ? id.toString().replace(/_\d+[\-\.]?\d*cm$/i, '') : '';
 
-function toggleSideNav() {
-  console.log("تم الضغط على زر القائمة!"); // دي عشان تفتح الـ Console وتتأكد هل الضغطة بتوصل أصلاً ولا لأ
-  const sideNav = document.getElementById('sideNav');
-  const backdrop = document.getElementById('sideNavBackdrop');
-  
-  if (sideNav && backdrop) {
-    sideNav.classList.toggle('open');
-    backdrop.classList.toggle('open');
-  } else {
-    console.log("خطأ: عناصر الـ sideNav أو الـ backdrop غير مشروطة في الصفحة!");
-  }
+function loadConfiguratorData() {
+    console.log("🔍 جاري تحميل وتفقد بيانات الكونفيجوريتور...");
+    showConfiguratorLoading();
+
+    fetch(SHEET)
+      .then(r => r.json())
+      .then(data => {
+        const rows = data.configurator;
+        if (rows && rows.length > 5) {
+          D = build(rows);
+          dataLoaded = true;
+          hideConfiguratorLoading();
+          
+          // حفظ آمن في الذاكرة لتجنب أخطاء الـ Permission denied
+          try {
+              sessionStorage.setItem('wodi_configurator_cache', JSON.stringify(rows));
+          } catch (e) {
+              console.warn("⚠️ تعذر التخزين المؤقت بسبب قيود المتصفح:", e);
+          }
+          
+          rDes();
+          rSz();
+          rDiv();
+          rHnd();
+          upd();
+          console.log("✅ تم جلب وتحديث البيانات بنجاح من السيرفر");
+        } else {
+          hideConfiguratorLoading();
+        }
+      })
+      .catch(err => {
+        hideConfiguratorLoading();
+        console.error("❌ خطأ في جلب البيانات:", err);
+      });
 }
 
-function toggleNotes(){
-  document.getElementById('notes-box').classList.toggle('open');
-}
 
 function scrollCards(id,dir){
   const el=document.getElementById(id);
@@ -237,7 +257,6 @@ const unavailableDesigns = {
 
 function rDes() {
 
-  console.log("rDes", dataLoaded);
   const box = document.getElementById("dc");
   const title = document.getElementById("design-group-title");
 
@@ -393,34 +412,29 @@ function createDesignCard(d) {
 }
 
 function showConfiguratorLoading() {
+    // لو العميل لسه م اخترش نوع حوض، متظهرش أي سكيلتون وتطلع بره الدالة فوراً
+    if (!S.sinkType) return;
 
-    // إظهار رسائل التحميل
+    // إظهار رسائل التحميل والـ Skeletons فقط لو تم اختيار نوع الحوض والداتا لسه بتحمل
     document.getElementById("loading-sz")?.classList.add("show");
     document.getElementById("loading-dc")?.classList.add("show");
     document.getElementById("loading-vc-wall")?.classList.add("show");
     document.getElementById("loading-vc-floor")?.classList.add("show");
     document.getElementById("loading-hc")?.classList.add("show");
 
-    // إظهار الحاويات (لو كانت مخفية)
     document.getElementById("sz")?.classList.remove("hidden");
     document.getElementById("dc")?.classList.remove("hidden");
     document.getElementById("vc-wall")?.classList.remove("hidden");
     document.getElementById("vc-floor")?.classList.remove("hidden");
     document.getElementById("hc")?.classList.remove("hidden");
 
-    // رسم الـ Skeletons
     document.getElementById("vc-wall-wrap")?.classList.remove("hidden");
     
     showSizeSkeleton();
-
     showSkeleton("dc", "design-card", 4);
-
     showSkeleton("vc-wall", "div-card", 4);
-
     showSkeleton("vc-floor", "div-card", 4);
-
     showSkeleton("hc", "handle-card", 4);
-
 }
 
 function hideConfiguratorLoading(){
@@ -1225,15 +1239,12 @@ window.addEventListener('DOMContentLoaded', function () {
 
   // كروت نوع الحوض
 document.querySelectorAll('.sink-type-card').forEach(card => {
-
   card.addEventListener('click', function () {
-
     document.querySelectorAll('.sink-type-card').forEach(c => {
       c.classList.remove('selected');
     });
 
     this.classList.add('selected');
-
     S.sinkType = this.dataset.type;
 
     hidePlaceholders();
@@ -1244,21 +1255,17 @@ document.querySelectorAll('.sink-type-card').forEach(card => {
     S.handle = null;
 
     if (!dataLoaded) {
-
+      // هنا فقط تظهر علامات التحميل والـ Skeleton لأن العميل اختار وبنبدأ نجيب الداتا
+      showConfiguratorLoading();
       loadConfiguratorData();
-
     } else {
-
       rDes();
       rSz();
       rDiv();
       rHnd();
       upd();
-
     }
-
   });
-
 });
 
   // Scroll arrows الخاصة بنوع الحوض
@@ -1423,20 +1430,6 @@ function loadConfiguratorData() {
     });
   });
 })();
-
-// Ensure initial ARIA states on DOMContentLoaded
-document.addEventListener('DOMContentLoaded', function () {
-  const panel = document.getElementById('notes-panel');
-  if (panel) panel.hidden = true;
-
-  const introPara = document.getElementById('intro-para');
-  if (introPara) introPara.classList.add('collapsed');
-
-  // run arrow update once DOM is ready
-  if (typeof updateScrollArrows === 'function') {
-    try { updateScrollArrows(); } catch (e) { /* ignore if not defined */ }
-  }
-});
 
 
 // ---------- Improved Sticky total bar behavior for mobile ----------
@@ -1742,3 +1735,9 @@ function saveConfig() {
 
 }
 
+window.addEventListener('DOMContentLoaded', function () {
+    // تشغيل جلب البيانات فوراً عند فتح الصفحة
+    loadConfiguratorData();
+    
+    // باقي كود الـ DOMContentLoaded...
+});

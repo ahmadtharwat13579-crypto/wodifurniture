@@ -1,6 +1,8 @@
 /* index.css */
 
-/* Hero */
+/* =========================================
+   Hero Section Styling
+========================================= */
 .hero {
   position: relative;
   overflow: hidden;
@@ -90,27 +92,30 @@
   background: var(--color-primary-hover);
 }
 
-/* Features Section */
-.why-wodi-section {
+/* =========================================
+    About Us Section Styling
+========================================= */
+
+.about-us-section {
   padding: 60px 35px 50px;
   background: var(--color-bg-white);
   color: var(--color-text-main);
   direction: rtl;
 }
 
-.why-container {
-  max-width: 1200px;
+.about-us-container {
+  max-width: var(--bp-wide);
   margin: 0 auto;
 }
 
-.why-text-content {
+.about-us-content {
   display: grid;
   grid-template-columns: 0.8fr 1fr;
-  gap: 40px;
+  gap: var(--space-7);
   align-items: center;
 }
 
-.why-text-content h2 {
+.about-us-content h2 {
   margin: 0;
   font-size: clamp(32px, 5vw, 50px);
   font-weight: 800;
@@ -121,31 +126,31 @@
   align-items: center;
 }
 
-.why-text-content p {
+.about-us-content p {
   margin: 0;
   font-size: clamp(16px, 4vw, 20px);
   max-width: 700px;
   width: 90%;
   line-height: 1.7;
-  color: #4a4a4a;
+  color: var(--color-text-muted);
   text-align: justify;
   display: flex;
   align-items: center;
 }
 
-/* Why section - mobile adjustments */
+/* About Us section - mobile adjustments */
 @media (max-width: 768px) {
-  .why-text-content {
+  .about-us-content {
     grid-template-columns: 1fr;
-    gap: 35px;
+    gap: var(--space-6);
   }
-  .why-text-content h2 {
+  .about-us-content h2 {
     width: 70%;
     justify-content: flex-start;
     font-size: 34px;
     text-align: right;
   }
-  .why-text-content p {
+  .about-us-content p {
     width: 75%;
     margin-right: auto;
     text-align: right;
@@ -165,110 +170,44 @@
   }
 }
 
-/* Features list */
-.features-section {
-  padding: 80px 60px;
-  background: var(--color-bg-white);
-  color: var(--color-text-main);
-}
+/* =========================================
+    Our Products Section Styling
+========================================= */
 
-.features-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 50px;
-  gap: 40px;
-}
-
-.features-header h2 {
-  font-size: 48px;
-  font-weight: 800;
-  line-height: 1.1;
-}
-
-.features-header p {
-  max-width: 450px;
-  color: var(--color-text-muted);
-  font-size: var(--font-size-xl);
-}
-
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 30px;
-}
-
-.feature-item img {
-  width: 100%;
-  height: 400px;
-  object-fit: cover;
-  border-radius: var(--radius-xs);
-  margin-bottom: 20px;
-}
-
-.feature-item h3 {
-  font-size: 24px;
-  margin-bottom: 10px;
-}
-
-.feature-item p {
-  color: var(--color-text-muted);
-  margin-bottom: 15px;
-  line-height: 1.6;
-}
-
-.more-link {
-  color: var(--color-text-main);
-  font-weight: bold;
-  text-decoration: none;
-  border-bottom: 1px solid var(--color-text-main);
-}
-
-/* Section Titles */
-.section-title {
-  text-align: center;
-  margin: 56px auto 32px;
-  font-size: clamp(22px, 4vw, 32px);
-  font-weight: 700;
-  color: var(--color-bg-white);
-}
-
-/* Products Grid */
-.products-section {
-  max-width: 1200px;
+.our-products-section {
+  max-width: var(--bp-wide);
   margin: 0 auto;
   direction: rtl;
 }
 
-.products-grid {
+.our-products-grid {
   overflow-x: auto;
   overflow-y: hidden;
   display: flex;
   flex-direction: row-reverse;
   justify-content: flex-start;
   scroll-behavior: smooth;
-  gap: 20px;
-  padding-bottom: 20px;
+  gap: var(--space-5);
+  padding-bottom: var(--space-5);
   width: 100%;
   max-width: 100%;
 }
 
 .bar.active {
-  background: #333;
+  background: var(--color-text-main);
   transform: scaleY(1.5);
 }
 
-.product-card img {
+.our-products-card img {
   width: 100%;
   aspect-ratio: 4 / 5;
   object-fit: cover;
   border-radius: var(--radius-xs);
-  margin-bottom: 20px;
+  margin-bottom: var(--space-5);
   display: block;
 }
 
-/* Product Cards Animation */
-.product-card {
+.our-products-card {
   flex: 0 0 260px;
   width: 280px;
   display: flex;
@@ -279,95 +218,152 @@
   transition: opacity .7s ease, transform .7s ease;
 }
 
-.product-card.show {
+.our-products-card.show {
   opacity: 1;
   transform: scale(.86) translateY(0);
 }
 
-.scroll-wrap {
+.our-products-scroll-wrap {
   position: relative;
   width: 100%;
   max-width: 100%;
   overflow: hidden;
 }
 
-.product-card h3 {
-  font-size: 25px;
+.our-products-card h3 {
+  font-size: var(--font-size-title);
   text-align: right;
-  margin-bottom: 8px;
-  color: #333;
+  margin-bottom: var(--space-2);
+  color: var(--color-text-main);
 }
 
-.product-card p {
-  font-size: 15px;
+.our-products-card p {
+  font-size: var(--font-size-md);
   line-height: 1.6;
   text-align: right;
   color: var(--color-text-muted);
-  margin-bottom: 15px;
+  margin-bottom: var(--space-4);
   max-width: 100%;
   flex-grow: 1;
 }
 
 .btn-more {
+    display: inline-block;
+    padding: 7px 20px;
+    border: 1px solid var(--color-text-main);
+    color: var(--color-text-main);
+    text-decoration: none;
+    font-weight: 600;
+    transition: var(--transition-fast);
+    margin-left: auto;
+    margin-right: 0;
+}
+
+.btn-more:hover {
+    background: var(--color-text-main);
+    color: var(--color-bg-white);
+}
+
+.our-products-btn-more {
   display: inline-block;
   padding: 7px 20px;
-  border: 1px solid #333;
-  color: #333;
+  border: 1px solid var(--color-text-main);
+  color: var(--color-text-main);
   text-decoration: none;
   font-weight: 600;
-  transition: 0.3s;
+  transition: var(--transition-fast);
   margin-left: auto;
   margin-right: 0;
 }
 
-.btn-more:hover {
-  background: #333;
+.our-products-btn-more:hover {
+  background: var(--color-text-main);
   color: var(--color-bg-white);
 }
 
-/* Why WODI (list) */
-.why-section {
-  padding: 20px 40px 60px;
-  max-width: 800px;
-  margin: 0 auto;
+/* =========================================
+    Scroll Wrap & Arrows Styling
+========================================= */
+
+.our-products-scroll-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
 }
 
-.why-list {
-  list-style: none;
+/* تنسيق عام للأسهم وتمركزها عمودياً على منتصف صورة الكارد */
+.scroll-arrow {
+  position: absolute;
+  top: calc((280px * (5/4)) / 2); /* منتصف ارتفاع الصورة بناءً على الـ aspect-ratio */
+  transform: translateY(-50%);
+  width: 42px;
+  height: 42px;
+  background: var(--color-bg-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
   display: flex;
-  flex-direction: column;
-  gap: 14px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: var(--z-overlay);
+  box-shadow: var(--shadow-md);
+  transition: var(--transition-fast);
+  color: var(--color-text-main);
 }
 
-.why-list li {
-  font-size: 15px;
-  color: rgba(51, 48, 40, 0.85);
-  line-height: 1.6;
-  display: flex;
-  gap: 10px;
-  align-items: flex-start;
+.scroll-arrow:hover {
+  background: var(--color-primary);
+  color: var(--color-bg-white);
+  border-color: var(--color-primary);
 }
 
-.why-list li::before {
-  content: '–';
-  color: var(--color-primary);
-  font-weight: 700;
-  flex-shrink: 0;
-  margin-top: 1px;
+.scroll-arrow svg {
+  width: 20px;
+  height: 20px;
 }
 
-/* Collections */
-.collections-section {
-  padding: 40px 10px;
-  max-width: 1200px;
+/* سهم اليمين (يظهر لتحريك السكرول لليمين/البداية في الـ RTL) */
+.scroll-arrow.arr-start {
+  right: -20px;
+}
+
+/* سهم اليسار (يظهر لتحريك السكرول لليسار/النهاية في الـ RTL) */
+.scroll-arrow.arr-end {
+  left: -20px;
+}
+
+/* إخفاء السهم عند عدم الحاجة إليه */
+.scroll-arrow.hidden {
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+/* تعديل بسيط للموبايل لتبقى الأسهم داخل الإطار بمسافة آمنة */
+@media (max-width: 768px) {
+  .scroll-arrow.arr-start {
+    right: 5px;
+  }
+  .scroll-arrow.arr-end {
+    left: 5px;
+  }
+}
+
+/* =========================================
+    Our Collections Section Styling
+========================================= */
+
+.our-collections-section {
+  padding: var(--space-7) 10px;
+  max-width: var(--bp-wide);
   margin: auto;
 }
 
-.collections-grid {
+.our-collections-grid {
   display: flex;
   flex-direction: row-reverse;
   scroll-snap-type: x mandatory;
-  padding-inline: 12px;
+  padding-inline: var(--space-3);
   overflow-x: auto;
   overflow-y: hidden;
   scroll-padding-inline: 40px;
@@ -377,7 +373,7 @@
   max-width: 100%;
 }
 
-.collection-card {
+.our-collections-card {
   flex: 0 0 86%;
   scroll-snap-align: center;
   transition: transform .45s ease, opacity .45s ease;
@@ -385,61 +381,158 @@
   opacity: .45;
 }
 
-.collection-card.active {
+.our-collections-card.active {
   transform: scale(1) translateY(0);
   opacity: 1;
 }
 
-.collection-mosaic {
+.our-collections-mosaic {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-1);
   margin-bottom: 14px;
 }
 
-.collection-mosaic .main-img {
+.our-collections-mosaic .our-collections-main-img {
   width: 100%;
   aspect-ratio: 16/16;
   object-fit: cover;
   border-radius: var(--radius-xs);
 }
 
-.collection-bottom {
+.our-collections-bottom {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 4px;
+  gap: var(--space-1);
 }
 
-.collection-bottom img {
+.our-collections-bottom img {
   width: 100%;
   aspect-ratio: 1/1;
   object-fit: cover;
   border-radius: var(--radius-xs);
 }
 
-.collection-card h3 {
-  font-size: 28px;
+.our-collections-card h3 {
+  font-size: var(--font-size-heading);
   color: var(--color-text-main);
-  margin-bottom: 10px;
+  margin-bottom: var(--space-2);
 }
 
-.collection-card p {
+.our-collections-card p {
   color: var(--color-text-muted);
   line-height: 1.7;
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
   flex-grow: 1;
 }
 
-.collection-price {
+.our-collections-price {
   font-size: 17px;
-  margin-bottom: 20px;
+  margin-bottom: var(--space-5);
   color: var(--color-text-muted);
 }
 
-.collection-price span {
+.our-collections-price span {
   color: var(--color-primary);
   font-weight: 700;
-  font-size: 22px;
+}
+
+.our-collections-btn-more {
+  display: inline-block;
+  padding: 7px 20px;
+  border: 1px solid var(--color-text-main);
+  color: var(--color-text-main);
+  text-decoration: none;
+  font-weight: 600;
+  transition: var(--transition-fast);
+  margin-left: auto;
+  margin-right: 0;
+}
+
+.our-collections-btn-more:hover {
+  background: var(--color-text-main);
+  color: var(--color-bg-white);
+}
+
+/* =========================================
+   Inquire Section Styling 
+========================================= */
+
+.inquire-section {
+  margin: 35px 0 60px;
+  padding: var(--space-4) 5px var(--space-4);
+  background: var(--color-bg-light);
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.inquire-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-xs);
+  padding: 28px var(--space-6);
+  text-align: center;
+  transition: border-color var(--transition-fast);
+}
+
+.inquire-icon {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 14px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(156, 175, 136, 0.12);
+  color: var(--color-primary);
+}
+
+.inquire-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.inquire-card h2 {
+  margin: 0;
+  font-size: var(--font-size-title);
+  color: var(--color-text-main);
+  font-weight: 700;
+}
+
+.inquire-card p {
+  margin: 10px auto 20px;
+  max-width: 520px;
+  font-size: var(--font-size-md);
+  line-height: 1.7;
+  color: var(--color-text-main);
+}
+
+.inquire-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 8px var(--space-4);
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--color-primary);
+  background: none;
+  color: var(--color-primary);
+  font-family: var(--font-family-main);
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.inquire-btn:hover {
+  background: var(--color-primary);
+  color: var(--color-bg-white);
+  box-shadow: 0 10px 25px rgba(156, 175, 136, 0.28);
+  transform: translateY(-2px);
+}
+
+.inquire-btn svg {
+  width: 16px;
+  height: 16px;
 }
 
 /* =========================================
