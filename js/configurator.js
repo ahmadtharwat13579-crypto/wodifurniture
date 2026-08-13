@@ -124,38 +124,95 @@ function pulsePrice(el) {
 
 function loadConfiguratorData() {
   console.log("🔍 جاري تحميل وتفقد بيانات الكونفيجوريتور...");
+
+  // 1) اذا في كاش محلي، استخدمه فوراً لتحسين السرعة
+  try {
+    const cached = sessionStorage.getItem('wodi_configurator_cache');
+    if (cached) {
+      try {
+        const rows = JSON.parse(cached);
+        D = build(rows);
+        dataLoaded = true;
+        // رسم فوري من الكاش
+        rDes(); rSz(); rDiv(); rHnd(); upd();
+        console.log('✅ Loaded configurator from sessionStorage cache');
+      } catch (e) {
+        console.warn('Failed to parse cached configurator', e);
+      }
+    }
+  } catch (e) {
+    console.warn('sessionStorage read failed', e);
+  }
+
+  // 2) ثم حاول تحديث البيانات من السيرفر (خلفية) مع retries/timeout
   showConfiguratorLoading();
 
-  fetch(SHEET)
-    .then(r => r.json())
-    .then(data => {
-      const rows = data.configurator;
-      if (rows && rows.length > 5) {
+  const MAX_RETRIES = 3;
+  const TIMEOUT_MS = 10000;
+  const BASE_DELAY = 700;
+
+  async function attempt(retry = 0) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+    try {
+      const resp = await fetch(SHEET, { signal: controller.signal });
+      clearTimeout(timer);
+
+      if (!resp.ok) {
+        const txt = await resp.text().catch(() => '');
+        console.error('SHEET fetch non-OK', resp.status, txt.slice ? txt.slice(0, 500) : txt);
+        throw new Error('SHEET non-OK ' + resp.status);
+      }
+
+      let data;
+      try {
+        data = await resp.json();
+      } catch (jsonErr) {
+        const txt = await resp.text().catch(() => '');
+        console.error('SHEET returned non-JSON (first 500 chars):', txt.slice ? txt.slice(0, 500) : txt);
+        throw jsonErr;
+      }
+
+      const rows = data && data.configurator;
+      if (rows && rows.length > 0) {
         D = build(rows);
         dataLoaded = true;
         hideConfiguratorLoading();
-
-        // حفظ آمن في الذاكرة لتجنب أخطاء الـ Permission denied
-        try {
-          sessionStorage.setItem('wodi_configurator_cache', JSON.stringify(rows));
-        } catch (e) {
-          console.warn("⚠️ تعذر التخزين المؤقت بسبب قيود المتصفح:", e);
-        }
-
-        rDes();
-        rSz();
-        rDiv();
-        rHnd();
-        upd();
+        try { sessionStorage.setItem('wodi_configurator_cache', JSON.stringify(rows)); } catch (e) { console.warn('sessionStorage set failed', e); }
+        rDes(); rSz(); rDiv(); rHnd(); upd();
         console.log("✅ تم جلب وتحديث البيانات بنجاح من السيرفر");
+        return;
       } else {
         hideConfiguratorLoading();
+        throw new Error('No configurator rows in response');
       }
-    })
-    .catch(err => {
+
+    } catch (err) {
+      clearTimeout(timer);
+      console.warn('loadConfiguratorData attempt failed', retry, err && err.message ? err.message : err);
+
+      if (retry < MAX_RETRIES - 1) {
+        const delay = BASE_DELAY * Math.pow(2, retry);
+        await new Promise(res => setTimeout(res, delay));
+        return attempt(retry + 1);
+      }
+
       hideConfiguratorLoading();
-      console.error("❌ خطأ في جلب البيانات:", err);
-    });
+
+      // final fallback: if we already loaded from sessionStorage earlier, keep it; else show message
+      if (!dataLoaded) {
+        showToast('تعذر تحميل البيانات. تأكد من اتصالك وحاول مرة أخرى.');
+        console.error('❌ فشل نهائي في جلب بيانات الكونفيجوريتور:', err);
+      } else {
+        showToast('البيانات مُعرضة من الكاش المحلي (اتصال الشبكة ضعيف)');
+      }
+    }
+  }
+
+  attempt(0).catch(e => {
+    console.error('Unexpected error in loadConfiguratorData:', e);
+    hideConfiguratorLoading();
+  });
 }
 
 // Convert rows to structured data used by UI. Keeps original grouping logic.
