@@ -258,37 +258,6 @@ fetch('nav.html')
 
 <script>
 
-const SHEET = 'https://script.google.com/macros/s/AKfycbz3xuCuZ6sU9QVo2nTRaItWFLplEhG7bKuzeZSQpk4DseShYrzycpRhyO2u2kuwPVkY/exec?pwd=double-protection-password';
-const GH = 'https://raw.githubusercontent.com/ahmadtharwat13579-crypto/wodifurniture/main/images/conf/';
-
-(async function prefetchData() {
-  try {
-    const response = await fetch(SHEET);
-    
-    if (!response.ok) {
-      throw new Error(`خطأ في الاتصال بالخادم: ${response.status}`);
-    }
-
-    const data = await response.json();
-
-    // حفظ البيانات في الذاكرة المؤقتة بشكل منفصل وسهل الاستخدام
-    if (data.configurator) {
-      sessionStorage.setItem('wodi_configurator_cache', JSON.stringify(data.configurator));
-    }
-    if (data.products) {
-      sessionStorage.setItem('wodi_products_cache', JSON.stringify(data.products));
-    }
-    if (data.categories) {
-      sessionStorage.setItem('wodi_categories_cache', JSON.stringify(data.categories));
-    }
-    
-    console.log('تم تحميل وتخزين بيانات الموقع بنجاح!');
-  } catch (err) {
-    console.error('فشل Prefetch البيانات:', err);
-  }
-})();
-
-
 function scrollCards(containerId, direction) {
     const container = document.getElementById(containerId);
     const amount = container.clientWidth * 0.85;
