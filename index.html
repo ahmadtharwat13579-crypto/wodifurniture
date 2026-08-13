@@ -258,21 +258,33 @@ fetch('nav.html')
 
 <script>
 
-// Prefetch بيانات الـ configurator والـ products في الخلفية
+const SHEET = 'https://script.google.com/macros/s/AKfycbz3xuCuZ6sU9QVo2nTRaItWFLplEhG7bKuzeZSQpk4DseShYrzycpRhyO2u2kuwPVkY/exec?pwd=double-protection-password';
+const GH = 'https://raw.githubusercontent.com/ahmadtharwat13579-crypto/wodifurniture/main/images/conf/';
+
 (async function prefetchData() {
   try {
-    const [configuratorRes, productsRes] = await Promise.all([
-      fetch(CONFIGURATOR_API_URL),
-      fetch(PRODUCTS_API_URL)
-    ]);
+    const response = await fetch(SHEET);
+    
+    if (!response.ok) {
+      throw new Error(`خطأ في الاتصال بالخادم: ${response.status}`);
+    }
 
-    const configuratorData = await configuratorRes.json();
-    const productsData = await productsRes.json();
+    const data = await response.json();
 
-    sessionStorage.setItem('wodi_configurator_cache', JSON.stringify(configuratorData));
-    sessionStorage.setItem('wodi_products_cache', JSON.stringify(productsData));
+    // حفظ البيانات في الذاكرة المؤقتة بشكل منفصل وسهل الاستخدام
+    if (data.configurator) {
+      sessionStorage.setItem('wodi_configurator_cache', JSON.stringify(data.configurator));
+    }
+    if (data.products) {
+      sessionStorage.setItem('wodi_products_cache', JSON.stringify(data.products));
+    }
+    if (data.categories) {
+      sessionStorage.setItem('wodi_categories_cache', JSON.stringify(data.categories));
+    }
+    
+    console.log('تم تحميل وتخزين بيانات الموقع بنجاح!');
   } catch (err) {
-    console.error('Prefetch فشل:', err);
+    console.error('فشل Prefetch البيانات:', err);
   }
 })();
 
