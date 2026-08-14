@@ -92,7 +92,8 @@
   border-radius: var(--radius-xl);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   border: 1px solid #f3f4f6;
-  top: 0px;
+  top: var(--stepper-top, 10px); /* استخدام متغير يتم حسابه ديناميكياً */
+  transition: top 0.3s ease, transform 0.3s ease;
 }
 
 .compact-stepper ol {
@@ -187,6 +188,21 @@
   border-color: #f59e0b;
 }
 
+/* --- المثال الأول: توهج ونبض هادئ --- */
+.compact-stepper .stepper-item.active .stepper-icon {
+  background: var(--color-bg-white);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  transform: scale(1.12);
+  box-shadow: 0 0 0 5px rgba(156, 175, 136, 0.25); /* توهج متناسق مع لون البراند */
+}
+
+.compact-stepper .stepper-item.active .stepper-title {
+  color: #111827;
+  font-weight: 700;
+  transform: scale(1.02);
+}
+
 /* =========================================
    Sticky Price Bar Styling 
 ========================================= */
@@ -213,7 +229,6 @@
   margin-bottom:10px;
 
   border-bottom: 1px solid #e5e7eb;
-  margin-inline: 6px;
   padding-bottom: 40px;
 }
 #location-section{

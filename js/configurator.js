@@ -493,6 +493,9 @@ function rSz() {
   if (!box) return;
   box.innerHTML = "";
 
+  const placeholder = document.getElementById("placeholder-sz");
+  const loading = document.getElementById("loading-sz");
+
   const sharedTypes = ['wall-hung', 'drop-in', 'bowl'];
   const effectiveType = sharedTypes.includes(S.sinkType) ? 'wall-hung' : S.sinkType;
 
@@ -507,6 +510,14 @@ function rSz() {
     });
 
   const sizes = [...sizesMap.values()];
+  
+  if (sizes.length > 0) {
+    // إخفاء الـ placeholder وإظهار قائمة المقاسات
+    if (placeholder) placeholder.classList.add("hidden");
+    if (loading) loading.classList.add("hidden");
+    box.classList.remove("hidden");
+  }
+
   sizes.forEach(s => {
     const b = document.createElement("button");
     b.className =
@@ -515,7 +526,6 @@ function rSz() {
     b.textContent = s.size;
     b.onclick = () => {
       S.size = s;
-      // تغيير المقاس يلغي الاختيارات التالية
       S.design = null;
       S.div = null;
       S.handle = null;
@@ -881,6 +891,11 @@ function upd() {
     const handlePrice = S.handle && !noH ? S.handle.price * S.design.hc : 0;
     if (shPrice) shPrice.textContent = S.handle ? (handlePrice > 0 ? '+' + handlePrice + ' EGP' : '+0 EGP') : (noH ? '—' : '—');
 
+    // نقلنا استدعاء تحديث الشريط السفلي إلى هنا ليعمل بعد اكتمال حساب السعر مباشرة
+    if (typeof window.updateStickyValue === 'function') {
+      window.updateStickyValue();
+    }
+
   }, 300);
 }
 
@@ -1221,6 +1236,7 @@ function setupStickyPriceBar() {
         pulsePrice(stickyVal);
       }
     }
+    window.updateStickyValue = updateStickyValue;
 
     function showSticky() {
       if (!stickyEl) createSticky();
@@ -1296,9 +1312,12 @@ function setupStepperSticky() {
     let io = null;
     function setup() {
       const stepperEl = document.getElementById('design-stepper');
+      const navbar = document.querySelector('.navbar');
       const targetSection = document.getElementById('sbar') || document.querySelector('.price-column.sbar') || document.querySelector('.details-section');
+      
       if (!stepperEl || !targetSection) return;
       if (io) io.disconnect();
+
       io = new IntersectionObserver(function (entries) {
         entries.forEach(function (ent) {
           if (ent.boundingClientRect.top < 0 && !ent.isIntersecting) {
@@ -1310,10 +1329,25 @@ function setupStepperSticky() {
           }
         });
       }, { root: null, threshold: 0 });
+
       io.observe(targetSection);
+
       window.addEventListener('scroll', function () {
-        if (window.scrollY > 150) stepperEl.classList.add('is-sticky');
-        else stepperEl.classList.remove('is-sticky');
+        if (window.scrollY > 150) {
+          stepperEl.classList.add('is-sticky');
+          
+          // حساب ارتفاع الـ Navbar وإضافته كمسافة أمان لكي لا تختفي تحته
+          if (navbar) {
+            const navHeight = navbar.offsetHeight;
+            // لو الـ Navbar ظاهرة (لم يتم إخفاؤها بـ translateY)، نترك مسافة تحتها
+            const isNavVisible = navbar.style.transform !== 'translateY(-100%)';
+            const offset = isNavVisible ? navHeight + 10 : 10; // 10px مسافة إضافية جمالية
+            stepperEl.style.setProperty('--stepper-top', `${offset}px`);
+          }
+        } else {
+          stepperEl.classList.remove('is-sticky');
+          stepperEl.style.removeProperty('--stepper-top');
+        }
       });
     }
     window.addEventListener('load', setup);
@@ -1355,11 +1389,46 @@ function updateStepperProgress() {
   }
   if (stepLocation) {
     const errorMsgElement = document.body.innerText.includes('خارج نطاق خدمتنا');
-    const isOutOfRange = (typeof locationError !== 'undefined' && locationError === true) || errorMsgElement;
-    const hasLocation = (typeof installCost !== 'undefined' && installCost !== null && !isOutOfRange);
-    if (hasLocation) { stepLocation.classList.add('completed'); stepLocation.classList.remove('out-of-range'); }
-    else if (isOutOfRange) { stepLocation.classList.remove('completed'); stepLocation.classList.add('out-of-range'); }
-    else stepLocation.classList.remove('completed', 'out-of-range');
+
+    const isOutOfRange =
+      (typeof locationError !== 'undefined' && locationError === true) ||
+      errorMsgElement;
+
+    const hasLocation =
+      typeof installCost !== 'undefined' &&
+      installCost !== null &&
+      !isOutOfRange;
+
+    if (hasLocation) {
+      stepLocation.classList.add('completed');
+      stepLocation.classList.remove('out-of-range');
+    } else if (isOutOfRange) {
+      stepLocation.classList.remove('completed');
+      stepLocation.classList.add('out-of-range');
+    } else {
+      stepLocation.classList.remove('completed', 'out-of-range');
+    }
+  }
+
+  // --- إضافة لتحديد الخطوة النشطة حالياً (Active Step) ---
+  const allSteps = [stepSinkType, stepSize, stepDesign, stepPartition, stepHandle, stepLocation];
+  
+  // إزالة الكلاس active من الكل أولاً
+  allSteps.forEach(el => el && el.classList.remove('active'));
+
+  // تحديد أول خطوة غير مكتملة لتكون هي الـ active (النشطة حالياً)
+  if (!hasSinkType) {
+    if (stepSinkType) stepSinkType.classList.add('active');
+  } else if (!hasSize) {
+    if (stepSize) stepSize.classList.add('active');
+  } else if (!hasDesign) {
+    if (stepDesign) stepDesign.classList.add('active');
+  } else if (!hasDiv) {
+    if (stepPartition) stepPartition.classList.add('active');
+  } else if (!hasHandle) {
+    if (stepHandle) stepHandle.classList.add('active');
+  } else if (!hasLocation) {
+    if (stepLocation) stepLocation.classList.add('active');
   }
 }
 
