@@ -70,13 +70,6 @@ fetch('nav.html')
 
 <div class="search-backdrop" id="search-backdrop" onclick="closeSearchDropdown()"></div>
 
-      <!-- شريط التصنيفات بنظام الشبكة الثابتة المتعددة الصفوف -->
-      <div class="categories-grid-wrapper" data-group="cat-scroll">
-        <div class="categories-grid scroll-x-styled" id="cat-scroll" role="list" aria-label="Categories">
-          <!-- سيتم تعبئتها ديناميكياً من الجافاسكريبت -->
-        </div>
-      </div>
-
       <!-- عنوان القسم الكبير (يتغير ديناميكياً حسب الفئة) -->
       <header class="page-header-container">
         <h1 class="main-category-title" id="current-category-title">الكل</h1>
@@ -87,6 +80,27 @@ fetch('nav.html')
         <a href="index.html">الرئيسية</a> / 
         <a href="products.html">المنتجات</a> / 
         <span id="current-breadcrumb-cat">الكل</span>
+      </div>
+
+      <!-- شريط التصنيفات بنظام الشبكة الثابتة المتعددة الصفوف -->
+      <div class="categories-grid-wrapper" data-group="cat-scroll">
+
+        <button class="scroll-arrow arr-start hidden" id="cat-arrow-right" aria-label="التمرير لليمين">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M15 18l-6-6 6-6"></path>
+          </svg>
+        </button>
+
+        <div class="categories-grid scroll-x-styled" id="cat-scroll" role="list" aria-label="Categories">
+          <!-- سيتم تعبئتها ديناميكياً من الجافاسكريبت -->
+        </div>
+
+        <button class="scroll-arrow arr-end hidden" id="cat-arrow-left" aria-label="التمرير لليسار">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M9 18l6-6-6-6"></path>
+          </svg>
+        </button>
+
       </div>
 
       <!-- قائمة المنتجات -->

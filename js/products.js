@@ -44,6 +44,8 @@
     categoryMap: {},
     counts: {},
     currentCat: getCategoryFromURL(),
+    currentPage: 1,
+    productsPerPage: 6,
     dom: {}
   };
 
@@ -198,6 +200,9 @@
     state.categories.sort((a,b) => (Number(a.order)||0)-(Number(b.order)||0)).forEach(cat => {
       container.appendChild(createBtn(cat.category_id, cat.display_name || cat.category_id, state.counts[cat.category_id] || 0));
     });
+
+    initCategoryScroll();
+
   }
 
   function updateCategoryHeader() {
@@ -208,138 +213,422 @@
   }
 
 function renderProducts() {
-    const container = state.dom.prodList; if (!container) return;
-    clearChildren(container);
+  const container = state.dom.prodList;
+  if (!container) return;
 
-    const filtered = state.products.filter(p => p.isVisible && (state.currentCat === 'all' || p.category === state.currentCat));
-    if (filtered.length === 0) {
-      const e = document.createElement('p'); e.className = 'prod-empty'; e.textContent = 'لا توجد منتجات متاحة حالياً في هذه الفئة.'; container.appendChild(e); return;
-    }
+  clearChildren(container);
 
-    const productsWrapper = document.createElement('div');
-    productsWrapper.className = 'ikea-products-wrapper';
+  const filtered = state.products
+    .filter(p =>
+      p.isVisible &&
+      (state.currentCat === 'all' || p.category === state.currentCat)
+    )
+    .sort((a, b) => {
+      const featuredA = a.isFeatured ? 1 : 0;
+      const featuredB = b.isFeatured ? 1 : 0;
 
-    for (let i = 0; i < filtered.length; i++) {
-      const p = filtered[i];
-      const card = document.createElement('article'); 
-      card.className = 'prod-card'; 
-      card.dataset.prod = p.product_id; 
-      card.dataset.cat = p.category || ''; 
-      card.tabIndex = 0;
-
-      // IMAGE COLUMN (تضم البادجات فوق الصورة، ثم الصورة، ثم التوفر والنقاط تحتها في نفس العمود لتتطابق مع تصميم الكارت)
-      const imgCol = document.createElement('div'); imgCol.className = 'prod-img-col';
-
-      // 1. صف البادجات فوق الصورة مباشرة (مع ترك مساحة محفوظة إن لمار تكن موجودة)
-      const badgesRow = document.createElement('div'); badgesRow.className = 'prod-badges-row';
-      if (p.isFeatured) { const b = document.createElement('span'); b.className = 'prod-badge featured'; b.textContent = 'الأكثر مبيعاً'; badgesRow.appendChild(b); }
-      if (p.isNew) { const b = document.createElement('span'); b.className = 'prod-badge new'; b.textContent = 'جديد'; badgesRow.appendChild(b); }
-      imgCol.appendChild(badgesRow);
-
-      // 2. حاوية الصورة
-      const wrap = document.createElement('div'); wrap.className = 'prod-img-wrap';
-      const img = document.createElement('img'); img.className = 'prod-img'; img.alt = p.display_name || ''; img.loading = 'lazy'; img.src = `${CONFIG.GH_IMAGES_BASE}${p.product_id}_1.webp`;
-      img.onerror = function () { safeImageFallback(this, `${CONFIG.GH_IMAGES_BASE}${p.product_id}.webp`); };
-      wrap.appendChild(img);
-      imgCol.appendChild(wrap);
-
-      // 3. تجميع حالة "متاح" والـ dots تحت الصورة في نفس العمود
-      const imgFooter = document.createElement('div'); imgFooter.className = 'prod-img-footer';
-      
-      const avail = document.createElement('div'); avail.className = 'prod-availability';
-      const dot = document.createElement('span'); dot.className = 'avail-dot ' + (p.isAvailable ? 'available' : 'unavailable');
-      const txt = document.createElement('span'); txt.className = 'avail-text'; txt.textContent = p.isAvailable ? 'متاح' : 'غير متاح';
-      avail.appendChild(dot); avail.appendChild(txt);
-
-      const dots = document.createElement('div'); dots.className = 'prod-dots';
-      const s1 = document.createElement('span'); s1.className = 'active'; dots.appendChild(s1); dots.appendChild(document.createElement('span')); dots.appendChild(document.createElement('span'));
-      imgFooter.appendChild(dots);
-
-      imgCol.appendChild(imgFooter);
-
-      // BODY (تفاصيل المنتج على اليمين)
-      const body = document.createElement('div'); body.className = 'prod-body';
-
-      const nameEl = document.createElement('div'); nameEl.className = 'prod-name'; nameEl.textContent = p.display_name;
-      const catTag = document.createElement('div'); catTag.className = 'prod-cat-tag'; catTag.textContent = state.categoryMap[p.category]?.display_name || '';
-
-      const head = document.createElement('div');
-      head.className = 'prod-head';
-
-      head.appendChild(nameEl);
-      head.appendChild(badgesRow);
-
-      let sizeEl = null;
-      if (p.width && p.height && p.depth) {
-        sizeEl = document.createElement('div'); sizeEl.className = 'prod-size'; sizeEl.textContent = `${p.width} × ${p.depth} × ${p.height} سم`;
+      if (featuredB !== featuredA) {
+        return featuredB - featuredA;
       }
 
-      const footerArea = document.createElement('div'); footerArea.className = 'prod-footer-area';
-      const priceArea = document.createElement('div'); priceArea.className = 'prod-price';
-      const newPrice = document.createElement('div');
-      newPrice.className = 'new-price';
+      const newA = a.isNew ? 1 : 0;
+      const newB = b.isNew ? 1 : 0;
 
-      const currency = document.createElement('span');
-      currency.className = 'price-currency';
-      currency.textContent = 'EGP';
+      return newB - newA;
+    });
 
-      const value = document.createElement('span');
-      value.className = 'price-value';
-      value.textContent = formatPrice(
-        p.sale_price != null ? p.sale_price : p.base_price
-      );
 
-      newPrice.appendChild(currency);
-      newPrice.appendChild(value);
-      priceArea.appendChild(newPrice);
-      if (p.sale_price != null && p.sale_price !== '') { const old = document.createElement('span'); old.className = 'old-price'; old.textContent = `${formatPrice(p.base_price)} EGP`; priceArea.appendChild(old); }
+  if (filtered.length === 0) {
+    const e = document.createElement('p');
+    e.className = 'prod-empty';
+    e.textContent = 'لا توجد منتجات متاحة حالياً في هذه الفئة.';
+    container.appendChild(e);
+    return;
+  }
 
-      const actions = document.createElement('div'); actions.className = 'prod-actions';
+  const totalPages = Math.ceil(filtered.length / state.productsPerPage);
 
-      const cartLink = document.createElement('a'); cartLink.className = 'prod-cart-btn'; cartLink.href = `cart.html`; cartLink.setAttribute('aria-label', 'اذهب إلى السلة'); cartLink.title = 'أضف إلى السلة / انتقل إلى السلة';
-      cartLink.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6h15l-1.5 9h-13z"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg>';
+  // التأكد إن الصفحة الحالية ما خرجتش عن النطاق
+  if (state.currentPage > totalPages) {
+    state.currentPage = totalPages;
+  }
 
-      const wishLink = document.createElement('a'); wishLink.className = 'prod-wishlist-btn'; wishLink.href = `wishlist.html`; wishLink.setAttribute('aria-label', 'القائمة المفضلة'); wishLink.title = 'قائمة الرغبات';
-      wishLink.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5 5 0 0 0-7.07 0L12 6.3l-1.73-1.7a5 5 0 0 0-7.07 7.07L12 21.3l8.8-8.8a5 5 0 0 0 0-7.9z"></path></svg>';
+  const startIndex =
+    (state.currentPage - 1) * state.productsPerPage;
 
-      const actionButtons = document.createElement('div');
-      actionButtons.className = 'prod-action-buttons';
+  const endIndex =
+    startIndex + state.productsPerPage;
 
-      actionButtons.appendChild(cartLink);
-      actionButtons.appendChild(wishLink);
-      
-      actions.appendChild(avail);
-      actions.appendChild(actionButtons);
+  const paginatedProducts = filtered.slice(startIndex, endIndex);
 
-      footerArea.appendChild(priceArea);
-      footerArea.appendChild(actions);
+  const productsWrapper = document.createElement('div');
+  productsWrapper.className = 'ikea-products-wrapper';
 
-      // assemble body
-      body.appendChild(head);
-      body.appendChild(catTag);
-      if (sizeEl) body.appendChild(sizeEl);
-    
-      body.appendChild(footerArea);
+  for (let i = 0; i < paginatedProducts.length; i++) {
+    const p = paginatedProducts[i];
 
-      // assemble card
-      card.appendChild(body);
-      card.appendChild(imgCol);
+    const card = document.createElement('article');
+    card.className = 'prod-card';
+    card.dataset.prod = p.product_id;
+    card.dataset.cat = p.category || '';
+    card.tabIndex = 0;
 
-      card.addEventListener('click', (ev) => {
-        const insideAction = ev.target.closest('.prod-actions, .prod-cart-btn, .prod-wishlist-btn');
-        if (insideAction) return;
-        window.location.href = `product-detail.html?id=${encodeURIComponent(p.product_id)}`;
-      });
+    // IMAGE COLUMN
+    const imgCol = document.createElement('div');
+    imgCol.className = 'prod-img-col';
 
-      productsWrapper.appendChild(card);
+    // BADGES
+    const badgesRow = document.createElement('div');
+    badgesRow.className = 'prod-badges-row';
+
+    if (p.isFeatured) {
+      const b = document.createElement('span');
+      b.className = 'prod-badge featured';
+      b.textContent = 'الأكثر مبيعاً';
+      badgesRow.appendChild(b);
     }
 
-    container.appendChild(productsWrapper);
+    if (p.isNew) {
+      const b = document.createElement('span');
+      b.className = 'prod-badge new';
+      b.textContent = 'جديد';
+      badgesRow.appendChild(b);
+    }
+
+    imgCol.appendChild(badgesRow);
+
+    // IMAGE
+    const wrap = document.createElement('div');
+    wrap.className = 'prod-img-wrap';
+
+    const img = document.createElement('img');
+    img.className = 'prod-img';
+    img.alt = p.display_name || '';
+    img.loading = 'lazy';
+    img.src = `${CONFIG.GH_IMAGES_BASE}${p.product_id}_1.webp`;
+
+    img.onerror = function () {
+      safeImageFallback(
+        this,
+        `${CONFIG.GH_IMAGES_BASE}${p.product_id}.webp`
+      );
+    };
+
+    wrap.appendChild(img);
+    imgCol.appendChild(wrap);
+
+    // IMAGE FOOTER / DOTS
+    const imgFooter = document.createElement('div');
+    imgFooter.className = 'prod-img-footer';
+
+    const dots = document.createElement('div');
+    dots.className = 'prod-dots';
+
+    const s1 = document.createElement('span');
+    s1.className = 'active';
+
+    dots.appendChild(s1);
+    dots.appendChild(document.createElement('span'));
+    dots.appendChild(document.createElement('span'));
+
+    imgFooter.appendChild(dots);
+    imgCol.appendChild(imgFooter);
+
+    // BODY
+    const body = document.createElement('div');
+    body.className = 'prod-body';
+
+    const nameEl = document.createElement('div');
+    nameEl.className = 'prod-name';
+    nameEl.textContent = p.display_name;
+
+    const catTag = document.createElement('div');
+    catTag.className = 'prod-cat-tag';
+    catTag.textContent =
+      state.categoryMap[p.category]?.display_name || '';
+
+    const head = document.createElement('div');
+    head.className = 'prod-head';
+    head.appendChild(nameEl);
+
+    let sizeEl = null;
+
+    if (p.width && p.height && p.depth) {
+      sizeEl = document.createElement('div');
+      sizeEl.className = 'prod-size';
+      sizeEl.textContent =
+        `${p.width} × ${p.depth} × ${p.height} سم`;
+    }
+
+    // PRICE
+    const footerArea = document.createElement('div');
+    footerArea.className = 'prod-footer-area';
+
+    const priceArea = document.createElement('div');
+    priceArea.className = 'prod-price';
+
+    const newPrice = document.createElement('div');
+    newPrice.className = 'new-price';
+
+    const currency = document.createElement('span');
+    currency.className = 'price-currency';
+    currency.textContent = 'EGP';
+
+    const value = document.createElement('span');
+    value.className = 'price-value';
+    value.textContent = formatPrice(
+      p.sale_price != null
+        ? p.sale_price
+        : p.base_price
+    );
+
+    newPrice.appendChild(currency);
+    newPrice.appendChild(value);
+
+    priceArea.appendChild(newPrice);
+
+    if (p.sale_price != null && p.sale_price !== '') {
+      const old = document.createElement('span');
+      old.className = 'old-price';
+      old.textContent = `${formatPrice(p.base_price)} EGP`;
+      priceArea.appendChild(old);
+    }
+
+    // ACTIONS
+    const actions = document.createElement('div');
+    actions.className = 'prod-actions';
+
+    const avail = document.createElement('div');
+    avail.className = 'prod-availability';
+
+    const dot = document.createElement('span');
+    dot.className =
+      'avail-dot ' +
+      (p.isAvailable ? 'available' : 'unavailable');
+
+    const txt = document.createElement('span');
+    txt.className = 'avail-text';
+    txt.textContent =
+      p.isAvailable ? 'متاح' : 'غير متاح';
+
+    avail.appendChild(dot);
+    avail.appendChild(txt);
+
+    const cartLink = document.createElement('a');
+    cartLink.className = 'prod-cart-btn';
+    cartLink.href = 'cart.html';
+    cartLink.setAttribute(
+      'aria-label',
+      'اذهب إلى السلة'
+    );
+    cartLink.title =
+      'أضف إلى السلة / انتقل إلى السلة';
+
+    cartLink.innerHTML =
+      '<svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>';
+
+    const wishLink = document.createElement('a');
+    wishLink.className = 'prod-wishlist-btn';
+    wishLink.href = 'wishlist.html';
+    wishLink.setAttribute(
+      'aria-label',
+      'القائمة المفضلة'
+    );
+    wishLink.title = 'قائمة الرغبات';
+
+    wishLink.innerHTML =
+      '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5 5 0 0 0-7.07 0L12 6.3l-1.73-1.7a5 5 0 0 0-7.07 7.07L12 21.3l8.8-8.8a5 5 0 0 0 0-7.9z"></path></svg>';
+
+    const actionButtons = document.createElement('div');
+    actionButtons.className =
+      'prod-action-buttons';
+
+    actionButtons.appendChild(cartLink);
+    actionButtons.appendChild(wishLink);
+
+    actions.appendChild(avail);
+    actions.appendChild(actionButtons);
+
+    footerArea.appendChild(priceArea);
+    footerArea.appendChild(actions);
+
+    // ASSEMBLE BODY
+    body.appendChild(head);
+    body.appendChild(catTag);
+
+    if (sizeEl) {
+      body.appendChild(sizeEl);
+    }
+
+    body.appendChild(footerArea);
+
+    // ASSEMBLE CARD
+    card.appendChild(body);
+    card.appendChild(imgCol);
+
+    card.addEventListener('click', ev => {
+      const insideAction = ev.target.closest(
+        '.prod-actions, .prod-cart-btn, .prod-wishlist-btn'
+      );
+
+      if (insideAction) return;
+
+      window.location.href =
+        `product-detail.html?id=${encodeURIComponent(
+          p.product_id
+        )}`;
+    });
+
+    productsWrapper.appendChild(card);
+  }
+
+  container.appendChild(productsWrapper);
+
+  renderPagination(totalPages);
+}
+
+function renderPagination(totalPages) {
+  const container = state.dom.prodList;
+  if (!container) return;
+
+  const oldPagination = container.querySelector('.products-pagination');
+  if (oldPagination) oldPagination.remove();
+
+  const oldInfo = container.querySelector('.products-page-info');
+  if (oldInfo) oldInfo.remove();
+
+  const filtered = state.products.filter(
+    p =>
+      p.isVisible &&
+      (state.currentCat === 'all' || p.category === state.currentCat)
+  );
+
+  const totalProducts = filtered.length;
+
+  const startIndex =
+    (state.currentPage - 1) * state.productsPerPage + 1;
+
+  const endIndex = Math.min(
+    state.currentPage * state.productsPerPage,
+    totalProducts
+  );
+
+  const info = document.createElement('div');
+  info.className = 'products-page-info';
+  info.textContent = `عرض ${startIndex}–${endIndex} من ${totalProducts} منتج`;
+
+  container.appendChild(info);
+
+  if (totalPages <= 1) return;
+
+  const pagination = document.createElement('nav');
+  pagination.className = 'products-pagination';
+  pagination.setAttribute('aria-label', 'صفحات المنتجات');
+
+  const createButton = (label, page, disabled = false, extraClass = '') => {
+    const button = document.createElement('button');
+
+    button.type = 'button';
+    button.className =
+      `pagination-btn ${extraClass}`.trim();
+
+    button.textContent = label;
+    button.disabled = disabled;
+
+    if (page === state.currentPage) {
+      button.classList.add('active');
+      button.setAttribute('aria-current', 'page');
+    }
+
+    button.addEventListener('click', () => {
+      if (page === state.currentPage) return;
+
+      state.currentPage = page;
+      renderProducts();
+
+      container.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    });
+
+    return button;
+  };
+
+  // Previous
+  pagination.appendChild(
+    createButton(
+      '‹',
+      state.currentPage - 1,
+      state.currentPage === 1,
+      'pagination-prev'
+    )
+  );
+
+  // Page numbers
+  for (let page = 1; page <= totalPages; page++) {
+    pagination.appendChild(
+      createButton(
+        String(page),
+        page,
+        false
+      )
+    );
+  }
+
+  // Next
+  pagination.appendChild(
+    createButton(
+      '›',
+      state.currentPage + 1,
+      state.currentPage === totalPages,
+      'pagination-next'
+    )
+  );
+
+  container.appendChild(pagination);
 }
 
   /* ===========================
      Interaction handlers
      =========================== */
+
+  function initCategoryScroll() {
+    const container = document.getElementById('cat-scroll');
+    const rightArrow = document.getElementById('cat-arrow-right');
+    const leftArrow = document.getElementById('cat-arrow-left');
+
+    if (!container || !rightArrow || !leftArrow) return;
+
+    const updateArrows = () => {
+      const maxScroll = container.scrollWidth - container.clientWidth;
+
+      const atStart = Math.abs(container.scrollLeft) < 2;
+      const atEnd = Math.abs(Math.abs(container.scrollLeft) - maxScroll) < 2;
+
+      rightArrow.classList.toggle('hidden', atStart);
+      leftArrow.classList.toggle('hidden', atEnd);
+    };
+
+    rightArrow.addEventListener('click', () => {
+      container.scrollBy({
+        left: 300,
+        behavior: 'smooth'
+      });
+    });
+
+    leftArrow.addEventListener('click', () => {
+      container.scrollBy({
+        left: -300,
+        behavior: 'smooth'
+      });
+    });
+
+    container.addEventListener('scroll', updateArrows);
+    window.addEventListener('resize', updateArrows);
+
+    updateArrows();
+  }
 
   function filterCat(catId) {
     state.currentCat = catId || 'all';
