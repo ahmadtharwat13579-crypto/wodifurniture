@@ -28,6 +28,7 @@
   --font-size-display: 28px;
 
   /* Border Radius */
+  --radius-z: 0px;
   --radius-xs: 2px;
   --radius-sm: 4px;
   --radius-md: 8px;
@@ -66,13 +67,27 @@
     --space-10: 64px;
 
     /* Transitions */
- --transition-fast: 0.2s ease;
- --transition-base: 0.3s ease;
- --transition-slow: 0.4s ease;
+  --transition-fast: 0.2s ease;
+  --transition-base: 0.3s ease;
+  --transition-slow: 0.4s ease;
 
    /* Breakpoints */
- --bp-mobile: 480px;
- --bp-tablet: 768px;
- --bp-desktop: 1024px;
- --bp-wide: 1200px;
+  --bp-mobile: 480px;
+  --bp-tablet: 768px;
+  --bp-desktop: 1024px;
+  --bp-wide: 1200px;
+
+  /* Product Card */
+  --product-image-width: 160px;
+  --product-image-height: 200px;
+
+  --product-badge-font-size: 13px;
+  --product-badge-padding-y: 5px;
+  --product-badge-padding-x: 10px;
+
+  --product-price-size: 26px;
+  --product-price-currency-size: 11px;
+
+  --product-availability-size: 14px;
+  --product-availability-dot-size: 10px;
 }

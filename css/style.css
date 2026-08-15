@@ -1967,3 +1967,23 @@ body {
   from { transform: translateY(15px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
+
+.scroll-x-styled {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-primary, #9caf88) var(--color-bg-light, #f4f4f4);
+}
+
+.scroll-x-styled::-webkit-scrollbar {
+  height: 5px;
+}
+
+.scroll-x-styled::-webkit-scrollbar-track {
+  background: var(--color-bg-light, #f4f4f4);
+  border-radius: 10px;
+}
+
+.scroll-x-styled::-webkit-scrollbar-thumb {
+  background: var(--color-primary, #9caf88);
+  border-radius: 10px;
+}

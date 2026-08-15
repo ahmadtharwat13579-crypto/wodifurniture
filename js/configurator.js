@@ -7,7 +7,6 @@
 ================================================================================
 */
 const WA = '201556840368';
-const LOCATION_SHEET = "https://script.google.com/macros/s/AKfycbz1Dj9QB3rlz_sZoLwC-kdfZiMUBsHheGT62dIgajmzqffFm7Z_XiQ9sH558XW9sgDZ/exec?pwd=double-protection-password";
 const GH = 'https://raw.githubusercontent.com/ahmadtharwat13579-crypto/wodifurniture/main/images/conf/';
 const SHEET = 'https://script.google.com/macros/s/AKfycbz3xuCuZ6sU9QVo2nTRaItWFLplEhG7bKuzeZSQpk4DseShYrzycpRhyO2u2kuwPVkY/exec?pwd=double-protection-password';
 
@@ -123,7 +122,6 @@ function pulsePrice(el) {
 */
 
 function loadConfiguratorData() {
-  console.log("🔍 جاري تحميل وتفقد بيانات الكونفيجوريتور...");
 
   // 1) اذا في كاش محلي، استخدمه فوراً لتحسين السرعة
   try {
@@ -133,9 +131,7 @@ function loadConfiguratorData() {
         const rows = JSON.parse(cached);
         D = build(rows);
         dataLoaded = true;
-        // رسم فوري من الكاش
         rDes(); rSz(); rDiv(); rHnd(); upd();
-        console.log('✅ Loaded configurator from sessionStorage cache');
       } catch (e) {
         console.warn('Failed to parse cached configurator', e);
       }
@@ -174,13 +170,19 @@ function loadConfiguratorData() {
       }
 
       const rows = data && data.configurator;
+
+      const settings = data && data.locationSettings;
+      if (settings && settings.workshop_lat) {
+        LOC = settings;
+      }
+
       if (rows && rows.length > 0) {
         D = build(rows);
         dataLoaded = true;
         hideConfiguratorLoading();
         try { sessionStorage.setItem('wodi_configurator_cache', JSON.stringify(rows)); } catch (e) { console.warn('sessionStorage set failed', e); }
         rDes(); rSz(); rDiv(); rHnd(); upd();
-        console.log("✅ تم جلب وتحديث البيانات بنجاح من السيرفر");
+        console.log('Configurator data loaded successfully.');
         return;
       } else {
         hideConfiguratorLoading();
@@ -199,10 +201,9 @@ function loadConfiguratorData() {
 
       hideConfiguratorLoading();
 
-      // final fallback: if we already loaded from sessionStorage earlier, keep it; else show message
       if (!dataLoaded) {
         showToast('تعذر تحميل البيانات. تأكد من اتصالك وحاول مرة أخرى.');
-        console.error('❌ فشل نهائي في جلب بيانات الكونفيجوريتور:', err);
+        console.error('Final failure loading configurator data:', err);
       } else {
         showToast('البيانات مُعرضة من الكاش المحلي (اتصال الشبكة ضعيف)');
       }
@@ -1603,15 +1604,6 @@ function initConfigurator() {
 
   // Run the initial data fetch (keeps same behavior as original — will be idempotent)
   loadConfiguratorData();
-
-  // fetch location settings for calcInstall (non-blocking)
-  fetch(LOCATION_SHEET)
-    .then(r => r.json())
-    .then(settings => {
-      if (settings.workshop_lat) LOC = settings;
-      console.log('✅ Location settings loaded');
-    })
-    .catch(() => { console.log('Using default location settings'); });
 }
 
 // Generic click handler used only to update stepper progress after interactions

@@ -392,7 +392,7 @@ body.side-nav-open {
 
 .side-nav-dropdown.open .side-nav-dropdown-menu,
 .side-nav-dropdown-menu.open {
-    max-height: 200px;
+    max-height: 400px;
 }
 
 .side-nav-dropdown-item {
