@@ -262,7 +262,7 @@ function renderProducts() {
   const paginatedProducts = filtered.slice(startIndex, endIndex);
 
   const productsWrapper = document.createElement('div');
-  productsWrapper.className = 'ikea-products-wrapper';
+  productsWrapper.className = 'products-wrapper';
 
   for (let i = 0; i < paginatedProducts.length; i++) {
     const p = paginatedProducts[i];
@@ -427,9 +427,20 @@ function renderProducts() {
     cartLink.innerHTML =
       '<svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>';
 
-    const wishLink = document.createElement('a');
+    // تغيير بسيط: اجعل أيقونة السلة تنفّذ إضافة للسلة قبل الانتقال إلى صفحة السلة
+    cartLink.addEventListener('click', (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      if (window.addToCart && typeof window.addToCart === 'function') {
+        window.addToCart(p.product_id, 1);
+      }
+      // ثم اذهب إلى صفحة السلة
+      window.location.href = 'cart.html';
+    });
+    
+    const wishLink = document.createElement('button');
     wishLink.className = 'prod-wishlist-btn';
-    wishLink.href = 'wishlist.html';
+    wishLink.type = 'button';
     wishLink.setAttribute(
       'aria-label',
       'القائمة المفضلة'
@@ -438,6 +449,12 @@ function renderProducts() {
 
     wishLink.innerHTML =
       '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5 5 0 0 0-7.07 0L12 6.3l-1.73-1.7a5 5 0 0 0-7.07 7.07L12 21.3l8.8-8.8a5 5 0 0 0 0-7.9z"></path></svg>';
+
+    wishLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleWishlist(p.product_id, wishLink);
+    });
 
     const actionButtons = document.createElement('div');
     actionButtons.className =
@@ -646,6 +663,42 @@ function renderPagination(totalPages) {
     window.open(`https://wa.me/${CONFIG.WA_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
   }
 
+
+  // Wishlist integration
+  function toggleWishlist(productId, wishBtn) {
+    if (!wishBtn) return;
+
+    const isInWishlist = window.isInWishlist && window.isInWishlist(productId);
+
+    if (isInWishlist) {
+      window.removeFromWishlistGlobal && window.removeFromWishlistGlobal(productId);
+      wishBtn.classList.remove('active');
+      wishBtn.querySelector('svg').style.fill = 'none';
+    } else {
+      window.addToWishlist && window.addToWishlist(productId);
+      wishBtn.classList.add('active');
+      wishBtn.querySelector('svg').style.fill = 'currentColor';
+    }
+  }
+
+  function updateWishlistButtonStates() {
+    document.querySelectorAll('.prod-wishlist-btn').forEach(btn => {
+      const card = btn.closest('.prod-card');
+      if (!card) return;
+      const productId = card.dataset.prod;
+      const isInWishlist = window.isInWishlist && window.isInWishlist(productId);
+
+      if (isInWishlist) {
+        btn.classList.add('active');
+        btn.querySelector('svg').style.fill = 'currentColor';
+      } else {
+        btn.classList.remove('active');
+        btn.querySelector('svg').style.fill = 'none';
+      }
+    });
+  }
+
+
   /* ===========================
      Init & lifecycle
      =========================== */
@@ -722,17 +775,17 @@ function renderPagination(totalPages) {
       state.categories = cached.categories;
       state.categoryMap = {}; state.categories.forEach(c=>state.categoryMap[c.category_id] = c);
       state.counts = { all: 0 }; state.products.forEach(p=>{ if (p.isVisible) { state.counts.all +=1; if (p.category) state.counts[p.category] = (state.counts[p.category]||0)+1; }});
-      renderCategories(); updateCategoryHeader(); renderProducts();
+      renderCategories(); updateCategoryHeader(); renderProducts(); updateWishlistButtonStates();
 
       // background refresh (non-blocking)
-      fetchData().then(raw => { try { processData(raw); renderCategories(); updateCategoryHeader(); renderProducts(); } catch(e){} }).catch(()=>{});
+      fetchData().then(raw => { try { processData(raw); renderCategories(); updateCategoryHeader(); renderProducts(); updateWishlistButtonStates(); } catch(e){} }).catch(()=>{});
       return;
     }
 
     try {
       const raw = await fetchData();
       processData(raw);
-      renderCategories(); updateCategoryHeader(); renderProducts();
+      renderCategories(); updateCategoryHeader(); renderProducts(); updateWishlistButtonStates();
     } catch (err) {
       console.error('Failed to load products:', err);
       if (container) container.innerHTML = '<p>فشل تحميل المنتجات. حاول إعادة التحميل لاحقًا.</p>';
@@ -770,6 +823,16 @@ function renderPagination(totalPages) {
   // start
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 
+  // Compatibility API: allow other scripts to call addToCart even if cart module not yet loaded.
+  // Products.js: ضع هذا بعد تعريف window.WODIProducts أو في نفس مكان expose API.
+  window.addToCart = function (productId, qty = 1) {
+    if (window.addToCartGlobal && typeof window.addToCartGlobal === 'function') {
+      return window.addToCartGlobal(productId, qty);
+    }
+    // إذا لم توجد واجهة cart بعد، يمكن تخزين id مؤقتًا أو فتح صفحة السلة
+    return null;
+  };
+ 
   // expose limited API
   window.WODIProducts = { filterCat: (c)=>filterCat(c), openLB: (s,a)=>openLB(s,a), closeLB: ()=>closeLB() };
 

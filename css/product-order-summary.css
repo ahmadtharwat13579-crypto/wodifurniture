@@ -1,0 +1,422 @@
+/* ==========================================================
+   order-summary.css
+   ملف CSS لتصميم ملخص الطلب - WODI Furniture
+   الاتجاه: RTL | الصفحة: A4 | اللغة: العربية
+   ========================================================== */
+
+/* ----------------------------------------------------------
+   FONTS & RESET
+   ---------------------------------------------------------- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Cairo', sans-serif;
+  background: #f0f0f0;
+  direction: rtl;
+  color: #000;
+}
+
+/* ----------------------------------------------------------
+   PAGE CONTAINER
+   أبعاد A4 ثابتة مناسبة للطباعة والتحويل إلى PDF
+   ---------------------------------------------------------- */
+.page {
+  width: 210mm;
+  min-height: 297mm;
+  background: #ffffff;
+  margin: 20px auto;
+  padding: 18mm 15mm 15mm 15mm;
+  position: relative;
+}
+
+/* ----------------------------------------------------------
+   HEADER SECTION
+   ---------------------------------------------------------- */
+.doc-header {
+  display: flex;
+  flex-direction: row-reverse;   /* لوجو يسارًا، عنوان يمينًا */
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 5mm;
+}
+
+.header-center {
+  text-align: right;
+  flex: 1;
+}
+
+.doc-title {
+  font-size: 42pt;
+  font-weight: 900;
+  color: #000;
+  line-height: 1.1;
+  margin-bottom: 2px;
+  letter-spacing: -0.5px;
+}
+
+.order-number-inline {
+  font-size: 10pt;
+  font-weight: 400;
+  margin-bottom: 4px;
+}
+
+.header-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.logo-img {
+  width: 90px;
+  height: auto;
+  display: block;
+}
+
+.header-center {
+  text-align: right;
+  flex: 1;
+
+}
+
+.doc-title {
+  font-size: 42pt;
+  font-weight: 900;
+  color: #000;
+  line-height: 1.1;
+  margin-bottom: 4px;
+  letter-spacing: -0.5px;
+}
+
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  font-size: 10pt;
+  font-weight: 400;
+  color: #000;
+  line-height: 1.7;
+  direction: ltr;          /* الأرقام والإيميل LTR */
+  text-align: right;
+}
+
+/* ----------------------------------------------------------
+   DIVIDERS
+   ---------------------------------------------------------- */
+.divider-thick {
+  border: none;
+  border-top: 2.5px solid #000;
+  margin: 0;
+}
+
+.divider-thin {
+  border: none;
+  border-top: 1px solid #000;
+  margin: 0;
+}
+
+/* ----------------------------------------------------------
+   CUSTOMER INFO SECTION
+   ---------------------------------------------------------- */
+.customer-section {
+  padding: 3mm 0 0 0;
+  margin-bottom: 2mm;
+}
+
+.customer-grid {
+  display: grid;
+  grid-template-columns: 0.3fr 1fr;
+  direction: rtl;
+  margin-bottom: 4mm;
+  gap: 0 5mm;
+}
+
+.customer-col-right {
+  text-align: right;
+}
+
+.customer-col-left {
+  text-align: right;
+}
+
+.customer-field {
+  font-size: 10.5pt;
+  font-weight: 400;
+  margin-bottom: 3mm;
+  display: flex;
+  flex-direction: row;        /* label أول من اليمين، ثم value */
+  gap: 4px;
+  justify-content: flex-start;
+  align-items: baseline;
+  direction: rtl;
+}
+
+.field-label {
+  font-weight: 700;
+  font-size: 10.5pt;
+}
+
+.field-value {
+  font-weight: 400;
+  font-size: 10.5pt;
+}
+
+.title-row {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.order-number-inline {
+  font-size: 10pt;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+/* ----------------------------------------------------------
+   PRODUCTS TABLE
+   ---------------------------------------------------------- */
+
+.table-title {
+  font-size: 13pt;
+  font-weight: 700;
+  margin-bottom: 3mm;
+  text-align: right;
+}
+
+.products-section {
+  margin: 8mm 0 0 0;
+}
+
+.products-table {
+  width: 100%;
+  border-collapse: collapse;
+  direction: rtl;
+  table-layout: fixed;
+}
+
+/* رأس الجدول */
+.table-header-row {
+  background-color: #000;
+  color: #fff;
+}
+
+.products-table thead th {
+  padding: 5px 8px;
+  font-size: 10.5pt;
+  font-weight: 700;
+  font-family: 'Cairo', sans-serif;
+  text-align: center;
+  color: #fff;
+}
+
+/* عرض الأعمدة */
+.col-name  { width: 35%; }
+.col-specs { width: 25%; }
+.col-qty   { width: 11%; }
+.col-price { width: 15%; }
+.col-section { width: 15%; }
+.col-code    { width: 12%; }
+.col-color   { width: 12%; }
+.col-handle-priority { width: 12%; }
+.col-category { width: 20%; }
+
+.sink-unit-table .col-section { width: 16%; }
+.sink-unit-table .col-name { width: 25%; }
+.sink-unit-table .col-code { width: 9%; }
+.sink-unit-table .col-color { width: 12%; }
+.sink-unit-table .col-handle-priority { width: 11%; }
+.sink-unit-table .col-price { width: 11%; }
+
+.sink-unit-table .item-name,
+.sink-unit-table .item-row td.col-handle-priority,
+.sink-unit-table .item-row td.col-code {
+  font-size: 9.5pt;
+  white-space: nowrap;
+}
+
+/* صفوف البيانات */
+.item-row td {
+  padding: 6px 8px;
+  font-size: 10pt;
+  font-weight: 400;
+  text-align: center;
+  border-bottom: 1px solid #000;
+  min-height: 10mm;
+  height: 10mm;
+}
+
+.item-row td.col-name {
+  text-align: right;
+}
+
+.item-row td.col-price {
+  direction: ltr;
+}
+
+.item-row td.col-code,
+.item-row td.col-color,
+.item-row td.col-handle-priority {
+  font-size: 9.5pt;
+}
+
+.table-total-row td {
+  border-bottom: none;
+  border-top: 2px solid #000;
+  padding: 8px 8px 4px;
+  text-align: right;
+}
+
+.table-total-inline {
+  display: inline-block;
+  font-weight: 700;
+  font-size: 10.5pt;
+  border-bottom: 1.5px solid #000;
+  padding-bottom: 3px;
+}
+
+.table-total-inline span {
+  font-weight: 700;
+  direction: ltr;
+  unicode-bidi: embed;
+}
+
+/* ----------------------------------------------------------
+   SHIPPING SECTION
+   ---------------------------------------------------------- */
+.shipping-section {
+  margin-top: 6mm;
+  padding-top: 5mm;
+}
+
+.shipping-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5mm;
+  margin-top: 3mm;
+  align-items: start;
+}
+
+.shipping-info-col {
+  display: flex;
+  flex-direction: column;
+  padding-right: 3mm;
+  line-height: 1.6;
+}
+
+.shipping-map-col {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.shipping-map-img {
+  width: 100%;
+  max-width: 80mm;
+  height: auto;
+  border: 1px solid #000;
+}
+
+/* ----------------------------------------------------------
+   TOTALS SECTION
+   ---------------------------------------------------------- */
+.totals-section {
+  margin-top: 6mm;
+  background: #f7f7f7;
+  padding: 5mm 6mm;
+  border-right: 4px solid #000;
+}
+
+.totals-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8mm;
+  direction: rtl;
+}
+
+.totals-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3mm;
+  direction: rtl;
+}
+
+.total-row {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 8px;
+  direction: rtl;
+  justify-content: flex-start;
+}
+
+.total-label {
+  font-size: 10.5pt;
+  font-weight: 700;
+}
+
+.total-value {
+  font-size: 10.5pt;
+  font-weight: 400;
+}
+
+.grand-total-row {
+  margin-top: 2mm;
+  padding-top: 3mm;
+  border-top: 2px solid #000;
+}
+
+.grand-total-label {
+  font-size: 13pt;
+  font-weight: 900;
+}
+
+.grand-total-value {
+  font-size: 14pt;
+  font-weight: 700;
+}
+
+/* العمود الأيسر: الملاحظات */
+.notes-col {
+  text-align: right;
+  padding-right: 1mm;
+  padding-top: 2mm;
+}
+
+.notes-label {
+  font-size: 11pt;
+  font-weight: 700;
+  margin-bottom: 1mm;
+}
+
+.notes-content {
+  font-size: 10pt;
+  font-weight: 400;
+  line-height: 1.8;
+  color: #000;
+  padding-right: 3mm;
+}
+
+/* ----------------------------------------------------------
+   PRINT STYLES
+   مناسب للتحويل إلى PDF عبر window.print() أو مكتبات PDF
+   ---------------------------------------------------------- */
+@media print {
+  body {
+    background: #fff;
+    margin: 0;
+    padding: 0;
+  }
+
+  .page {
+    margin: 0;
+    padding: 18mm 15mm 15mm 15mm;
+    box-shadow: none;
+    width: 210mm;
+    min-height: 297mm;
+  }
+}

@@ -892,10 +892,9 @@ function upd() {
     const handlePrice = S.handle && !noH ? S.handle.price * S.design.hc : 0;
     if (shPrice) shPrice.textContent = S.handle ? (handlePrice > 0 ? '+' + handlePrice + ' EGP' : '+0 EGP') : (noH ? '—' : '—');
 
-    // نقلنا استدعاء تحديث الشريط السفلي إلى هنا ليعمل بعد اكتمال حساب السعر مباشرة
-    if (typeof window.updateStickyValue === 'function') {
-      window.updateStickyValue();
-    }
+  if (typeof window.updateStickyValue === 'function') {
+    window.updateStickyValue();
+  }
 
   }, 300);
 }
@@ -1230,6 +1229,8 @@ function setupStickyPriceBar() {
     }
 
     function updateStickyValue() {
+      if (!stickyEl) createSticky(); // تأكد من وجود العنصر أولاً، حتى لو مخفي حالياً
+
       const total = document.getElementById('total-price')?.textContent?.trim() || '— EGP';
       const stickyVal = document.getElementById('sticky-total');
       if (stickyVal) {
@@ -1294,7 +1295,12 @@ function setupStickyPriceBar() {
       setupObservers();
     }
 
-    window.addEventListener('load', enableIfMobile);
+    window.addEventListener('load', () => {
+      enableIfMobile();
+      if (window.innerWidth <= MOBILE_BREAK) {
+        createSticky(); // إنشاء العنصر فورًا حتى لو مخفي، عشان يكون جاهز لأي تحديث لاحق
+      }
+    });
     window.addEventListener('resize', function () {
       clearTimeout(window._priceStickyResize);
       window._priceStickyResize = setTimeout(enableIfMobile, 120);
@@ -1373,6 +1379,15 @@ function updateStepperProgress() {
   const noH = (typeof S !== 'undefined' && S.design && S.design.hc === 0);
   const hasHandle = (typeof S !== 'undefined' && (S.handle || noH));
 
+  const errorMsgElement = document.body.innerText.includes('خارج نطاق خدمتنا');
+  const isOutOfRange =
+    (typeof locationError !== 'undefined' && locationError === true) ||
+    errorMsgElement;
+  const hasLocation =
+    typeof installCost !== 'undefined' &&
+    installCost !== null &&
+    !isOutOfRange;
+
   if (stepSinkType) {
     if (hasSinkType) stepSinkType.classList.add('completed'); else stepSinkType.classList.remove('completed');
   }
@@ -1389,17 +1404,6 @@ function updateStepperProgress() {
     if (hasHandle) stepHandle.classList.add('completed'); else stepHandle.classList.remove('completed');
   }
   if (stepLocation) {
-    const errorMsgElement = document.body.innerText.includes('خارج نطاق خدمتنا');
-
-    const isOutOfRange =
-      (typeof locationError !== 'undefined' && locationError === true) ||
-      errorMsgElement;
-
-    const hasLocation =
-      typeof installCost !== 'undefined' &&
-      installCost !== null &&
-      !isOutOfRange;
-
     if (hasLocation) {
       stepLocation.classList.add('completed');
       stepLocation.classList.remove('out-of-range');
@@ -1411,13 +1415,9 @@ function updateStepperProgress() {
     }
   }
 
-  // --- إضافة لتحديد الخطوة النشطة حالياً (Active Step) ---
   const allSteps = [stepSinkType, stepSize, stepDesign, stepPartition, stepHandle, stepLocation];
-  
-  // إزالة الكلاس active من الكل أولاً
   allSteps.forEach(el => el && el.classList.remove('active'));
 
-  // تحديد أول خطوة غير مكتملة لتكون هي الـ active (النشطة حالياً)
   if (!hasSinkType) {
     if (stepSinkType) stepSinkType.classList.add('active');
   } else if (!hasSize) {

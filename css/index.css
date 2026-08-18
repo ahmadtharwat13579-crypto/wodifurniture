@@ -28,7 +28,7 @@
 .hero-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.20);
+  background: rgba(0, 0, 0, 0.25);
   z-index: var(--z-overlay);
 }
 
@@ -38,13 +38,28 @@
   padding: 100px 60px 60px;
 }
 
+/* تعديل العنوان لضمان التناسق المثالي مع الأيقونة */
 .hero h1 {
+  display: flex;
+  align-items: center;
+  gap: 12px; /* تقليل المسافة قليلاً لتكون متماسكة */
+  flex-wrap: nowrap; /* منع انزلاق الأيقونة للسطر التالي */
   font-size: clamp(32px, 5vw, 56px);
   font-weight: 800;
   line-height: 1.3;
   margin-bottom: 16px;
   color: var(--color-bg-white);
   text-shadow: none;
+}
+
+/* تنسيق الـ SVG لتبدو مريحة ومتناسقة مع حجم الخط */
+.hero-svg-icon {
+  color: #ffffff;
+  width: 36px;   /* تصغير الحجم قليلاً ليناسب العين بجانب الكلمة */
+  height: 36px;
+  flex-shrink: 0;
+  stroke-width: 22; /* ضبط السمك ليصبح ناعماً ومريحاً */
+  transform: translateY(-2px); /* ضبط طفيف جداً للارتفاع لمنتصف السطر */
 }
 
 .hero p {

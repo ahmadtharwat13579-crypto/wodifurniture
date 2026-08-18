@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ملخص الطلب - WODI Furniture</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/product-order-summary.css">
+</head>
+<body>
+
+  <div class="page">
+
+    <!-- ===== HEADER ===== -->
+    <header class="doc-header">
+      <div class="header-logo">
+        <img src="/images/logos/logo-white.png" alt="WODI Logo" class="logo-img">
+      </div>
+    <div class="header-center">
+      <h1 class="doc-title">ملخص الطلب</h1>
+      <p class="order-number-inline">
+        <span class="field-label">رقم الطلب:</span>
+        <span id="order-number">250817-001</span>
+      </p>
+      <div class="contact-info">
+        <span>Whatsapp: +20 15 5684 0368</span>
+        <span>wodifurniture@outlook.com</span>
+      </div>
+    </div>
+    </header>
+
+    <!-- ===== DIVIDER ===== -->
+    <hr class="divider-thick">
+
+    <!-- ===== CUSTOMER INFO SECTION ===== -->
+    <section class="customer-section">
+      <div class="customer-grid">
+
+        <div class="customer-col-right">
+          <p class="section-label">تم تلخيص الطلب إلى:</p>
+        </div>
+
+        <div class="customer-col-left">
+          <p class="customer-field">
+            <span class="field-label">إسم العميل:</span>
+            <span class="field-value" id="customer-name">أحمد محمد</span>
+          </p>
+          <p class="customer-field">
+            <span class="field-label">رقم التليفون:</span>
+            <span class="field-value" id="customer-phone">+20 100 000 0000</span>
+          </p>
+        </div>
+
+      </div>
+    </section>
+
+    <hr class="divider-thin">
+
+    <!-- ===== SINK UNIT TABLE ===== -->
+    <section class="products-section">
+      <h2 class="table-title"> وحدة الحوض #01</h2>
+      <table class="products-table sink-unit-table">
+        <thead>
+          <tr class="table-header-row">
+            <th class="col-section">القسم</th>
+            <th class="col-name">الاختيار</th>
+            <th class="col-code">الكود</th>
+            <th class="col-color">اللون</th>
+            <th class="col-handle-priority">أولوية 1</th>
+            <th class="col-handle-priority">أولوية 2</th>
+            <th class="col-price">السعر</th>
+          </tr>
+        </thead>
+        <tbody id="sink-unit-items">
+
+          <tr class="item-row">
+            <td class="col-section item-section">تصميم الوحدة</td>
+            <td class="col-name item-name">وحدة معلقة - ضلفتين</td>
+            <td class="col-code item-code">SU-201</td>
+            <td class="col-color item-color">أبيض لامع</td>
+            <td class="col-handle-priority">—</td>
+            <td class="col-handle-priority">—</td>
+            <td class="col-price item-price">3,500 ج.م</td>
+          </tr>
+
+          <tr class="item-row">
+            <td class="col-section item-section">التقسيمة الداخلية</td>
+            <td class="col-name item-name">رف كامل</td>
+            <td class="col-code item-code">DIV-045</td>
+            <td class="col-color item-color">—</td>
+            <td class="col-handle-priority">—</td>
+            <td class="col-handle-priority">—</td>
+            <td class="col-price item-price">216 ج.م</td>
+          </tr>
+
+          <tr class="item-row">
+            <td class="col-section item-section">المقبض</td>
+            <td class="col-name item-name">مقبض سحابي</td>
+            <td class="col-code item-code">HND-012</td>
+            <td class="col-color item-color">ذهبي</td>
+            <td class="col-handle-priority">#04</td>
+            <td class="col-handle-priority">#05</td>
+            <td class="col-price item-price">130 ج.م</td>
+          </tr>
+
+        </tbody>
+      <tfoot>
+        <tr class="table-total-row">
+          <td colspan="7" class="table-total-cell">
+            <span class="table-total-inline">
+              إجمالي الوحدة: <span id="sink-unit-subtotal">3,846 ج.م</span>
+            </span>
+          </td>
+        </tr>
+      </tfoot>
+      </table>
+    </section>
+
+    <!-- ===== ADDITIONAL PRODUCTS TABLE ===== -->
+    <section class="products-section">
+      <h2 class="table-title">المنتجات</h2>
+      <table class="products-table">
+        <thead>
+          <tr class="table-header-row">
+            <th class="col-name">إسم المنتج</th>
+            <th class="col-category">الفئة</th>
+            <th class="col-code">الكود</th>
+            <th class="col-color">اللون</th>
+            <th class="col-specs">المقاس</th>
+            <th class="col-qty">الكمية</th>
+            <th class="col-price">السعر</th>
+          </tr>
+        </thead>
+        <tbody id="order-items">
+
+          <tr class="item-row" data-item-template>
+            <td class="col-name item-name">وحدة مرايا</td>
+            <td class="col-category item-category">وحدات المراية</td>
+            <td class="col-code item-code">MR-014</td>
+            <td class="col-color item-color">أبيض</td>
+            <td class="col-specs item-specs">60×70 سم</td>
+            <td class="col-qty item-qty">1</td>
+            <td class="col-price item-price">1,800 ج.م</td>
+          </tr>
+
+        </tbody>
+      <tfoot>
+        <tr class="table-total-row">
+          <td colspan="7" class="table-total-cell">
+            <span class="table-total-inline">
+              إجمالي المنتجات : <span id="products-subtotal-table">1,800 ج.م</span>
+            </span>
+          </td>
+        </tr>
+      </tfoot>
+      </table>
+    </section>
+
+    <!-- ===== SHIPPING SECTION ===== -->
+    <section class="shipping-section">
+
+      <h2 class="table-title">تكلفة النقل</h2>
+
+      <div class="shipping-grid">
+        <div class="shipping-info-col">
+          <p class="customer-field">
+            <span class="field-label">المحافظة:</span>
+            <span class="field-value" id="shipping-governorate">القاهرة</span>
+          </p>
+          <p class="customer-field">
+            <span class="field-label">الحي:</span>
+            <span class="field-value" id="shipping-district">مدينة نصر</span>
+          </p>
+          <p class="customer-field">
+            <span class="field-label">خط الطول:</span>
+            <span class="field-value" id="shipping-lng">31.3467</span>
+          </p>
+          <p class="customer-field">
+            <span class="field-label">دائرة العرض:</span>
+            <span class="field-value" id="shipping-lat">30.0561</span>
+          </p>
+        </div>
+
+        <div class="shipping-map-col">
+          <img src="" alt="خريطة الموقع" id="shipping-map-image" class="shipping-map-img">
+        </div>
+      </div>
+    </section>
+
+  <!-- ===== TOTALS SECTION (يشمل الملاحظات في عمودين) ===== -->
+  <section class="totals-section">
+
+    <div class="totals-grid">
+
+      <!-- العمود الأيمن: الأسعار -->
+      <div class="totals-block">
+
+        <div class="total-row">
+          <span class="total-label">تكلفة وحدة الحوض:</span>
+          <span class="total-value" id="sink-unit-total">3,846 ج.م</span>
+        </div>
+
+        <div class="total-row">
+          <span class="total-label">تكلفة المنتجات الإضافية:</span>
+          <span class="total-value" id="products-subtotal">1,800 ج.م</span>
+        </div>
+
+        <div class="total-row">
+          <span class="total-label">تكلفة النقل:</span>
+          <span class="total-value" id="shipping-cost">200 ج.م</span>
+        </div>
+
+        <div class="total-row">
+          <span class="total-label">المعاينة والتركيب:</span>
+          <span class="total-value" id="inspection-cost">200 ج.م</span>
+        </div>
+
+        <div class="total-row grand-total-row">
+          <span class="total-label grand-total-label">الإجمالي:</span>
+          <span class="total-value grand-total-value" id="order-total">6,046 ج.م</span>
+        </div>
+
+      </div>
+
+      <!-- العمود الأيسر: الملاحظات -->
+      <div class="notes-col">
+        <p class="notes-label">ملاحظات:</p>
+        <p class="notes-content" id="order-notes">
+          1. يرجى التواصل قبل التوصيل بيوم لتحديد الميعاد المناسب.
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+  </div><!-- end .page -->
+
+</body>
+</html>

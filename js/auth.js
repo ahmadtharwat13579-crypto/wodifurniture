@@ -85,6 +85,18 @@ onAuthStateChanged(auth, (user) => {
     updateNavbarAccount(user);
 });
 
+// Expose auth state listener globally for other pages (like wishlist)
+window.onAuthStateChanged = function(callback) {
+  onAuthStateChanged(auth, callback);
+};
+
+// Expose current user for other pages
+Object.defineProperty(window, 'currentUser', {
+  get() {
+    return auth.currentUser;
+  }
+});
+
 // نظام إدارة الـ Logout Modal بشكل آمن بدون Duplicate Listeners
 window.initLogoutSystem = function () {
     const logoutModal = document.getElementById('logoutModal');
@@ -170,3 +182,4 @@ setTimeout(() => {
         window.initLogoutSystem();
     }
 }, 1000);
+
