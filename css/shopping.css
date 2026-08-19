@@ -108,7 +108,7 @@
 .shopping-counter-container {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
   text-align: right;
 }
 
@@ -121,7 +121,7 @@
 .shopping-count-number {
   font-size: var(--font-size-lg, 15px);
   font-weight: 800;
-  color: var(--color-primary, #9caf88);
+
 }
 
 /* ==========================================
@@ -185,6 +185,10 @@
   border-radius: var(--radius-z, 0px);
   display: flex;
   flex-direction: column;
+  width: calc(100% - 24px);
+  max-width: 100%;
+  box-sizing: border-box;
+  margin: 0 auto;
 }
 
 /* ==========================================
@@ -545,4 +549,418 @@
   color: var(--color-text-main);
   text-align: left;
   margin-left: auto;
+}
+
+/* ===========================
+   Shopping & Cart Modal Clean CSS
+   =========================== */
+
+/* Cart Summary Bar */
+.cart-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 12px 16px;
+}
+
+.cart-summary-left {
+  text-align: right;
+}
+
+.cart-summary-left .cart-items-title {
+  font-weight: 700;
+  gap: 4px;
+}
+
+.cart-summary-left .cart-total-wrap {
+  margin-top: 6px;
+}
+
+.cart-summary-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.cart-summary-actions .btn-clear {
+  border-color: var(--color-error);
+  color: var(--color-error);
+}
+
+.cart-summary-actions .btn-generate {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+/* Order Preview Modal Layout */
+.order-preview-modal-custom {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 12000;
+  background: rgba(0, 0, 0, 0.6);
+  align-items: center;
+  justify-content: center;
+}
+
+.order-preview-inner-custom {
+  background: var(--color-bg-white);
+  width: 94%;
+  max-width: 980px;
+  border-radius: var(--radius-md, 8px);
+  overflow: auto;
+  max-height: 92%;
+  padding: 18px;
+  box-sizing: border-box;
+}
+
+.order-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.order-modal-title {
+  font-weight: 800;
+  font-size: 18px;
+}
+
+.order-modal-close-btn {
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: var(--color-text-main);
+}
+
+.order-modal-grid {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.order-modal-form-col {
+  flex: 1 1 340px;
+  min-width: 280px;
+}
+
+.order-modal-preview-col {
+  flex: 1 1 420px;
+  min-width: 320px;
+}
+
+.order-form-section-title {
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+
+.order-form-label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.order-form-input,
+.order-form-textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  margin-bottom: 8px;
+  box-sizing: border-box;
+  font-family: 'Cairo', sans-serif;
+}
+
+.order-form-hint {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin-bottom: 6px;
+}
+
+.order-map-container-custom {
+  margin-top: 8px;
+  border: 1px solid var(--color-border);
+}
+
+.order-invoice-preview-box {
+  direction: rtl;
+  text-align: right;
+  border: 1px solid var(--color-border);
+  padding: 12px;
+  border-radius: 6px;
+  min-height: 160px;
+  max-height: 520px;
+  overflow: auto;
+}
+
+.order-modal-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+/* Custom Item Chips inside Cart */
+.custom-item-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  width: fit-content;
+  padding: 2px 6px;
+  font-size: 11px;
+  background: var(--color-bg-alt, #f4f4f4);
+  border: 1px solid var(--color-border, #ddd);
+  border-radius: 4px;
+  color: var(--color-text-muted, #555);
+}
+
+/* --- Order popup (minimal, uses design tokens) --- */
+.order-preview-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:var(--z-modal,10500); align-items:center; justify-content:center; }
+.order-preview-inner { background:var(--color-bg-white); border-radius:var(--radius-md); padding:18px; width:94%; max-width:980px; box-shadow:var(--shadow-modal); color:var(--color-text-main); }
+.order-preview-inner input, .order-preview-inner textarea { border:1px solid var(--color-border); border-radius:4px; padding:8px; font-family:var(--font-family-main); color:var(--color-text-main); }
+.order-preview-inner .btn-locate { background:var(--color-primary); color:#fff; border:none; padding:10px; border-radius:4px; font-weight:700; }
+.order-preview-inner .related-see-more-btn { padding:8px 12px; border-radius:var(--radius-pill); font-weight:700; cursor:pointer; }
+.order-preview-inner .related-see-more-btn[disabled] { opacity:0.6; cursor:not-allowed; }
+
+/* --- WODI Professional Minimalist Cart Layout --- */
+
+/* 1. Main Container Max-Width Control for Large Desktops */
+.conf.config-layout {
+    max-width: 1280px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding-left: 20px;
+    padding-right: 20px;
+    box-sizing: border-box;
+}
+
+/* 2. Two-Column Grid Architecture */
+.cart-two-column-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 240px;
+    gap: 40px;
+    align-items: start;
+    width: 100%;
+    margin-top: 24px;
+}
+
+.cart-main-products-column {
+    width: 100%;
+    min-width: 0; /* Prevents grid blowout */
+}
+
+.cart-sidebar-summary-column {
+    position: sticky;
+    top: 100px;
+    width: 100%;
+}
+
+/* 3. Minimalist Summary Area (No Heavy Borders or Card-in-Card feel) */
+.cart-sidebar-summary-column .cart-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    background: #ffffff;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+    width: 100%;
+    box-sizing: border-box;
+    direction: rtl;
+    text-align: right;
+}
+
+.cart-sidebar-summary-column .cart-summary-left {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    border-bottom: 1px solid var(--border-color, #eaeaea);
+    padding-bottom: 20px;
+    width: 100%;
+}
+
+/* Items count styling (Secondary visual hierarchy) */
+.cart-sidebar-summary-column .cart-items-title {
+    font-size: 0.95rem;
+    color: var(--text-muted, #666666);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.cart-sidebar-summary-column .cart-items-title span {
+    font-weight: 600;
+    color: var(--text-main, #111111);
+}
+
+/* 4. Grand Total as the Strongest Visual Element */
+.cart-sidebar-summary-column .cart-total-wrap {
+    font-size: 1.1rem;
+    color: var(--text-main, #111111);
+    font-weight: 700;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.cart-sidebar-summary-column .cart-total-wrap span#cart-grand-total {
+    font-size: var(--font-size-display, 28px);
+    font-weight: 800;
+    color: var(--color-primary, #111111);
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+}
+
+/* 5. Summary Actions & Buttons (Fixing vertical text wrapping / letter breaking) */
+.cart-sidebar-summary-column .cart-summary-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+}
+
+.cart-sidebar-summary-column .cart-summary-actions button {
+    width: 100% !important;
+    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    white-space: nowrap !important;
+    padding: 14px 24px !important;
+    border-radius: 8px !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    box-sizing: border-box !important;
+    text-align: center !important;
+    writing-mode: horizontal-tb !important;
+}
+
+/* Primary CTA: WODI Primary Color */
+.cart-sidebar-summary-column .cart-summary-actions button.btn-generate {
+    background: var(--color-primary, #111111) !important;
+    color: #ffffff !important;
+    border: none !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: opacity 0.2s ease;
+}
+
+.cart-sidebar-summary-column .cart-summary-actions button.btn-generate:hover {
+    opacity: 0.9;
+}
+
+/* Secondary / Destructive CTA: Quiet & Minimalist */
+.cart-sidebar-summary-column .cart-summary-actions button.btn-clear {
+    background: transparent !important;
+    color: var(--text-muted, #666666) !important;
+    border: 1px solid var(--border-color, #dddddd) !important;
+    box-shadow: none !important;
+    transition: all 0.2s ease;
+}
+
+.cart-sidebar-summary-column .cart-sidebar-summary-column .cart-summary-actions button.btn-clear:hover {
+    color: #dc2626 !important;
+    border-color: #dc2626 !important;
+    background: rgba(220, 38, 38, 0.02) !important;
+}
+
+/* Mobile Sticky Bottom Bar (Hidden on Desktop) */
+.mobile-sticky-checkout-bar {
+    display: none;
+}
+
+/* 6. Responsive Rules for Tablets and Mobiles (<= 992px) */
+@media screen and (max-width: 992px) {
+    .cart-two-column-wrapper {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    .cart-sidebar-summary-column {
+        position: static;
+        margin-bottom: 100px;
+    }
+
+    .cart-sidebar-summary-column .cart-summary {
+        background: var(--bg-card, #ffffff);
+        padding: 20px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.01);
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .cart-sidebar-summary-column .cart-summary-left {
+        border-bottom: none;
+        padding-bottom: 0;
+        gap: 4px;
+        width: auto;
+    }
+
+    .cart-sidebar-summary-column .cart-total-wrap span#cart-grand-total {
+        font-size: var(--font-size-display, 28px);
+    }
+
+    .cart-sidebar-summary-column .cart-summary-actions {
+        flex-direction: row;
+        width: auto;
+        gap: 8px;
+
+    }
+
+    .cart-sidebar-summary-column .cart-summary-actions button {
+        width: auto !important;
+        padding: 10px 18px !important;
+        font-size: 0.9rem !important;
+    }
+
+    /* Mobile Sticky Bottom Bar */
+    .mobile-sticky-checkout-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: var(--bg-card, #ffffff);
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+        padding: 14px 20px;
+        z-index: 1000;
+        border-top: 1px solid var(--border-color, #e5e7eb);
+        box-sizing: border-box;
+        direction: rtl;
+    }
+
+    .mobile-total-container {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .mobile-total-label {
+        font-size: 0.75rem;
+        color: var(--text-muted, #6b7280);
+    }
+
+    .mobile-total-value {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--text-main, #111827);
+    }
+
+    .mobile-checkout-cta-btn {
+        background: var(--color-primary, #111111);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 24px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        white-space: nowrap;
+    }
 }

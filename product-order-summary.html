@@ -10,7 +10,8 @@
 </head>
 <body>
 
-  <div class="page">
+  <!-- الصفحة الأولى: وحدة الحوض المخصصة (إن وجدت) أو تبدأ مباشرة -->
+  <div class="page" data-page-role="sink-page">
 
     <!-- ===== HEADER ===== -->
     <header class="doc-header">
@@ -38,10 +39,11 @@
       <div class="customer-grid">
 
         <div class="customer-col-right">
-          <p class="section-label">تم تلخيص الطلب إلى:</p>
+          <p class="section-label">بيانات العميل</p>
         </div>
 
         <div class="customer-col-left">
+          <p class="section-label" style="margin-bottom: 3mm;">تم تلخيص الطلب إلى:</p>
           <p class="customer-field">
             <span class="field-label">إسم العميل:</span>
             <span class="field-value" id="customer-name">أحمد محمد</span>
@@ -50,71 +52,112 @@
             <span class="field-label">رقم التليفون:</span>
             <span class="field-value" id="customer-phone">+20 100 000 0000</span>
           </p>
+          <p class="customer-field">
+            <span class="field-label">العنوان التفصيلي:</span>
+            <span class="field-value" id="customer-address">غير متوفر</span>
+          </p>
         </div>
 
       </div>
     </section>
-
-    <hr class="divider-thin">
-
-    <!-- ===== SINK UNIT TABLE ===== -->
+  
+    <!-- ===== SINK UNIT TABLES & IMAGES ===== -->
     <section class="products-section">
-      <h2 class="table-title"> وحدة الحوض #01</h2>
-      <table class="products-table sink-unit-table">
-        <thead>
-          <tr class="table-header-row">
-            <th class="col-section">القسم</th>
-            <th class="col-name">الاختيار</th>
-            <th class="col-code">الكود</th>
-            <th class="col-color">اللون</th>
-            <th class="col-handle-priority">أولوية 1</th>
-            <th class="col-handle-priority">أولوية 2</th>
-            <th class="col-price">السعر</th>
-          </tr>
-        </thead>
-        <tbody id="sink-unit-items">
+      <h2 class="table-title">وحدة الحوض #01</h2>
 
-          <tr class="item-row">
-            <td class="col-section item-section">تصميم الوحدة</td>
-            <td class="col-name item-name">وحدة معلقة - ضلفتين</td>
-            <td class="col-code item-code">SU-201</td>
-            <td class="col-color item-color">أبيض لامع</td>
-            <td class="col-handle-priority">—</td>
-            <td class="col-handle-priority">—</td>
-            <td class="col-price item-price">3,500 ج.م</td>
-          </tr>
+      <!-- 1. Design Section -->
+      <div class="sink-row-container">
+        <div class="sink-table-col">
+          <table class="products-table sink-unit-table">
+            <thead>
+              <tr class="table-header-row">
+                <th class="col-section">القسم</th>
+                <th class="col-name">الاختيار</th>
+                <th class="col-code">الكود</th>
+                <th class="col-color">اللون</th>
+                <th class="col-price">السعر</th>
+              </tr>
+            </thead>
+            <tbody id="sink-design-items">
+              <tr class="item-row">
+                <td class="col-section item-section">التصميم</td>
+                <td class="col-name item-name">وحدة معلقة - ضلفتين</td>
+                <td class="col-code item-code">SU-201</td>
+                <td class="col-color item-color">أبيض لامع</td>
+                <td class="col-price item-price">3,500 ج.م</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="sink-image-col">
+          <img src="" alt="صورة التصميم" id="design-img" class="sink-part-img">
+        </div>
+      </div>
 
-          <tr class="item-row">
-            <td class="col-section item-section">التقسيمة الداخلية</td>
-            <td class="col-name item-name">رف كامل</td>
-            <td class="col-code item-code">DIV-045</td>
-            <td class="col-color item-color">—</td>
-            <td class="col-handle-priority">—</td>
-            <td class="col-handle-priority">—</td>
-            <td class="col-price item-price">216 ج.م</td>
-          </tr>
+      <!-- 2. Internal Division Section -->
+      <div class="sink-row-container">
+        <div class="sink-table-col">
+          <table class="products-table sink-unit-table">
+            <thead>
+              <tr class="table-header-row">
+                <th class="col-section">القسم</th>
+                <th class="col-name">الاختيار</th>
+                <th class="col-code">الكود</th>
+                <th class="col-price">السعر</th>
+              </tr>
+            </thead>
+            <tbody id="sink-division-items">
+              <tr class="item-row">
+                <td class="col-section item-section">التقسيمة الداخلية</td>
+                <td class="col-name item-name">رف كامل</td>
+                <td class="col-code item-code">DIV-045</td>
+                <td class="col-price item-price">216 ج.م</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="sink-image-col">
+          <img src="" alt="صورة التقسيمة الداخلية" id="division-img" class="sink-part-img">
+        </div>
+      </div>
 
-          <tr class="item-row">
-            <td class="col-section item-section">المقبض</td>
-            <td class="col-name item-name">مقبض سحابي</td>
-            <td class="col-code item-code">HND-012</td>
-            <td class="col-color item-color">ذهبي</td>
-            <td class="col-handle-priority">#04</td>
-            <td class="col-handle-priority">#05</td>
-            <td class="col-price item-price">130 ج.م</td>
-          </tr>
+      <!-- 3. Handle Section -->
+      <div class="sink-row-container">
+        <div class="sink-table-col">
+          <table class="products-table sink-unit-table">
+            <thead>
+              <tr class="table-header-row">
+                <th class="col-section">القسم</th>
+                <th class="col-name">الاختيار</th>
+                <th class="col-code">الكود</th>
+                <th class="col-handle-priority">أولوية 1</th>
+                <th class="col-handle-priority">أولوية 2</th>
+                <th class="col-price">السعر</th>
+              </tr>
+            </thead>
+            <tbody id="sink-handle-items">
+              <tr class="item-row">
+                <td class="col-section item-section">نوع المقبض</td>
+                <td class="col-name item-name">مقبض سحابي</td>
+                <td class="col-code item-code">HND-012</td>
+                <td class="col-handle-priority">—</td>
+                <td class="col-handle-priority">—</td>
+                <td class="col-price item-price">130 ج.م</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="sink-image-col">
+          <img src="" alt="صورة المقبض" id="handle-img" class="sink-part-img">
+        </div>
+      </div>
 
-        </tbody>
-      <tfoot>
-        <tr class="table-total-row">
-          <td colspan="7" class="table-total-cell">
-            <span class="table-total-inline">
-              إجمالي الوحدة: <span id="sink-unit-subtotal">3,846 ج.م</span>
-            </span>
-          </td>
-        </tr>
-      </tfoot>
-      </table>
+      <!-- Sink Unit Subtotal Footer Box -->
+      <div class="sink-subtotal-box">
+        <span class="table-total-inline">
+          إجمالي الوحدة: <span id="sink-unit-subtotal">3,846 ج.م</span>
+        </span>
+      </div>
     </section>
 
     <!-- ===== ADDITIONAL PRODUCTS TABLE ===== -->
@@ -234,7 +277,24 @@
     </div>
   </section>
 
-  </div><!-- end .page -->
+    <!-- footer الديناميكي للصفحة الأولى -->
+    <div class="page-footer">
+      <span class="page-number-text">صفحة 1 من 2</span>
+    </div>
+
+  </div><!-- end .page 1 -->
+
+  <!-- الصفحة الثانية (تُستخدم فقط عند وجود وحدة حوض ومنتجات معاً) -->
+  <div class="page" data-page-role="products-page" style="display: none;">
+
+    <!-- سيتم نقل قسم المنتجات، الشحن، والإجماليات هنا ديناميكياً أو تركها موزعة حسب الفئات -->
+
+    <!-- footer الديناميكي للصفحة الثانية -->
+    <div class="page-footer">
+      <span class="page-number-text">صفحة 2 من 2</span>
+    </div>
+
+  </div><!-- end .page 2 -->
 
 </body>
 </html>

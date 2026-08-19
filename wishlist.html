@@ -9,7 +9,11 @@
   <link rel="stylesheet" href="css/variable.css">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/products.css">
+<<<<<<< HEAD
   <link rel="stylesheet" href="css/shopping.css">
+=======
+  <link rel="stylesheet" href="css/wishlist.css">
+>>>>>>> 08e075124eb02bfc11d91b81259316d5c4ad4e5c
   <link rel="stylesheet" href="css/footer.css">
   <link rel="stylesheet" href="css/nav.css">
 </head>
@@ -47,6 +51,7 @@ fetch('nav.html')
   <div class="conf config-layout">
     <section class="main-column full-width-column">
 
+<<<<<<< HEAD
       <!-- Search Section -->
       <div class="search-section-wrapper">
         <div class="search-container">
@@ -75,6 +80,35 @@ fetch('nav.html')
 
         <div class="shopping-login-container">
           <button class="btn-google-login" id="btn-google-login-shopping">
+=======
+    <div class="search-section-wrapper">
+      <div class="search-container">
+        <div class="search-box" id="main-search-box">
+          <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input type="text" id="product-search-input" placeholder="ابحث عما ترغب فيه..." onfocus="openSearchDropdown()" oninput="handleAdvancedSearch(this.value)">
+        </div>
+
+        <div class="search-dropdown" id="search-dropdown">
+          <div class="search-results-container">
+            <div class="search-suggestions-list" id="search-suggestions-list"></div>
+            <div class="search-products-grid" id="search-products-grid"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="search-backdrop" id="search-backdrop" onclick="closeSearchDropdown()"></div>
+
+      <!-- Not Logged In State -->
+      <div id="wishlist-not-logged-in" class="wishlist-not-logged-in">
+        <header class="wishlist-header-not-logged">
+          <h1 class="wishlist-title-not-logged">المفضلة</h1>
+          <p class="wishlist-description-not-logged">احفظ المنتجات التي تعجبك بالنقر على أيقونة القلب، وعد إليها في أي وقت.</p>
+        </header>
+
+        <div class="wishlist-login-container">
+          <button class="btn-google-login" id="btn-google-login-wishlist">
+>>>>>>> 08e075124eb02bfc11d91b81259316d5c4ad4e5c
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
               <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -87,16 +121,26 @@ fetch('nav.html')
       </div>
 
       <!-- Logged In State -->
+<<<<<<< HEAD
       <div id="shopping-logged-in" class="shopping-logged-in hidden">
         <header class="shopping-header-logged">
           <h2 class="shopping-title-logged">المفضلة</h2>
           <div class="shopping-counter-container">
             <span class="shopping-count-label">عدد المنتجات:</span>
             <span class="shopping-count-number" id="shopping-count">0</span>
+=======
+      <div id="wishlist-logged-in" class="wishlist-logged-in hidden">
+        <header class="wishlist-header-logged">
+          <h2 class="wishlist-title-logged">المفضلة</h2>
+          <div class="wishlist-counter-container">
+            <span class="wishlist-count-label">عدد المنتجات:</span>
+            <span class="wishlist-count-number" id="wishlist-count">0</span>
+>>>>>>> 08e075124eb02bfc11d91b81259316d5c4ad4e5c
           </div>
         </header>
 
         <!-- Empty State -->
+<<<<<<< HEAD
         <div id="shopping-empty-state" class="shopping-empty-state">
           <img src="images/ui/empty-wishlist.svg" alt="لا توجد منتجات مفضلة" class="empty-shopping-image">
           <h3 class="empty-shopping-title">لا توجد منتجات مفضلة بعد</h3>
@@ -105,10 +149,21 @@ fetch('nav.html')
 
         <!-- Wishlist Products Grid -->
         <div id="shopping-products-grid" class="shopping-products-grid">
+=======
+        <div id="wishlist-empty-state" class="wishlist-empty-state">
+          <img src="images/ui/empty-wishlist.png" alt="لا توجد منتجات مفضلة" class="empty-wishlist-image">
+          <h3 class="empty-wishlist-title">لا توجد منتجات مفضلة بعد</h3>
+          <p class="empty-wishlist-text">ابدأ بإضافة المنتجات التي تعجبك إلى قائمة المفضلة</p>
+        </div>
+
+        <!-- Wishlist Products Grid -->
+        <div id="wishlist-products-grid" class="wishlist-products-grid">
+>>>>>>> 08e075124eb02bfc11d91b81259316d5c4ad4e5c
           <!-- Products will be rendered here -->
         </div>
       </div>
 
+<<<<<<< HEAD
     <!-- Related Products Section -->
     <div id="related-products-section" class="related-products-section">
 
@@ -128,6 +183,30 @@ fetch('nav.html')
     </div>
 
     </div>
+=======
+      <!-- Related Products Section -->
+      <div id="related-products-section" class="related-products-section hidden">
+        <h2 class="related-products-title">قد يعجبك أيضاً</h2>
+        
+        <div class="related-products-wrapper" data-group="related-scroll">
+          <button class="scroll-arrow arr-start hidden" id="related-arrow-right" aria-label="التمرير لليمين">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M15 18l-6-6 6-6"></path>
+            </svg>
+          </button>
+
+          <div class="related-products-carousel scroll-x-styled" id="related-products-carousel" role="list" aria-label="Related Products">
+            <!-- Related products will be rendered here -->
+          </div>
+
+          <button class="scroll-arrow arr-end hidden" id="related-arrow-left" aria-label="التمرير لليسار">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M9 18l6-6-6-6"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+>>>>>>> 08e075124eb02bfc11d91b81259316d5c4ad4e5c
 
     </section>
   </div>
@@ -154,4 +233,8 @@ fetch('nav.html')
 <script type="module" src="js/wishlist.js"></script>
 
 </body>
+<<<<<<< HEAD
 </html>
+=======
+</html>
+>>>>>>> 08e075124eb02bfc11d91b81259316d5c4ad4e5c

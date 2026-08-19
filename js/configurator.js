@@ -446,6 +446,11 @@ function createDesignCard(d) {
     upd();
   };
 
+  if (typeof window.addToCart === 'function') {
+  // add base design product id to cart: use d.id as id and qty 1
+  try { window.addToCart(d.id, 1); } catch(e) {}
+  }
+
   return el;
 }
 
@@ -955,15 +960,9 @@ function requestLocation() {
   const mapContainer = document.getElementById('mapContainer');
   const mapIframe = document.getElementById('staticMap');
 
-  // 1. حالة البدء
-  if (btn) {
-    btn.disabled = true;
-    btn.innerHTML = '<svg class="spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> جارٍ تحديد موقعك...';
-  }
-
   if (!navigator.geolocation) {
-    if (res) { res.textContent = 'متصفحك لا يدعم تحديد الموقع'; res.className = 'loc-result error show'; }
-    if (btn) { btn.disabled = false; }
+    if (res) { res.textContent = 'خدمة تحديد الموقع غير متاحة حالياً'; res.className = 'loc-result error show'; }
+    if (btn) { btn.disabled = false; btn.innerHTML = 'تحديد موقعي الحالي'; }
     return;
   }
 
@@ -977,6 +976,17 @@ function getLocation(btn, res, mapContainer, mapIframe) {
   res = (typeof res === 'string') ? document.getElementById(res) : res;
   mapContainer = (typeof mapContainer === 'string') ? document.getElementById(mapContainer) : mapContainer;
   mapIframe = (typeof mapIframe === 'string') ? document.getElementById(mapIframe) : mapIframe;
+
+  if (!navigator.geolocation) {
+    if (res) { res.textContent = 'خدمة تحديد الموقع غير متاحة حالياً'; res.className = 'loc-result error show'; }
+    if (btn) { btn.disabled = false; btn.innerHTML = 'تحديد موقعي الحالي'; }
+    return;
+  }
+
+  // دالة مساعدة لتمرير البيانات وتحديث الـ Invoice Preview فوراً
+  window.dispatchLocationUpdate = function(data) {
+    window.dispatchEvent(new CustomEvent('app:location-updated', { detail: data }));
+  };
 
   // early UI: show loading state
   if (btn) {
@@ -1007,6 +1017,11 @@ function getLocation(btn, res, mapContainer, mapIframe) {
           const zoomFactor = 0.0005;
           if (mapIframe) {
             mapIframe.src = `https://www.openstreetmap.org/export/embed.html?bbox=${userLng - zoomFactor},${userLat - zoomFactor},${userLng + zoomFactor},${userLat + zoomFactor}&layer=mapnik`;
+          }
+
+          // إطلاق الحدث المخصص لتحديث بيانات الموقع فوراً في السلة والـ Preview
+          if (typeof window.dispatchLocationUpdate === 'function') {
+            window.dispatchLocationUpdate({ lat: userLat, lng: userLng, shippingCost: installCost });
           }
           if (mapContainer) {
             mapContainer.style.display = 'block';
@@ -1446,6 +1461,48 @@ function closeLB() { document.getElementById('lb').classList.remove('open'); }
 Order / WA actions, Reset, Save
 ================================================================================
 */
+// إضافة الوحدة المخصصة إلى السلة بالتوافق مع Cart API الحالي
+function addToCartFromConfigurator() {
+  if (!S.design || !S.size || !S.div) {
+    showToast('يرجى إكمال الاختيارات الأساسية أولاً');
+    return;
+  }
+  const noH = S.design.hc === 0;
+  if (!noH && !S.handle) {
+    showToast('يرجى اختيار المقبض أو التأكيد بدون مقبض');
+    return;
+  }
+
+  const finalPrice = calc();
+  if (finalPrice === null) {
+    showToast('خطأ في حساب السعر، تأكد من الخيارات');
+    return;
+  }
+
+  const configuration = {
+    sinkType: S.sinkType,
+    design: S.design,
+    size: S.size,
+    division: S.div,
+    handle: noH ? null : S.handle,
+    installCost: typeof installCost !== 'undefined' ? installCost : null
+  };
+
+  const customData = {
+    configuration: configuration,
+    unitPrice: finalPrice
+  };
+
+  const productId = S.design.id || 'custom-sink';
+
+  if (typeof window.addToCart === 'function') {
+    window.addToCart(productId, 1, customData);
+    showToast('تمت إضافة المنتج إلى السلة بنجاح');
+  } else {
+    showToast('تعذر إضافة المنتج للسلة حالياً');
+  }
+}
+
 
 function orderWA() {
   const t = calc();
@@ -1633,3 +1690,416 @@ window.closeLB = closeLB;
 window.orderWA = orderWA;
 window.customWA = customWA;
 window.outOfRangeWA = outOfRangeWA;
+
+/* ===========================
+   Order Popup / Summary Integration
+   - Append this block at the end of configurator.js
+   - Reuses existing getLocation / calc / S state and auth helper window.loginWithGoogle / window.onAuthStateChanged
+   =========================== */
+(function () {
+  'use strict';
+
+  const ORDER_POPUP_KEY = 'wodi_user_profile';
+  let orderPayloadCache = null;
+  let summaryGenerated = false;
+  let previewWindow = null;
+
+  function saveLocalProfile(profile) {
+    try {
+      localStorage.setItem(ORDER_POPUP_KEY, JSON.stringify(profile || {}));
+    } catch (e) { console.warn('saveLocalProfile failed', e); }
+  }
+
+  function loadLocalProfile() {
+    try {
+      const raw = localStorage.getItem(ORDER_POPUP_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch (e) { return {}; }
+  }
+
+  function getAuthUserSafe() {
+    try {
+      return (typeof window.currentUser !== 'undefined') ? window.currentUser : null;
+    } catch (e) { return null; }
+  }
+
+  /* Build modal DOM once */
+  function ensureOrderPopup() {
+    if (document.getElementById('wodi-order-popup')) return document.getElementById('wodi-order-popup');
+
+    const modal = document.createElement('div');
+    modal.id = 'wodi-order-popup';
+    modal.className = 'wodi-modal';
+    modal.style.display = 'none';
+    modal.style.zIndex = '12000';
+    modal.innerHTML = `
+      <div class="wodi-modal-box" role="dialog" aria-modal="true" style="max-width:820px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 18px;border-bottom:1px solid rgba(0,0,0,0.06);">
+          <div style="font-weight:800;font-size:18px;">ملخص الطلب</div>
+          <button id="wodi-order-popup-close" aria-label="close" style="background:none;border:none;font-size:22px;cursor:pointer;">×</button>
+        </div>
+
+        <div class="wodi-modal-body" style="padding:16px; background:#fff; text-align:right;">
+          <div id="wodi-auth-area" style="margin-bottom:12px;">
+            <div id="wodi-auth-signed" style="display:none;">
+              <label style="display:block;font-weight:700;margin-bottom:6px;">العميل</label>
+              <input id="wodi-customer-name" type="text" placeholder="اسمك" style="width:100%;padding:10px;margin-bottom:8px;border:1px solid #e7e3da;border-radius:4px;">
+              <input id="wodi-customer-phone" type="tel" placeholder="رقم التليفون" style="width:100%;padding:10px;margin-bottom:8px;border:1px solid #e7e3da;border-radius:4px;">
+            </div>
+            <div id="wodi-auth-unsigned" style="display:none; margin-bottom:8px;">
+              <div style="margin-bottom:8px;color:#666;">سجل دخولك بحساب جوجل لحفظ البيانات وتسريع العملية</div>
+              <button id="wodi-login-btn" class="btn-locate" style="display:inline-flex;align-items:center;gap:8px;">سجل الدخول بجوجل</button>
+            </div>
+          </div>
+
+          <div style="margin-bottom:14px;">
+            <div style="font-weight:700;margin-bottom:8px;">العنوان & التوصيل</div>
+            <div id="wodi-loc-wrap" style="text-align:right;">
+              <div id="wodi-popup-loc-result" class="loc-result" style="display:none;margin-bottom:8px;"></div>
+              <div id="wodi-popup-mapContainer" class="map-container" hidden style="margin-bottom:8px;">
+                <iframe id="wodi-popup-staticMap" width="100%" height="160" loading="lazy" style="border:1px solid #ccc;border-radius:2px;"></iframe>
+              </div>
+              <button id="wodi-popup-btn-locate" class="btn-locate" style="display:inline-flex;align-items:center;gap:8px;">تحديد موقعي الحالي</button>
+              <div style="margin-top:6px;color:#666;font-size:12px;">نستخدم موقعك لتقدير تكلفة التوصيل والتحقق من تغطية منطقتك</div>
+            </div>
+          </div>
+
+          <div style="margin-top:6px;">
+            <div style="font-weight:700;margin-bottom:8px;">ملاحظات إضافية</div>
+            <textarea id="wodi-order-notes" rows="3" style="width:100%;padding:10px;border:1px solid #e7e3da;border-radius:4px;" placeholder="ملاحظات حول الطلب (اختياري)"></textarea>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;justify-content:flex-end;padding:12px;border-top:1px solid rgba(0,0,0,0.06);">
+          <button id="wodi-order-cancel" class="wodi-btn alt">إلغاء</button>
+          <button id="wodi-order-generate" class="wodi-btn">استخراج الملخص</button>
+          <button id="wodi-order-sendwa" class="wodi-btn" disabled style="background:#fff;border:1px solid var(--color-primary);color:var(--color-primary);">إرسال عبر WhatsApp</button>
+        </div>
+
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // hook close
+    modal.querySelector('#wodi-order-popup-close').addEventListener('click', () => closeOrderPopup());
+    modal.querySelector('#wodi-order-cancel').addEventListener('click', () => closeOrderPopup());
+
+    // login / input
+    const loginBtn = modal.querySelector('#wodi-login-btn');
+    if (loginBtn) loginBtn.addEventListener('click', () => {
+      if (typeof window.loginWithGoogle === 'function') window.loginWithGoogle();
+      else showToast('نظام تسجيل الدخول غير متاح الآن');
+    });
+
+    // locate button -> reuse existing getLocation. It accepts element or id.
+    modal.querySelector('#wodi-popup-btn-locate').addEventListener('click', function () {
+      // call getLocation with elements/ids created inside popup
+      try {
+        // make elements visible to getLocation flow
+        const btn = document.getElementById('wodi-popup-btn-locate');
+        const res = document.getElementById('wodi-popup-loc-result');
+        const mapContainer = document.getElementById('wodi-popup-mapContainer');
+        const mapIframe = document.getElementById('wodi-popup-staticMap');
+        // call the existing getLocation with these DOM refs (function defined earlier in this file)
+        if (typeof getLocation === 'function') {
+          getLocation(btn, res, mapContainer, mapIframe);
+        } else {
+          // fallback to requestLocation (uses ids from page, not popup) - unlikely
+          if (typeof requestLocation === 'function') requestLocation();
+        }
+      } catch (e) {
+        console.error('popup locate error', e);
+      }
+    });
+
+    // generate + send button hooks
+    modal.querySelector('#wodi-order-generate').addEventListener('click', handlePopupGenerate);
+    modal.querySelector('#wodi-order-sendwa').addEventListener('click', handlePopupSendWA);
+
+    // listen to auth state to update UI
+    window.onAuthStateChanged((u) => {
+      refreshAuthAreaInPopup();
+      // when user signs in, persist basic profile
+      const cur = getAuthUserSafe();
+      if (cur) {
+        const p = loadLocalProfile();
+        p.uid = cur.uid || p.uid;
+        p.name = cur.displayName || p.name || '';
+        p.phone = p.phone || cur.phoneNumber || p.phone || '';
+        saveLocalProfile(p);
+        refreshAuthAreaInPopup();
+      }
+    });
+
+    return modal;
+  }
+
+  function openOrderPopup() {
+    const modal = ensureOrderPopup();
+    // populate inputs from local or auth
+    refreshAuthAreaInPopup();
+    modal.style.display = 'flex';
+    modal.setAttribute('aria-hidden', 'false');
+    // reset summary state
+    summaryGenerated = false;
+    orderPayloadCache = null;
+    setPopupSendState(false);
+  }
+
+  function closeOrderPopup() {
+    const modal = document.getElementById('wodi-order-popup');
+    if (!modal) return;
+    modal.style.display = 'none';
+    modal.setAttribute('aria-hidden', 'true');
+  }
+
+  function refreshAuthAreaInPopup() {
+    const modal = ensureOrderPopup();
+    const signed = modal.querySelector('#wodi-auth-signed');
+    const unsigned = modal.querySelector('#wodi-auth-unsigned');
+    const nameInput = modal.querySelector('#wodi-customer-name');
+    const phoneInput = modal.querySelector('#wodi-customer-phone');
+
+    const stored = loadLocalProfile() || {};
+    const current = getAuthUserSafe();
+
+    if (current) {
+      // show signed view (editable)
+      signed.style.display = 'block';
+      unsigned.style.display = 'none';
+      nameInput.value = stored.name || current.displayName || '';
+      phoneInput.value = stored.phone || current.phoneNumber || '';
+    } else {
+      signed.style.display = 'none';
+      unsigned.style.display = 'block';
+    }
+
+    // Save changes live
+    nameInput && nameInput.addEventListener('input', () => {
+      const p = loadLocalProfile(); p.name = nameInput.value; saveLocalProfile(p);
+    });
+    phoneInput && phoneInput.addEventListener('input', () => {
+      const p = loadLocalProfile(); p.phone = phoneInput.value; saveLocalProfile(p);
+    });
+  }
+
+  function setPopupSendState(enabled) {
+    const modal = ensureOrderPopup();
+    const sendBtn = modal.querySelector('#wodi-order-sendwa');
+    const genBtn = modal.querySelector('#wodi-order-generate');
+    if (sendBtn) sendBtn.disabled = !enabled;
+    if (genBtn) {
+      genBtn.textContent = enabled ? 'رؤية الملخص' : 'استخراج الملخص';
+      genBtn.classList.toggle('wodi-generated', enabled);
+    }
+  }
+
+  /* Build a payload from configurator S state (unit + price) */
+  function buildConfiguratorPayload() {
+    // Basic guard: S, calc function exist
+    const now = new Date();
+    const orderNumber = `WODI-${String(now.getTime()).slice(-8)}`;
+    const totalPrice = (typeof calc === 'function') ? calc() : null;
+    const notes = document.getElementById('wodi-order-notes')?.value || '';
+    const profile = loadLocalProfile();
+    const user = getAuthUserSafe() || {};
+
+    const customerName = profile.name || user.displayName || 'غير متوفر';
+    const customerPhone = profile.phone || user.phoneNumber || 'غير متوفر';
+
+    // pull unit details from S (sink configuration)
+    const unit = {
+      sinkType: S.sinkType || null,
+      size: S.size ? S.size.size : null,
+      design: S.design ? (S.design.name || S.design.id) : null,
+      division: S.div ? (S.div.name || S.div.id) : null,
+      handle: S.handle ? (S.handle.name || S.handle.id) : null,
+    };
+
+    // items array includes the configured unit as single item
+    const items = [{
+      product_id: unit.design || 'config-unit',
+      name: unit.design || 'وحدة حوض مخصصة',
+      specs: `${unit.size || ''}`,
+      qty: 1,
+      unitPrice: (typeof totalPrice === 'number' && !isNaN(totalPrice)) ? totalPrice : 0,
+      subtotal: (typeof totalPrice === 'number' && !isNaN(totalPrice)) ? totalPrice : 0
+    }];
+
+    // if you want also to include other selected additional products from cart you can extend this
+    return {
+      number: orderNumber,
+      createdAt: now.toISOString(),
+      customerName,
+      customerPhone,
+      items,
+      grandTotal: items.reduce((s,i)=>s + (Number(i.subtotal)||0), 0),
+      notes
+    };
+  }
+
+  /* create HTML summary page (opens in new tab) */
+  function openSummaryPreviewWindow(payload) {
+    try {
+      const html = generateOrderHtml(payload);
+      const w = window.open('', '_blank');
+      if (!w) {
+        showToast('تعذّر فتح نافذة المعاينة (منع النوافذ المنبثقة)'); return;
+      }
+      w.document.open();
+      w.document.write(html);
+      w.document.close();
+      previewWindow = w;
+    } catch (e) {
+      console.error('openSummaryPreviewWindow error', e);
+      showToast('فشل فتح معاينة الفاتورة');
+    }
+  }
+
+  function generateOrderHtml(p) {
+    // Simple HTML - uses inline styles to match your product-order-summary look
+    const date = new Date(p.createdAt).toLocaleString('ar-EG', { hour12:false });
+    const itemsRows = p.items.map(it => `
+      <tr>
+        <td style="padding:8px;border:1px solid #000;text-align:right;">${escapeHtml(it.name)}</td>
+        <td style="padding:8px;border:1px solid #000;text-align:center;">${escapeHtml(it.specs)}</td>
+        <td style="padding:8px;border:1px solid #000;text-align:center;">${it.qty}</td>
+        <td style="padding:8px;border:1px solid #000;text-align:center;">${formatPrice(it.unitPrice)}</td>
+        <td style="padding:8px;border:1px solid #000;text-align:center;">${formatPrice(it.subtotal)}</td>
+      </tr>`).join('');
+
+    return `<!doctype html>
+      <html lang="ar" dir="rtl">
+      <head>
+        <meta charset="utf-8">
+        <title>ملخص الطلب ${escapeHtml(p.number)}</title>
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <style>
+          body { font-family: Arial, Helvetica, "Cairo", sans-serif; direction: rtl; padding:20px; color:#111 }
+          .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px }
+          .title { font-size:20px; font-weight:800 }
+          table { width:100%; border-collapse:collapse; margin-top:12px; }
+          th, td { border:1px solid #000; padding:8px; }
+          thead th { background:#f4f4f4; font-weight:700; }
+          .totals { text-align:right; margin-top:12px; font-weight:700 }
+          .notes { margin-top:8px;color:#666 }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div>
+            <div class="title">ملخص الطلب</div>
+            <div>رقم الطلب: ${escapeHtml(p.number)}</div>
+            <div>التاريخ: ${escapeHtml(date)}</div>
+          </div>
+          <div style="text-align:left;">
+            <div>WODI Furniture</div>
+            <div>Whatsapp: +20 15 5684 0368</div>
+          </div>
+        </div>
+
+        <div style="margin-top:6px;">
+          <div style="font-weight:700;margin-bottom:6px;">بيانات العميل</div>
+          <div>الاسم: ${escapeHtml(p.customerName)}</div>
+          <div>الهاتف: ${escapeHtml(p.customerPhone)}</div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>المنتج</th>
+              <th>المواصفات</th>
+              <th>الكمية</th>
+              <th>سعر الوحدة (EGP)</th>
+              <th>الإجمالي (EGP)</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${itemsRows}
+          </tbody>
+        </table>
+
+        <div class="totals">الإجمالي الكلي: ${formatPrice(p.grandTotal)} EGP</div>
+
+        <div class="notes">ملاحظة: ${escapeHtml(p.notes || 'هذه فاتورة مبدئية. التواصل والدفع عبر WhatsApp.')}</div>
+
+      </body>
+      </html>`;
+  }
+
+  /* Handlers for Generate & Send WA in popup */
+  function handlePopupGenerate() {
+    const modal = ensureOrderPopup();
+    // validate minimal config completeness
+    if (!S.sinkType || !S.size || !S.design || !S.div) {
+      showToast('الطلب غير مكتمل — اكمل اختيارات الحوض أولاً');
+      return;
+    }
+
+    const payload = buildConfiguratorPayload();
+    orderPayloadCache = payload;
+    summaryGenerated = true;
+    setPopupSendState(true);
+
+    // open preview window with generated html
+    openSummaryPreviewWindow(payload);
+  }
+
+  async function handlePopupSendWA() {
+    if (!summaryGenerated || !orderPayloadCache) {
+      showToast('لا يمكنك الإرسال قبل استخراج الملخص');
+      return;
+    }
+
+    // Generate PDF client-side is heavy -> we will open preview window (already done) and instruct user to attach PDF.
+    // Note: attaching a file automatically to wa.me link from browser isn't possible (needs server).
+    // We open wa.me with a message and notify the user to attach the PDF manually.
+    const payload = orderPayloadCache;
+    const message = [
+      `مرحباً، لدي طلب جديد من WODI.`,
+      `رقم الطلب: ${payload.number}`,
+      `الاسم: ${payload.customerName}`,
+      `الهاتف: ${payload.customerPhone}`,
+      `الإجمالي: ${formatPrice(payload.grandTotal)} EGP`,
+      `الملف المولد: الرجاء إرفاق الفاتورة التي تم إنشاؤها (قم بتنزيلها من صفحة المعاينة).`
+    ].join('\n');
+
+    const url = `https://wa.me/${LOC && LOC.WA ? LOC.WA : '201556840368'}?text=${encodeURIComponent(message)}`;
+    // open wa
+    const w = window.open(url, '_blank');
+    if (!w) showToast('تعذّر فتح WhatsApp. تأكد من إعداد المتصفح للسماح بالفتح في نوافذ جديدة.');
+    else showToast('تم فتح WhatsApp — أرفق ملف الفاتورة إذا رغبت قبل الإرسال.');
+  }
+
+  /* Utility helpers */
+  function escapeHtml(s) {
+    if (s == null) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  /* small price format using existing helper in this file */
+  function formatPrice(num) {
+    if (num == null || isNaN(num)) return '0';
+    return Math.round(num).toLocaleString('en-US');
+  }
+
+  /* Public hook: open popup (use from configurator & cart) */
+  window.openOrderPopup = openOrderPopup;
+
+  /* Auto-create the popup on load so auth state bindings set up early */
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => { ensureOrderPopup(); refreshAuthAreaInPopup(); });
+  } else {
+    ensureOrderPopup(); refreshAuthAreaInPopup();
+  }
+
+  /* =======
+     Notes & limitations (short):
+     - This re-uses getLocation/getAddress by calling getLocation(btn,res,mapContainer,mapIframe)
+     - It uses localStorage to store simple profile (replace with Firestore later)
+     - Auto-attaching PDF to WhatsApp is not possible purely client-side via wa.me; server upload + WhatsApp Business API required.
+     - The popup's Generate Summary opens a preview window with the filled HTML which the user can print/save as PDF.
+     ======= */
+
+})();

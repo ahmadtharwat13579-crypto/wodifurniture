@@ -18,6 +18,11 @@ body {
   background: #f0f0f0;
   direction: rtl;
   color: #000;
+  overflow-x: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 210mm;
 }
 
 /* ----------------------------------------------------------
@@ -26,11 +31,34 @@ body {
    ---------------------------------------------------------- */
 .page {
   width: 210mm;
+  height: 297mm;
   min-height: 297mm;
-  background: #ffffff;
-  margin: 20px auto;
-  padding: 18mm 15mm 15mm 15mm;
+  max-height: 297mm;
+  padding: 15mm;
+  margin: 0 auto 10mm auto;
+  background: white;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  box-sizing: border-box;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  page-break-after: always;
+  break-after: page;
+  flex-shrink: 0;
+  transform: none !important;
+}
+
+#order-invoice-preview {
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;
+  overflow-y: auto;
+  overflow-x: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 /* ----------------------------------------------------------
@@ -121,8 +149,8 @@ body {
    CUSTOMER INFO SECTION
    ---------------------------------------------------------- */
 .customer-section {
-  padding: 3mm 0 0 0;
-  margin-bottom: 2mm;
+  padding: 1mm 0 0 0;
+  margin-bottom: 1mm;
 }
 
 .customer-grid {
@@ -139,6 +167,7 @@ body {
 
 .customer-col-left {
   text-align: right;
+  line-height: 1.5;
 }
 
 .customer-field {
@@ -214,23 +243,23 @@ body {
   color: #fff;
 }
 
-/* عرض الأعمدة */
-.col-name  { width: 35%; }
-.col-specs { width: 25%; }
-.col-qty   { width: 11%; }
-.col-price { width: 15%; }
-.col-section { width: 15%; }
-.col-code    { width: 12%; }
-.col-color   { width: 12%; }
-.col-handle-priority { width: 12%; }
+/* عرض الأعمدة العامة وجداول وحدة الحوض (Compact Smart Sizing) */
+.col-name     { width: auto; } /* مرن يأخذ المساحة الفائضة الأولى */
+.col-code     { width: 14%; }  /* مساحة فائضة ثانية */
 .col-category { width: 20%; }
+.col-specs    { width: 25%; }
+.col-qty      { width: 11%; }
+.col-price    { width: 15%; }
+.col-section  { width: 18%; }
+.col-color    { width: 14%; }
+.col-handle-priority { width: 12%; }
 
-.sink-unit-table .col-section { width: 16%; }
-.sink-unit-table .col-name { width: 25%; }
-.sink-unit-table .col-code { width: 9%; }
-.sink-unit-table .col-color { width: 12%; }
-.sink-unit-table .col-handle-priority { width: 11%; }
-.sink-unit-table .col-price { width: 11%; }
+.sink-unit-table .col-section { width: 18%; }
+.sink-unit-table .col-name    { width: 38%; } /* إعطاء المساحة الكبرى لعمود الاختيار */
+.sink-unit-table .col-code    { width: 14%; } /* مساحة ثانية للكود */
+.sink-unit-table .col-color   { width: 14%; }
+.sink-unit-table .col-price   { width: 16%; }
+.sink-unit-table .col-handle-priority { width: 12%; }
 
 .sink-unit-table .item-name,
 .sink-unit-table .item-row td.col-handle-priority,
@@ -402,8 +431,50 @@ body {
 }
 
 /* ----------------------------------------------------------
+   CUSTOM SINK UNIT SPLIT LAYOUT (Tables & Images)
+   ---------------------------------------------------------- */
+.sink-row-container {
+  display: flex;
+  flex-direction: row;
+  gap: 4mm;
+  margin-bottom: 3.5mm;
+  align-items: flex-start; /* منع التمدد الرأسي للجدول بناءً على طول الصورة */
+}
+
+.sink-table-col {
+  flex: 0 0 66%;
+  max-width: 66%;
+}
+
+.sink-image-col {
+  flex: 0 0 25%;
+  max-width: 25%;
+  aspect-ratio: 1 / 1;      /* فرض نسبة مربعة 1:1 للصورة */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #000;
+  background: #fafafa;
+  padding: 2px;
+  box-sizing: border-box;
+}
+
+.sink-part-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;     /* ملائمة الصورة داخل الحاوية المربعة بدون تشويه */
+  display: block;
+}
+
+.sink-subtotal-box {
+  margin-top: 2mm;
+  margin-bottom: 5mm;
+  text-align: right;
+  padding-right: 2px;
+}
+
+/* ----------------------------------------------------------
    PRINT STYLES
-   مناسب للتحويل إلى PDF عبر window.print() أو مكتبات PDF
    ---------------------------------------------------------- */
 @media print {
   body {
@@ -418,5 +489,29 @@ body {
     box-shadow: none;
     width: 210mm;
     min-height: 297mm;
+  }
+}
+
+/* ----------------------------------------------------------
+   PAGE BREAKS & FOOTERS FOR A4 MULTI-PAGE PREVIEW
+   ---------------------------------------------------------- */
+.page-footer {
+  position: absolute;
+  bottom: 10mm;
+  left: 15mm;
+  right: 15mm;
+  display: flex;
+  justify-content: center;
+  font-size: 9pt;
+  font-weight: 600;
+  color: #555;
+  border-top: 1px solid #ddd;
+  padding-top: 2mm;
+}
+
+@media print {
+  .page {
+    page-break-after: always;
+    break-after: page;
   }
 }

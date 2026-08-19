@@ -96,18 +96,6 @@ fetch('nav.html')
           </div>
         </header>
 
-        <!-- Cart Summary (Totals + Actions) -->
-        <div id="cart-summary" class="cart-summary" style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding: 0 12px 16px;">
-          <div class="cart-summary-left" style="text-align:right;">
-            <div style="font-weight:700;">العناصر: <span id="cart-items-count">0</span></div>
-            <div style="margin-top:6px;">الإجمالي: <span id="cart-grand-total">0</span> EGP</div>
-          </div>
-          <div class="cart-summary-actions" style="display:flex; gap:8px; align-items:center;">
-            <button id="btn-clear-cart" class="related-see-more-btn" style="border-color:var(--color-error); color:var(--color-error);">تفريغ السلة</button>
-            <button id="btn-generate-summary" class="related-see-more-btn" style="background:var(--color-primary); color:#fff;">ملخص الطلب</button>
-          </div>
-        </div>
-
         <!-- Empty State -->
         <div id="shopping-empty-state" class="shopping-empty-state">
           <img src="images/ui/empty-cart.svg" alt="لا توجد منتجات في السلة" class="empty-shopping-image">
@@ -115,10 +103,40 @@ fetch('nav.html')
           <p class="empty-cart-text">ابدأ بإضافة المنتجات التي تعجبك إلى قائمة سلة المشتريات</p>
         </div>
 
-        <!-- Cart Products Grid -->
-        <div id="cart-products-grid" class="cart-products-grid">
-          <!-- Products will be rendered here -->
+        <!-- Two-Column Wrapper for Cart Content -->
+        <div class="cart-two-column-wrapper">
+          
+          <!-- Main Products Column (Right in RTL) -->
+          <div class="cart-main-products-column">
+            <div id="cart-products-grid" class="cart-products-grid">
+              <!-- Products will be rendered here -->
+            </div>
+          </div>
+
+          <!-- Sidebar Summary Column (Left in RTL) -->
+          <aside class="cart-sidebar-summary-column">
+            <div id="cart-summary" class="cart-summary">
+              <div class="cart-summary-left">
+                <div class="cart-items-title">العناصر: <span id="cart-items-count">0</span></div>
+                <div class="cart-total-wrap">الإجمالي: <span id="cart-grand-total">0</span> EGP</div>
+              </div>
+              <div class="cart-summary-actions">
+                <button id="btn-generate-summary" class="related-see-more-btn btn-generate">ملخص الطلب</button>
+                <button id="btn-clear-cart" class="related-see-more-btn btn-clear">تفريغ السلة</button>
+              </div>
+            </div>
+          </aside>
+
         </div>
+      </div>
+
+      <!-- Mobile Sticky Bottom Bar -->
+      <div class="mobile-sticky-checkout-bar">
+        <div class="mobile-total-container">
+          <span class="mobile-total-label">الإجمالي:</span>
+          <span id="mobile-cart-grand-total" class="mobile-total-value">0 EGP</span>
+        </div>
+        <button id="mobile-btn-generate-summary" class="mobile-checkout-cta-btn">ملخص الطلب</button>
       </div>
 
     <!-- Related Products Section -->
@@ -151,21 +169,63 @@ fetch('nav.html')
   <img id="prod-lb-img" class="product-lightbox-image" src="" alt="" />
 </div>
 
-<!-- Order Preview Modal -->
-<div id="order-preview-modal" class="order-preview-modal" aria-hidden="true" style="display:none; position:fixed; inset:0; z-index:12000; background:rgba(0,0,0,0.6); align-items:center; justify-content:center;">
-  <div class="order-preview-inner" role="document" style="background:var(--color-bg-white); width:90%; max-width:900px; border-radius:var(--radius-md,8px); overflow:auto; max-height:90%; padding:18px; box-sizing:border-box;">
-    <div class="order-preview-toolbar" style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:12px;">
-      <div style="font-weight:800; font-size:16px;">معاينة ملخص الطلب</div>
-      <div style="display:flex; gap:8px;">
-        <button id="btn-download-pdf" class="related-see-more-btn" style="background:var(--color-primary); color:#fff;">تحميل PDF</button>
-        <button id="btn-send-whatsapp" class="related-see-more-btn" style="border-color:var(--color-primary); color:var(--color-primary);">إرسال عبر WhatsApp</button>
-        <button id="btn-close-preview" class="related-see-more-btn" style="border-color:var(--color-text-main); color:var(--color-text-main);">إغلاق</button>
+<!-- Order Preview / Popup Modal (enhanced) -->
+<div id="order-preview-modal" class="order-preview-modal order-preview-modal-custom" aria-hidden="true">
+  <div class="order-preview-inner order-preview-inner-custom" role="document">
+    <div class="order-modal-header">
+      <div class="order-modal-title">ملخص الطلب</div>
+      <button id="order-popup-close" class="order-modal-close-btn" aria-label="إغلاق">×</button>
+    </div>
+
+    <div class="order-modal-grid">
+      <!-- Left: form -->
+      <div class="order-modal-form-col">
+        <div class="order-form-section-title">بيانات العميل</div>
+
+        <label class="order-form-label">الاسم</label>
+        <input id="modal-customer-name" class="order-form-input" type="text" placeholder="اسمك" />
+
+        <label class="order-form-label">رقم التليفون</label>
+        <input id="modal-customer-phone" class="order-form-input" type="tel" placeholder="+20 ..." />
+
+        <label class="order-form-label">العنوان (تفصيلي)</label>
+        <textarea id="modal-customer-address" class="order-form-textarea" rows="3" placeholder="عنوانك"></textarea>
+
+        <div class="order-form-hint">نستخدم موقعك لتقدير تكلفة التوصيل والتحقق من تغطية منطقتك</div>
+
+        <button id="modal-btn-locate" class="btn-locate" style="width:100%; margin-bottom:8px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:8px"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="9" stroke-dasharray="4 2"/></svg>
+          تحديد موقعي الحالي
+        </button>
+
+        <div id="modal-loc-result" class="loc-result" style="display:none; margin-bottom:8px;"></div>
+
+        <div id="modal-mapContainer" class="map-container order-map-container-custom" hidden>
+          <iframe id="modal-staticMap" width="100%" height="200" loading="lazy" title="خريطة الموقع" style="border:0"></iframe>
+        </div>
+
+      </div>
+
+      <!-- Right: preview area & actions -->
+      <div class="order-modal-preview-col">
+        
+        <div class="order-form-section-title">معاينة الملخص</div>
+
+        <div id="order-invoice-preview" class="order-invoice-preview-box">
+          <!-- invoice HTML injected here -->
+          <div style="color:var(--color-text-muted);">اضغط "استخراج الملخص" لعمل معاينة وملف PDF.</div>
+        </div>
+
+        <div class="order-modal-actions">
+          <button id="btn-cancel-popup" class="related-see-more-btn" style="border-color:var(--color-text-main); color:var(--color-text-main);">إلغاء</button>
+          <button id="btn-generate-popup-pdf" class="related-see-more-btn" style="background:var(--color-primary); color:#fff;">استخراج الملخص</button>
+          <button id="btn-send-popup-whatsapp" class="related-see-more-btn" style="border-color:var(--color-primary); color:var(--color-primary);" disabled>إرسال عبر WhatsApp</button>
+        </div>
+
+        <div id="popup-toast" style="margin-top:8px;"></div>
       </div>
     </div>
 
-    <div id="order-invoice-preview" style="direction:rtl; text-align:right;">
-      <!-- Invoice HTML will be injected here by cart.js -->
-    </div>
   </div>
 </div>
 
@@ -184,6 +244,7 @@ fetch('nav.html')
 <!-- html2pdf (used to convert the invoice HTML into PDF in-browser) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
 
+<script src="js/configurator.js"></script>
 <script type="module" src="js/cart.js"></script>
 
 </body>
