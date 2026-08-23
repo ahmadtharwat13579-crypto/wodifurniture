@@ -8,13 +8,16 @@ function initNavbar() {
     if (!navbar) return;
 
     function updateNavbar() {
+      if (document.body.classList.contains('modal-open')) {
+        ticking = false;
+        return;
+      }
+
       const currentScrollY = window.scrollY;
 
       if (currentScrollY > lastScrollY && currentScrollY > 80) {
-        // نازل تحت وعدى مسافة معينة (80px) → إخفاء
         navbar.style.setProperty('transform', 'translateY(-100%)', 'important');
       } else {
-        // طالع فوق (في أي مكان) → إظهار
         navbar.style.setProperty('transform', 'translateY(0)', 'important');
       }
 

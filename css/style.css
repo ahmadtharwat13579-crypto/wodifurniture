@@ -1388,7 +1388,7 @@ body {
   transform: translateX(-50%);
   background: rgba(30,25,20,0.95);
   color: #fff;
-  padding: 10px 18px;
+  padding: 10px 18px 14px;
   border-radius: 2px;
   font-size: 13px;
   font-family: 'Cairo', sans-serif;
@@ -1401,9 +1401,23 @@ body {
   max-width: 90vw;
   text-align: center;
   line-height: 1.4;
+  overflow: hidden;
 }
 .toast.show {
   opacity: 1;
+}
+.toast-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background-color: #9caf88;
+  width: 100%;
+  animation: toastProgressLinear linear forwards;
+}
+@keyframes toastProgressLinear {
+  from { width: 100%; }
+  to { width: 0%; }
 }
 .size-warning {
   font-size: 12px;

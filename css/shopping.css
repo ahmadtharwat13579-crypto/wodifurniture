@@ -685,17 +685,6 @@
   border: 1px solid var(--color-border);
 }
 
-.order-invoice-preview-box {
-  direction: rtl;
-  text-align: right;
-  border: 1px solid var(--color-border);
-  padding: 12px;
-  border-radius: 6px;
-  min-height: 160px;
-  max-height: 520px;
-  overflow: auto;
-}
-
 .order-modal-actions {
   display: flex;
   gap: 8px;
@@ -964,3 +953,41 @@
         white-space: nowrap;
     }
 }
+
+/* Stepper Styles */
+.order-modal-stepper {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 30px;
+  position: relative;
+  padding: 0 10px;
+}
+
+.stepper-line {
+  position: absolute;
+  top: 50%;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  background: #e7e3da;
+  z-index: 0;
+}
+
+.stepper-step {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #e7e3da;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  z-index: 1;
+  transition: background 0.3s;
+}
+
+.stepper-step.active, .stepper-step.filled {
+  background: var(--color-primary); /* الأخضر الزيتوني */
+}
+

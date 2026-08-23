@@ -18,11 +18,14 @@ body {
   background: #f0f0f0;
   direction: rtl;
   color: #000;
-  overflow-x: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 210mm;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
 }
 
 /* ----------------------------------------------------------
@@ -35,7 +38,7 @@ body {
   min-height: 297mm;
   max-height: 297mm;
   padding: 15mm;
-  margin: 0 auto 10mm auto;
+  margin: 0 auto;
   background: white;
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
   box-sizing: border-box;
@@ -46,7 +49,8 @@ body {
   page-break-after: always;
   break-after: page;
   flex-shrink: 0;
-  transform: none !important;
+  transform: none;
+  margin-bottom: -420px;
 }
 
 #order-invoice-preview {
@@ -54,8 +58,8 @@ body {
   flex: 1 1 auto;
   min-height: 0;
   height: auto;
-  overflow-y: auto;
-  overflow-x: auto;
+  overflow-y: visible;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -135,7 +139,7 @@ body {
    ---------------------------------------------------------- */
 .divider-thick {
   border: none;
-  border-top: 2.5px solid #000;
+  border-top: 1mm solid #000;
   margin: 0;
 }
 
@@ -143,6 +147,9 @@ body {
   border: none;
   border-top: 1px solid #000;
   margin: 0;
+
+  align-self: center;
+  width: 80%;
 }
 
 /* ----------------------------------------------------------
@@ -157,7 +164,8 @@ body {
   display: grid;
   grid-template-columns: 0.3fr 1fr;
   direction: rtl;
-  margin-bottom: 4mm;
+  margin-top: 2mm;
+  margin-bottom: 2mm;
   gap: 0 5mm;
 }
 
@@ -166,8 +174,10 @@ body {
 }
 
 .customer-col-left {
+  margin-top: 1mm;
   text-align: right;
-  line-height: 1.5;
+  line-height: 1.6;
+
 }
 
 .customer-field {
@@ -204,6 +214,91 @@ body {
   font-size: 10pt;
   font-weight: 400;
   white-space: nowrap;
+}
+
+/* ----------------------------------------------------------
+   SINK SPECIFICATIONS
+   بيانات الحوض التي يدخلها العميل
+   ---------------------------------------------------------- */
+
+.sink-specs-section {
+  margin: 6mm 0 7mm 0;
+  padding: 0;
+}
+
+.sink-specs-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 8mm;
+  direction: rtl;
+  margin-bottom: 5mm;
+}
+
+.sink-spec-row {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 4px;
+  margin-bottom: 3mm;
+  direction: rtl;
+}
+
+.sink-spec-label {
+  font-size: 10.5pt;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.sink-spec-value {
+  font-size: 10.5pt;
+  font-weight: 400;
+}
+
+/* Images */
+
+.sink-specs-images {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 5mm;
+  direction: rtl;
+  align-items: start;
+}
+
+.sink-spec-image-item {
+  text-align: right;
+  min-width: 0;
+}
+
+.sink-spec-image-title {
+  font-size: 10.5pt;
+  font-weight: 700;
+  margin-bottom: 2mm;
+}
+
+.sink-spec-image-box {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border: 1px solid #000;
+  background: #fafafa;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.sink-spec-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.sink-spec-image-description {
+  font-size: 8.5pt;
+  font-weight: 400;
+  line-height: 1.5;
+  margin-top: 1.5mm;
 }
 
 /* ----------------------------------------------------------
@@ -318,8 +413,8 @@ body {
    SHIPPING SECTION
    ---------------------------------------------------------- */
 .shipping-section {
-  margin-top: 6mm;
-  padding-top: 5mm;
+  margin-top: 2mm;
+
 }
 
 .shipping-grid {
@@ -436,14 +531,14 @@ body {
 .sink-row-container {
   display: flex;
   flex-direction: row;
-  gap: 4mm;
-  margin-bottom: 3.5mm;
+  gap: 2mm;
+  margin-bottom: 4mm;
   align-items: flex-start; /* منع التمدد الرأسي للجدول بناءً على طول الصورة */
 }
 
 .sink-table-col {
-  flex: 0 0 66%;
-  max-width: 66%;
+  flex: 0 0 73%;
+  max-width: 100%;
 }
 
 .sink-image-col {
@@ -467,30 +562,12 @@ body {
 }
 
 .sink-subtotal-box {
-  margin-top: 2mm;
-  margin-bottom: 5mm;
+  margin-top: 1mm;
+  margin-bottom: 2mm;
   text-align: right;
   padding-right: 2px;
 }
 
-/* ----------------------------------------------------------
-   PRINT STYLES
-   ---------------------------------------------------------- */
-@media print {
-  body {
-    background: #fff;
-    margin: 0;
-    padding: 0;
-  }
-
-  .page {
-    margin: 0;
-    padding: 18mm 15mm 15mm 15mm;
-    box-shadow: none;
-    width: 210mm;
-    min-height: 297mm;
-  }
-}
 
 /* ----------------------------------------------------------
    PAGE BREAKS & FOOTERS FOR A4 MULTI-PAGE PREVIEW
@@ -507,6 +584,31 @@ body {
   color: #555;
   border-top: 1px solid #ddd;
   padding-top: 2mm;
+}
+
+.dr-zoom-controls {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+  z-index: 10;
+}
+
+.dr-zoom-btn {
+  width: 32px;
+  height: 32px;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.dr-zoom-btn:hover {
+  background: var(--color-primary-hover);
 }
 
 @media print {

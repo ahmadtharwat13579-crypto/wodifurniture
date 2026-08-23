@@ -48,12 +48,18 @@
         return;
       }
     }
-    const existing = document.querySelector('.toast.show');
-    if (existing) existing.remove();
+    const existing = document.querySelectorAll('.toast');
+    existing.forEach(el => el.remove());
 
     const toast = document.createElement('div');
     toast.className = 'toast show';
     toast.textContent = message;
+
+    const progress = document.createElement('div');
+    progress.className = 'toast-progress';
+    progress.style.animationDuration = `${duration}ms`;
+    toast.appendChild(progress);
+
     document.body.appendChild(toast);
 
     setTimeout(() => {
@@ -1067,17 +1073,81 @@
   function buildOrderPayload() {
     const items = [];
     let grandTotal = 0;
+
     for (const it of state.cartItems) {
-      const p = state.allProducts.find(x => String(x.product_id) === String(it.product_id));
-      if (!p) continue;
-      const unitPrice = (p.sale_price != null && p.sale_price !== '') ? Number(p.sale_price) : Number(p.base_price || 0);
-      const subtotal = unitPrice * Number(it.qty || 0);
+      const isCustom = !!it.is_custom;
+
+      const p = state.allProducts.find(
+        x => String(x.product_id) === String(it.product_id)
+      );
+
+      // المنتج العادي لازم يكون له Product Data
+      if (!p && !isCustom) continue;
+
+      let unitPrice = 0;
+      let name = '';
+      let specs = '';
+
+      if (isCustom) {
+        // Custom Sink Unit
+        unitPrice = Number(it.unitPrice || 0);
+
+        const config = it.configuration || {};
+
+        name =
+          config.design?.name ||
+          config.designName ||
+          'وحدة حوض مخصصة';
+
+        // تكوين المواصفات من بيانات الـ configuration
+        const specParts = [];
+
+        if (config.width) specParts.push(`العرض: ${config.width} سم`);
+        if (config.height) specParts.push(`الارتفاع: ${config.height} سم`);
+        if (config.depth) specParts.push(`العمق: ${config.depth} سم`);
+
+        if (config.division?.name) {
+          specParts.push(`التقسيم: ${config.division.name}`);
+        }
+
+        if (config.handle?.name) {
+          specParts.push(`المقبض: ${config.handle.name}`);
+        }
+
+        if (config.opening?.name) {
+          specParts.push(`طريقة الفتح: ${config.opening.name}`);
+        }
+
+        specs = specParts.join(' | ');
+
+      } else {
+        // Normal Product
+        unitPrice =
+          (p.sale_price != null && p.sale_price !== '')
+            ? Number(p.sale_price)
+            : Number(p.base_price || 0);
+
+        name = p.display_name || 'منتج';
+
+        specs =
+          (p.width && p.height && p.depth)
+            ? `${p.width} × ${p.depth} × ${p.height} سم`
+            : '';
+      }
+
+      const qty = Number(it.qty || 0);
+      const subtotal = unitPrice * qty;
+
       grandTotal += subtotal;
+
       items.push({
-        product_id: p.product_id,
-        name: p.display_name,
-        specs: (p.width && p.height && p.depth) ? `${p.width} × ${p.depth} × ${p.height} سم` : '',
-        qty: Number(it.qty || 0),
+        product_id: it.product_id,
+        cartItemId: it.cartItemId || null,
+        is_custom: isCustom,
+        name,
+        specs,
+        configuration: isCustom ? (it.configuration || null) : null,
+        qty,
         unitPrice,
         subtotal
       });
@@ -1086,26 +1156,55 @@
     const now = new Date();
     const orderNumber = `WODI-${String(now.getTime()).slice(-8)}`;
 
-    // gather customer data from modal (prefer currentUser)
+    // Customer data
     const user = state.currentUser || {};
-    const modalName = (state.dom.modalName && state.dom.modalName.value) ? state.dom.modalName.value.trim() : '';
-    const modalPhone = (state.dom.modalPhone && state.dom.modalPhone.value) ? state.dom.modalPhone.value.trim() : '';
-    const modalAddress = (state.dom.modalAddress && state.dom.modalAddress.value) ? state.dom.modalAddress.value.trim() : '';
 
-    const customerName = modalName || user.displayName || user.name || 'غير متوفر';
-    const customerPhone = modalPhone || user.phoneNumber || user.phone || 'غير متوفر';
+    const modalName =
+      (state.dom.modalName && state.dom.modalName.value)
+        ? state.dom.modalName.value.trim()
+        : '';
+
+    const modalPhone =
+      (state.dom.modalPhone && state.dom.modalPhone.value)
+        ? state.dom.modalPhone.value.trim()
+        : '';
+
+    const modalAddress =
+      (state.dom.modalAddress && state.dom.modalAddress.value)
+        ? state.dom.modalAddress.value.trim()
+        : '';
+
+    const customerName =
+      modalName ||
+      user.displayName ||
+      user.name ||
+      'غير متوفر';
+
+    const customerPhone =
+      modalPhone ||
+      user.phoneNumber ||
+      user.phone ||
+      'غير متوفر';
+
     const shippingAddress = modalAddress || '';
 
     return {
       number: orderNumber,
       createdAt: now.toISOString(),
+
       customerName,
       customerPhone,
       shippingAddress,
+
       items,
       grandTotal,
+
       notes: 'الأسعار لا تشمل الشحن أو الضرائب. التواصل والدفع عبر WhatsApp.',
-      installCost: (typeof window.installCost !== 'undefined') ? window.installCost : null
+
+      installCost:
+        (typeof window.installCost !== 'undefined')
+          ? window.installCost
+          : null
     };
   }
 
@@ -1361,15 +1460,29 @@
           }
 
           // Apply the three visibility cases cleanly by hiding/showing entire sections
-          if (customItems.length > 0 && normalItems.length === 0) {
-            if (sinkSection) sinkSection.style.setProperty('display', 'block', 'important');
-            if (normalSection) normalSection.style.setProperty('display', 'none', 'important');
-          } else if (customItems.length === 0 && normalItems.length > 0) {
-            if (sinkSection) sinkSection.style.setProperty('display', 'none', 'important');
-            if (normalSection) normalSection.style.setProperty('display', 'block', 'important');
+          // ضمان ظهور سكاشن الـ Sink بناءً على وجودها في الـ Cart
+          if (customItems.length > 0) {
+            if (sinkSection) {
+               sinkSection.style.display = 'block';
+               sinkSection.style.setProperty('display', 'block', 'important');
+            }
           } else {
-            if (sinkSection) sinkSection.style.setProperty('display', 'block', 'important');
-            if (normalSection) normalSection.style.setProperty('display', 'block', 'important');
+            if (sinkSection) {
+               sinkSection.style.display = 'none';
+               sinkSection.style.setProperty('display', 'none', 'important');
+            }
+          }
+
+          if (normalItems.length > 0) {
+            if (normalSection) {
+               normalSection.style.display = 'block';
+               normalSection.style.setProperty('display', 'block', 'important');
+            }
+          } else {
+            if (normalSection) {
+               normalSection.style.display = 'none';
+               normalSection.style.setProperty('display', 'none', 'important');
+            }
           }
 
           // Update subtotals and totals matching exact template IDs
@@ -1629,8 +1742,12 @@
     }
   }
 
-  /* Modal opener used by cart generate and configurator (callable externally) */
-  window.openOrderPopup = function () {
+  /* Modal opener used by cart generate and configurator */
+  window.openOrderPopup = function (customData = null) {
+    // إذا كان هناك بيانات وحدة حوض (customData) نقوم بتخزينها في state
+    if (customData) {
+      state.customSinkData = customData;
+    }
     openOrderPopup();
   };
 

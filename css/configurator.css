@@ -111,8 +111,8 @@
   content: '';
   position: absolute;
   top: 18px;
-  right: 45px;
-  left: 45px;
+  right: 25px;
+  left: 25px;
   height: 2px;
   background: #e5e7eb;
   z-index: 1;
@@ -152,33 +152,47 @@
 }
 
 .compact-stepper .stepper-title {
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-sm);
   font-weight: 600;
   line-height: 1.4;
   color: #6b7280;
 }
 
-/* حالة الاكتمال (باللون الأخضر الزيتوني المطلوب #9caf88) */
+.stepper-icon span {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+/* Completed step */
 .compact-stepper .stepper-item.completed .stepper-icon {
+  position: relative;
   background: var(--color-primary);
   color: var(--color-bg-white);
   border-color: var(--color-primary);
 }
 
-/* علامة الصح الهندسية الحادة المينيملست (Straight checkmark) */
-.compact-stepper .stepper-item.completed .stepper-icon svg {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='square' stroke-linejoin='miter'%3E%3Cpolyline points='4 12 10 18 20 6'%3E%3C/polyline%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: 16px;
-}
-
-.compact-stepper .stepper-item.completed .stepper-icon svg > * {
+/* Hide the original icon/number when completed */
+.compact-stepper .stepper-item.completed .stepper-icon svg,
+.compact-stepper .stepper-item.completed .stepper-icon > span {
   display: none;
 }
 
-.compact-stepper .stepper-item.completed .stepper-title {
-  color: #111827;
+/* Center the checkmark inside the circle */
+.compact-stepper .stepper-item.completed .stepper-icon::after {
+  content: '✓';
+  position: absolute;
+  inset: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: var(--color-bg-white);
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1;
+
+  pointer-events: none;
 }
 
 /* حالة فشل تحديد الموقع أو خارج النطاق (برتقالي / أصفر) */
@@ -201,6 +215,24 @@
   color: #111827;
   font-weight: 700;
   transform: scale(1.02);
+}
+
+#dr-stepper {
+  width: 100%;
+  max-width: 500px;
+  margin: 4px auto 2px !important;
+  padding: 30px 2px;
+  border: none;
+  box-sizing: border-box;
+  transform-origin: center center;
+}
+
+#dr-stepper ol {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 /* =========================================
@@ -231,6 +263,11 @@
   border-bottom: 1px solid #e5e7eb;
   padding-bottom: 40px;
 }
+
+.grid-item:has(#handle-group-title) {
+  border-bottom: none;
+}
+
 #location-section{
   border-bottom: none;
   padding-bottom: 20px; /* أو القيمة اللي تناسبك */
@@ -974,6 +1011,439 @@
   .price-column.sbar {top: 100px; align-self: start; }
 }
 
+/* =========================================
+   DESIGN REQUEST MODAL STYLES (3-STEP)
+========================================= */
+
+.design-request-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 13000;
+  padding: 20px;
+}
+
+.design-request-box {
+  background: var(--color-bg-white);
+  border-radius: var(--radius-md);
+  max-width: 900px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+}
+
+.dr-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  padding: 30px 20px 10px;
+}
+
+.dr-close-btn {
+  position: absolute;
+  right: 20px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #999;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dr-close-btn:hover {
+  color: var(--color-text-main);
+}
+
+.dr-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-text-main);
+  margin: 0;
+  text-align: center;
+  padding-top: 8px;
+}
+
+.dr-step-content {
+  padding: 24px 20px;
+  flex: 1;
+}
+
+.dr-step-heading {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: var(--color-text-main);
+}
+
+.dr-form-group {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.dr-label {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--color-text-main);
+}
+
+.required {
+  color: var(--color-error);
+}
+
+.dr-input {
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xs);
+  font-size: 14px;
+  font-family: var(--font-family-main);
+  background: var(--color-bg-white);
+  color: var(--color-text-main);
+}
+
+.dr-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(156, 175, 136, 0.1);
+}
+
+.dr-input[readonly] {
+  background-color: #f0f0f0;
+  cursor: not-allowed;
+  color: var(--color-text-muted);
+}
+
+/* حاوية الـ Select للتحكم في موضع السهم */
+.dr-select-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+/* تنسيق حقل الاختيار وإلغاء السهم الافتراضي للمتصفح */
+.dr-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 100%;
+  cursor: pointer;
+  background-color: #ffffff;
+  /* مساحة داخلية جهة اليسار لمنع تداخل النص مع السهم في الواجهات العربية */
+  padding-left: 36px !important;
+  padding-right: 12px;
+}
+
+/* سهم مخصص SVG متناسق ومضبوط لجهة اليسار (RTL) */
+.dr-select-wrapper::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  transform: translateY(-50%);
+  width: 10px;
+  height: 6px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath fill='none' stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M1 1l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  pointer-events: none;
+  transition: transform 0.2s ease;
+}
+
+/* تمييز خيار الـ Placeholder بلون خفيف */
+.dr-select:invalid,
+.dr-select option[value=""] {
+  color: #9ca3af;
+}
+
+/* تنسيق مجموعات الخيارات والعناصر داخل القائمة */
+.dr-select optgroup {
+  font-weight: 700;
+  color: #374151;
+  background-color: #f3f4f6;
+  padding: 6px 4px;
+}
+
+.dr-select option {
+  font-weight: 400;
+  color: #1f2937;
+  background-color: #ffffff;
+  padding: 8px 10px;
+}
+
+/* إخفاء الـ input الأصلي وجعل الحاوية قابلة للضغط */
+.dr-file-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed #d1d5db;
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+  cursor: pointer;
+  background-color: #f9fafb;
+  min-height: 80px;
+  transition: all 0.2s ease;
+}
+
+.dr-file-wrapper input[type="file"] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+
+/* المعاينة عند وجود صورة */
+.dr-file-preview-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.dr-file-preview-box img {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+}
+
+.dr-file-preview-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-size: 13px;
+  color: var(--color-text-main, #374151);
+}
+
+.dr-file-preview-info small {
+  color: #6b7280;
+  font-size: 11px;
+}
+
+.dr-hint {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+  display: block;
+}
+
+.dr-location-section {
+  margin-top: 16px;
+  padding: 0;
+  background: transparent;
+}
+
+.dr-location-title {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--color-text-main);
+}
+
+.order-invoice-preview-box {
+  direction: rtl;
+  text-align: right;
+  border: 1px solid var(--color-border);
+  padding: 12px;
+  border-radius: 6px;
+  min-height: 160px;
+  max-height: none;
+  height: 600px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  box-sizing: border-box;
+}
+
+.dr-invoice-frame {
+  direction: rtl;
+  width: 100%;
+  height: 500px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xs);
+  overflow: auto;
+  background: #f9f9f9;
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.dr-preview-document {
+  direction: rtl;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: visible;
+  box-sizing: border-box;
+}
+
+.dr-preview-document .page {
+  flex-shrink: 0;
+}
+
+.dr-zoom-controls {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 6px;
+  z-index: 10;
+  direction: ltr;
+}
+
+.dr-zoom-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-xs);
+  background: var(--color-bg-white);
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text-main);
+}
+
+.dr-zoom-btn:hover {
+  background: var(--color-border);
+}
+
+.dr-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--color-border);
+  flex-direction: row-reverse;
+}
+
+.dr-btn-primary,
+.dr-btn-secondary,
+.dr-btn-whatsapp {
+  padding: 10px 20px;
+  border-radius: var(--radius-xs);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.3s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-family-main);
+}
+
+.dr-btn-primary {
+  background: var(--color-primary);
+  color: var(--color-bg-white);
+}
+
+.dr-btn-primary:hover {
+  background: var(--color-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(156, 175, 136, 0.28);
+}
+
+.dr-btn-secondary {
+  background: var(--color-bg-white);
+  color: var(--color-text-main);
+  border: 1px solid var(--color-border);
+}
+
+.dr-btn-secondary:hover {
+  background: var(--color-border);
+}
+
+.dr-btn-whatsapp {
+  background: #25d366;
+  color: var(--color-bg-white);
+}
+
+.dr-btn-whatsapp:hover {
+  background: #20ba5a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.28);
+}
+
+.dr-btn-whatsapp:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ====================================================
+   MAPS & CONTAINERS
+   ==================================================== */
+#dr-mapContainer {
+  margin-top: 12px;
+}
+
+#dr-staticMap {
+  width: 100%;
+  height: 160px;
+  display: block;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+#modal-staticMap {
+  border: 0;
+}
+
+@media (max-width: 600px) {
+  .design-request-box {
+    max-height: 95vh;
+  }
+
+  .dr-footer {
+    flex-direction: column-reverse;
+  }
+
+  .dr-footer-left,
+  .dr-footer-right {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .dr-btn-primary,
+  .dr-btn-secondary,
+  .dr-btn-whatsapp {
+    width: 100%;
+  }
+}
+
+
 /* Lightbox */
 .lb {
   display: none;
@@ -1102,3 +1572,4 @@
 .map-wrap.show {
   display: block;
 }
+

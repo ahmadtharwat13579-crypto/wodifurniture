@@ -51,8 +51,8 @@
   --z-stepper: 900;
   --z-backdrop: 999;
   --z-header: 1000;
-  --z-modal: 10500;
-  --z-toast: 12000;
+  --z-modal: 2000;
+  --z-toast: 3000;
 
   /* Spacing */
     --space-1: 4px;
@@ -65,6 +65,11 @@
     --space-8: 40px;
     --space-9: 48px;
     --space-10: 64px;
+    
+  /* Modal Multi-step Variables */
+  --modal-bg-overlay: rgba(0, 0, 0, 0.5);
+  --step-active-clr: var(--color-primary);
+  --step-inactive-clr: var(--color-border);
 
     /* Transitions */
   --transition-fast: 0.2s ease;

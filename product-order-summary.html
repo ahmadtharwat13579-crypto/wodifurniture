@@ -38,12 +38,9 @@
     <section class="customer-section">
       <div class="customer-grid">
 
-        <div class="customer-col-right">
-          <p class="section-label">بيانات العميل</p>
-        </div>
+    <h2 class="table-title">بيانات العميل</h2>
 
         <div class="customer-col-left">
-          <p class="section-label" style="margin-bottom: 3mm;">تم تلخيص الطلب إلى:</p>
           <p class="customer-field">
             <span class="field-label">إسم العميل:</span>
             <span class="field-value" id="customer-name">أحمد محمد</span>
@@ -52,15 +49,133 @@
             <span class="field-label">رقم التليفون:</span>
             <span class="field-value" id="customer-phone">+20 100 000 0000</span>
           </p>
-          <p class="customer-field">
-            <span class="field-label">العنوان التفصيلي:</span>
-            <span class="field-value" id="customer-address">غير متوفر</span>
-          </p>
         </div>
 
       </div>
     </section>
+
+
+
+        <!-- ===== SHIPPING SECTION ===== -->
+    <section class="shipping-section">
+
+      <h2 class="table-title">تكلفة النقل</h2>
+
+      <div class="shipping-grid">
+        <div class="shipping-info-col">
+          <p class="customer-field">
+            <span class="field-label">المحافظة:</span>
+            <span class="field-value" id="shipping-governorate">القاهرة</span>
+          </p>
+          <p class="customer-field">
+            <span class="field-label">الحي:</span>
+            <span class="field-value" id="shipping-district">مدينة نصر</span>
+          </p>
+          <p class="customer-field">
+            <span class="field-label">خط الطول:</span>
+            <span class="field-value" id="shipping-lng">31.3467</span>
+          </p>
+          <p class="customer-field">
+            <span class="field-label">دائرة العرض:</span>
+            <span class="field-value" id="shipping-lat">30.0561</span>
+          </p>
+        </div>
+
+        <div class="shipping-map-col">
+          <img src="" alt="خريطة الموقع" id="shipping-map-image" class="shipping-map-img">
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SINK SPECIFICATIONS SECTION ===== -->
+    <section class="sink-specs-section">
+
+      <h2 class="table-title">مواصفات الحوض</h2>
+
+      <!-- Basic Sink Information -->
+      <div class="sink-specs-info">
+
+        <div class="sink-spec-row">
+          <span class="sink-spec-label">نوع الحوض:</span>
+          <span class="sink-spec-value" id="sink-type">غير متوفر</span>
+        </div>
+
+        <div class="sink-spec-row">
+          <span class="sink-spec-label">علامة الحوض:</span>
+          <span class="sink-spec-value" id="sink-brand">غير متوفر</span>
+        </div>
+
+        <div class="sink-spec-row">
+          <span class="sink-spec-label">عرض الحوض:</span>
+          <span class="sink-spec-value" id="sink-width">غير متوفر</span>
+        </div>
+
+        <div class="sink-spec-row">
+          <span class="sink-spec-label">كود الحوض:</span>
+          <span class="sink-spec-value" id="sink-code">غير متوفر</span>
+        </div>
+
+      </div>
+
+      <!-- Sink Images -->
+      <div class="sink-specs-images">
+
+        <!-- Wall Image -->
+        <div class="sink-spec-image-item">
+          <p class="sink-spec-image-title">صورة واضحة للحيطة</p>
+          <div class="sink-spec-image-box">
+            <img
+              src=""
+              alt="صورة واضحة للحيطة"
+              id="sink-wall-image"
+              class="sink-spec-img"
+            >
+          </div>
+          <p class="sink-spec-image-description">
+            صورة واضحة للحيطة التي سيركب عليها الحوض
+          </p>
+        </div>
+
+        <!-- Sink Image -->
+        <div class="sink-spec-image-item">
+          <p class="sink-spec-image-title">صورة الحوض</p>
+          <div class="sink-spec-image-box">
+            <img
+              src=""
+              alt="صورة الحوض"
+              id="sink-image"
+              class="sink-spec-img"
+            >
+          </div>
+        </div>
+
+        <!-- Label Image -->
+        <div class="sink-spec-image-item">
+          <p class="sink-spec-image-title">صورة الملصق</p>
+          <div class="sink-spec-image-box">
+            <img
+              src=""
+              alt="صورة ملصق الحوض"
+              id="sink-label-image"
+              class="sink-spec-img"
+            >
+          </div>
+          <p class="sink-spec-image-description">
+            صورة الملصق الذي يحتوي على البيانات والكود
+          </p>
+        </div>
+
+      </div>
+
+    </section>
+
+      <div class="page-footer">
+        <span class="page-number-text">صفحة 1 من 2</span>
+      </div>
+
+  </div> <!-- end .page 1 -->
   
+  <div class="page" data-page-role="products-page">
     <!-- ===== SINK UNIT TABLES & IMAGES ===== -->
     <section class="products-section">
       <h2 class="table-title">وحدة الحوض #01</h2>
@@ -160,78 +275,7 @@
       </div>
     </section>
 
-    <!-- ===== ADDITIONAL PRODUCTS TABLE ===== -->
-    <section class="products-section">
-      <h2 class="table-title">المنتجات</h2>
-      <table class="products-table">
-        <thead>
-          <tr class="table-header-row">
-            <th class="col-name">إسم المنتج</th>
-            <th class="col-category">الفئة</th>
-            <th class="col-code">الكود</th>
-            <th class="col-color">اللون</th>
-            <th class="col-specs">المقاس</th>
-            <th class="col-qty">الكمية</th>
-            <th class="col-price">السعر</th>
-          </tr>
-        </thead>
-        <tbody id="order-items">
-
-          <tr class="item-row" data-item-template>
-            <td class="col-name item-name">وحدة مرايا</td>
-            <td class="col-category item-category">وحدات المراية</td>
-            <td class="col-code item-code">MR-014</td>
-            <td class="col-color item-color">أبيض</td>
-            <td class="col-specs item-specs">60×70 سم</td>
-            <td class="col-qty item-qty">1</td>
-            <td class="col-price item-price">1,800 ج.م</td>
-          </tr>
-
-        </tbody>
-      <tfoot>
-        <tr class="table-total-row">
-          <td colspan="7" class="table-total-cell">
-            <span class="table-total-inline">
-              إجمالي المنتجات : <span id="products-subtotal-table">1,800 ج.م</span>
-            </span>
-          </td>
-        </tr>
-      </tfoot>
-      </table>
-    </section>
-
-    <!-- ===== SHIPPING SECTION ===== -->
-    <section class="shipping-section">
-
-      <h2 class="table-title">تكلفة النقل</h2>
-
-      <div class="shipping-grid">
-        <div class="shipping-info-col">
-          <p class="customer-field">
-            <span class="field-label">المحافظة:</span>
-            <span class="field-value" id="shipping-governorate">القاهرة</span>
-          </p>
-          <p class="customer-field">
-            <span class="field-label">الحي:</span>
-            <span class="field-value" id="shipping-district">مدينة نصر</span>
-          </p>
-          <p class="customer-field">
-            <span class="field-label">خط الطول:</span>
-            <span class="field-value" id="shipping-lng">31.3467</span>
-          </p>
-          <p class="customer-field">
-            <span class="field-label">دائرة العرض:</span>
-            <span class="field-value" id="shipping-lat">30.0561</span>
-          </p>
-        </div>
-
-        <div class="shipping-map-col">
-          <img src="" alt="خريطة الموقع" id="shipping-map-image" class="shipping-map-img">
-        </div>
-      </div>
-    </section>
-
-  <!-- ===== TOTALS SECTION (يشمل الملاحظات في عمودين) ===== -->
+      <!-- ===== TOTALS SECTION (يشمل الملاحظات في عمودين) ===== -->
   <section class="totals-section">
 
     <div class="totals-grid">
@@ -277,18 +321,6 @@
     </div>
   </section>
 
-    <!-- footer الديناميكي للصفحة الأولى -->
-    <div class="page-footer">
-      <span class="page-number-text">صفحة 1 من 2</span>
-    </div>
-
-  </div><!-- end .page 1 -->
-
-  <!-- الصفحة الثانية (تُستخدم فقط عند وجود وحدة حوض ومنتجات معاً) -->
-  <div class="page" data-page-role="products-page" style="display: none;">
-
-    <!-- سيتم نقل قسم المنتجات، الشحن، والإجماليات هنا ديناميكياً أو تركها موزعة حسب الفئات -->
-
     <!-- footer الديناميكي للصفحة الثانية -->
     <div class="page-footer">
       <span class="page-number-text">صفحة 2 من 2</span>
@@ -296,5 +328,49 @@
 
   </div><!-- end .page 2 -->
 
+<!--
+    <div class="page" data-page-role="products-page" style="display: none;">
+     ===== ADDITIONAL PRODUCTS TABLE ===== 
+    <section class="products-section">
+      <h2 class="table-title">المنتجات</h2>
+      <table class="products-table">
+        <thead>
+          <tr class="table-header-row">
+            <th class="col-name">إسم المنتج</th>
+            <th class="col-category">الفئة</th>
+            <th class="col-code">الكود</th>
+            <th class="col-color">اللون</th>
+            <th class="col-specs">المقاس</th>
+            <th class="col-qty">الكمية</th>
+            <th class="col-price">السعر</th>
+          </tr>
+        </thead>
+        <tbody id="order-items">
+
+          <tr class="item-row" data-item-template>
+            <td class="col-name item-name">وحدة مرايا</td>
+            <td class="col-category item-category">وحدات المراية</td>
+            <td class="col-code item-code">MR-014</td>
+            <td class="col-color item-color">أبيض</td>
+            <td class="col-specs item-specs">60×70 سم</td>
+            <td class="col-qty item-qty">1</td>
+            <td class="col-price item-price">1,800 ج.م</td>
+          </tr>
+
+        </tbody>
+      <tfoot>
+        <tr class="table-total-row">
+          <td colspan="7" class="table-total-cell">
+            <span class="table-total-inline">
+              إجمالي المنتجات : <span id="products-subtotal-table">1,800 ج.م</span>
+            </span>
+          </td>
+        </tr>
+      </tfoot>
+      </table>
+    </section>
+
+    </div>
+  -->
 </body>
 </html>
