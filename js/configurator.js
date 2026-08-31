@@ -918,6 +918,7 @@ function calc() {
 }
 
 function upd() {
+  setTimeout(() => { if (typeof updateStickyValue === 'function') updateStickyValue(); }, 0);
   clearTimeout(dt);
   dt = setTimeout(() => {
     // Persist state to localStorage
@@ -1005,21 +1006,6 @@ function upd() {
   updateStickyValue();
   }, 300);
 }
-
-function updateStickyValue() {
-  const stickyVal = document.getElementById('sticky-price-val');
-  const total = calc();
-  if (stickyVal) {
-    stickyVal.textContent = (total !== null && total > 0) ? `${total.toLocaleString('ar-EG')} EGP` : '— EGP';
-  }
-
-  const stickyBtn = document.querySelector('.mobile-checkout-cta-btn');
-  if (stickyBtn) {
-    stickyBtn.textContent = 'طلب التصميم والمعاينة';
-    stickyBtn.onclick = () => handleOpenSinkOrderModal();
-  }
-}
-window.updateStickyValue = updateStickyValue;
 
 /*
 ================================================================================
@@ -2534,10 +2520,28 @@ function setupStickyPriceBar() {
     }
 
     function updateStickyValue() {
-      const stickyVal = document.getElementById('sticky-price-val');
-      if (!stickyVal) return;
-      const total = calc();
-      stickyVal.textContent = total > 0 ? `${total.toLocaleString('ar-EG')} EGP` : '0 EGP';
+      const total = typeof calc === 'function' ? calc() : null;
+      const formattedPrice = (total !== null && total > 0) 
+        ? `${total.toLocaleString('en-US')} <small style="font-size: 0.75em; font-weight: normal; margin-left: 2px;">EGP</small>` 
+        : '— EGP';
+      
+      const el1 = document.getElementById('sticky-price-val');
+      const el2 = document.getElementById('sticky-total');
+      
+      const applyAnimation = (el) => {
+        if (!el) return;
+        // التحقق مما إذا كان السعر قد تغير فعلاً
+        if (el.innerHTML !== formattedPrice) {
+          el.innerHTML = formattedPrice;
+          el.classList.remove('price-updated');
+          // إجبار المتصفح على إعادة تطبيق الـ CSS Class (Reflow)
+          void el.offsetWidth;
+          el.classList.add('price-updated');
+        }
+      };
+
+      applyAnimation(el1);
+      applyAnimation(el2);
 
       const stickyBtn = document.querySelector('.mobile-checkout-cta-btn');
       if (stickyBtn) {
