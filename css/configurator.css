@@ -71,7 +71,7 @@
 }
 
 /* =========================================
-   Stepper Section Styling 
+   Stepper Section Styling
 ========================================= */
 
 .compact-stepper {
@@ -85,7 +85,7 @@
   transition: all 0.3s ease;
 }
 
-/* الحالة الـ Sticky: خلفية بيضاء مستطيلة وظل خفيف عند التمرير */
+/* الحالة الـ Sticky: خلفية بيضاء مستطيلة ظل خفيف عند التمرير */
 .compact-stepper.is-sticky {
   background: var(--color-bg-white);
   padding: 12px 12px;
@@ -233,6 +233,101 @@
   margin: 0 auto;
   padding: 0;
   box-sizing: border-box;
+}
+
+/* Responsive adjustments for different screen sizes */
+@media (max-width: 1024px) {
+  .compact-stepper {
+    padding: 1px 4px;
+  }
+
+  .compact-stepper ol::before {
+    right: 20px;
+    left: 20px;
+  }
+
+  .compact-stepper .stepper-item {
+    padding: 0 4px;
+  }
+}
+
+@media (max-width: 768px) {
+  .compact-stepper {
+    padding: 1px 2px;
+  }
+
+  .compact-stepper ol::before {
+    right: 15px;
+    left: 15px;
+  }
+
+  .compact-stepper .stepper-item {
+    padding: 0 2px;
+  }
+
+  .compact-stepper .stepper-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .compact-stepper .stepper-title {
+    font-size: var(--font-size-xs);
+  }
+}
+
+@media (max-width: 480px) {
+  .compact-stepper {
+    padding: 1px 1px;
+  }
+
+  .compact-stepper ol::before {
+    right: 10px;
+    left: 10px;
+  }
+
+  .compact-stepper .stepper-item {
+    padding: 0 1px;
+  }
+
+  .compact-stepper .stepper-icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .compact-stepper .stepper-title {
+    font-size: var(--font-size-xxs);
+  }
+}
+
+/* Ensure the stepper remains stable at intermediate widths */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .compact-stepper {
+    padding: 1px 6px;
+  }
+
+  .compact-stepper ol::before {
+    right: 22px;
+    left: 22px;
+  }
+
+  .compact-stepper .stepper-item {
+    padding: 0 6px;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  .compact-stepper {
+    padding: 1px 3px;
+  }
+
+  .compact-stepper ol::before {
+    right: 18px;
+    left: 18px;
+  }
+
+  .compact-stepper .stepper-item {
+    padding: 0 3px;
+  }
 }
 
 /* =========================================

@@ -1,8 +1,7 @@
-/* index.css */
-
 /* =========================================
-   Hero Section Styling
+    Hero Section Styling
 ========================================= */
+
 .hero {
   position: relative;
   overflow: hidden;
@@ -35,19 +34,19 @@
 .hero-content {
   position: relative;
   z-index: var(--z-nav-item);
-  padding: 100px 60px 60px;
+  padding: clamp(20px, 10vw, 100px) clamp(15px, 5vw, 60px) clamp(15px, 5vw, 60px);
 }
 
 /* تعديل العنوان لضمان التناسق المثالي مع الأيقونة */
 .hero h1 {
   display: flex;
   align-items: center;
-  gap: 12px; /* تقليل المسافة قليلاً لتكون متماسكة */
+  gap: clamp(8px, 2vw, 12px); /* تقليل المسافة قليلاً لتكون متماسكة */
   flex-wrap: nowrap; /* منع انزلاق الأيقونة للسطر التالي */
   font-size: clamp(32px, 5vw, 56px);
   font-weight: 800;
   line-height: 1.3;
-  margin-bottom: 16px;
+  margin-bottom: clamp(12px, 3vw, 16px);
   color: var(--color-bg-white);
   text-shadow: none;
 }
@@ -55,24 +54,24 @@
 /* تنسيق الـ SVG لتبدو مريحة ومتناسقة مع حجم الخط */
 .hero-svg-icon {
   color: #ffffff;
-  width: 36px;   /* تصغير الحجم قليلاً ليناسب العين بجانب الكلمة */
-  height: 36px;
+  width: clamp(24px, 4vw, 36px);   /* تصغير الحجم قليلاً ليناسب العين بجانب الكلمة */
+  height: clamp(24px, 4vw, 36px);
   flex-shrink: 0;
   stroke-width: 22; /* ضبط السمك ليصبح ناعماً ومريحاً */
   transform: translateY(-2px); /* ضبط طفيف جداً للارتفاع لمنتصف السطر */
 }
 
 .hero p {
-  font-size: clamp(18px, 2vw, 17px);
+  font-size: clamp(16px, 2vw, 18px);
   color: var(--color-bg-white);
-  margin-bottom: 28px;
-  max-width: 480px;
+  margin-bottom: clamp(14px, 3vw, 28px);
+  max-width: min(100%, 480px);
   text-shadow: none;
 }
 
 .btn-outline {
   display: inline-block;
-  padding: 10px 20px;
+  padding: clamp(8px, 2vw, 10px) clamp(16px, 3vw, 20px);
   border: 1px solid var(--color-bg-white);
   color: var(--color-bg-white);
   text-decoration: none;
@@ -93,7 +92,7 @@
   background: var(--color-primary);
   color: var(--color-bg-white);
   text-decoration: none;
-  padding: 10px 28px;
+  padding: clamp(8px, 2vw, 10px) clamp(20px, 3vw, 28px);
   border: none;
   border-radius: var(--radius-xs);
   cursor: pointer;
@@ -112,7 +111,7 @@
 ========================================= */
 
 .about-us-section {
-  padding: 60px 35px 50px;
+  padding: clamp(30px, 5vw, 60px) clamp(15px, 3vw, 35px) clamp(25px, 5vw, 50px);
   background: var(--color-bg-white);
   color: var(--color-text-main);
   direction: rtl;
@@ -125,26 +124,26 @@
 
 .about-us-content {
   display: grid;
-  grid-template-columns: 0.8fr 1fr;
-  gap: var(--space-7);
+  grid-template-columns: 1fr;
+  gap: clamp(20px, 3vw, var(--space-7));
   align-items: center;
 }
 
 .about-us-content h2 {
   margin: 0;
-  font-size: clamp(32px, 5vw, 50px);
+  font-size: clamp(28px, 4vw, 50px);
   font-weight: 800;
   line-height: 1.1;
   color: var(--color-text-main);
-  margin-right: 60px;
+  margin-right: clamp(20px, 5vw, 60px);
   display: flex;
   align-items: center;
 }
 
 .about-us-content p {
   margin: 0;
-  font-size: clamp(16px, 4vw, 20px);
-  max-width: 700px;
+  font-size: clamp(14px, 2vw, 20px);
+  max-width: min(100%, 700px);
   width: 90%;
   line-height: 1.7;
   color: var(--color-text-muted);
@@ -154,22 +153,21 @@
 }
 
 /* About Us section - mobile adjustments */
-@media (max-width: 768px) {
+@media (min-width: 768px) {
   .about-us-content {
-    grid-template-columns: 1fr;
-    gap: var(--space-6);
+    grid-template-columns: 0.8fr 1fr;
   }
   .about-us-content h2 {
-    width: 70%;
-    justify-content: flex-start;
-    font-size: 34px;
+    width: auto;
+    justify-content: flex-end;
+    font-size: clamp(32px, 5vw, 50px);
     text-align: right;
   }
   .about-us-content p {
-    width: 75%;
-    margin-right: auto;
+    width: auto;
+    margin-right: 0;
     text-align: right;
-    font-size: 18px;
+    font-size: clamp(16px, 4vw, 20px);
   }
 }
 
@@ -202,10 +200,11 @@
   flex-direction: row-reverse;
   justify-content: flex-start;
   scroll-behavior: smooth;
-  gap: var(--space-5);
-  padding-bottom: var(--space-5);
+  gap: clamp(10px, 2vw, var(--space-5));
+  padding-bottom: clamp(10px, 2vw, var(--space-5));
   width: 100%;
   max-width: 100%;
+  -webkit-overflow-scrolling: touch;
 }
 
 .bar.active {
@@ -218,13 +217,13 @@
   aspect-ratio: 4 / 5;
   object-fit: cover;
   border-radius: var(--radius-xs);
-  margin-bottom: var(--space-5);
+  margin-bottom: clamp(10px, 2vw, var(--space-5));
   display: block;
 }
 
 .our-products-card {
-  flex: 0 0 260px;
-  width: 280px;
+  flex: 0 0 clamp(200px, 30vw, 280px);
+  width: clamp(200px, 30vw, 280px);
   display: flex;
   flex-direction: column;
   direction: rtl;
@@ -248,7 +247,7 @@
 .our-products-card h3 {
   font-size: var(--font-size-title);
   text-align: right;
-  margin-bottom: var(--space-2);
+  margin-bottom: clamp(5px, 1vw, var(--space-2));
   color: var(--color-text-main);
 }
 
@@ -257,14 +256,14 @@
   line-height: 1.6;
   text-align: right;
   color: var(--color-text-muted);
-  margin-bottom: var(--space-4);
+  margin-bottom: clamp(10px, 2vw, var(--space-4));
   max-width: 100%;
   flex-grow: 1;
 }
 
 .btn-more {
     display: inline-block;
-    padding: 7px 20px;
+    padding: clamp(5px, 1vw, 7px) clamp(15px, 2vw, 20px);
     border: 1px solid var(--color-text-main);
     color: var(--color-text-main);
     text-decoration: none;
@@ -281,7 +280,7 @@
 
 .our-products-btn-more {
   display: inline-block;
-  padding: 7px 20px;
+  padding: clamp(5px, 1vw, 7px) clamp(15px, 2vw, 20px);
   border: 1px solid var(--color-text-main);
   color: var(--color-text-main);
   text-decoration: none;
@@ -309,10 +308,10 @@
 /* تنسيق عام للأسهم وتمركزها عمودياً على منتصف صورة الكارد */
 .scroll-arrow {
   position: absolute;
-  top: calc((280px * (5/4)) / 2); /* منتصف ارتفاع الصورة بناءً على الـ aspect-ratio */
+  top: calc((clamp(200px, 30vw, 280px) * (5/4)) / 2); /* منتصف ارتفاع الصورة بناءً على الـ aspect-ratio */
   transform: translateY(-50%);
-  width: 42px;
-  height: 42px;
+  width: clamp(30px, 4vw, 42px);
+  height: clamp(30px, 4vw, 42px);
   background: var(--color-bg-white);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-full);
@@ -333,18 +332,18 @@
 }
 
 .scroll-arrow svg {
-  width: 20px;
-  height: 20px;
+  width: clamp(15px, 2vw, 20px);
+  height: clamp(15px, 2vw, 20px);
 }
 
 /* سهم اليمين (يظهر لتحريك السكرول لليمين/البداية في الـ RTL) */
 .scroll-arrow.arr-start {
-  right: -20px;
+  right: clamp(-10px, 1vw, -20px);
 }
 
 /* سهم اليسار (يظهر لتحريك السكرول لليسار/النهاية في الـ RTL) */
 .scroll-arrow.arr-end {
-  left: -20px;
+  left: clamp(-10px, 1vw, -20px);
 }
 
 /* إخفاء السهم عند عدم الحاجة إليه */
@@ -357,10 +356,10 @@
 /* تعديل بسيط للموبايل لتبقى الأسهم داخل الإطار بمسافة آمنة */
 @media (max-width: 768px) {
   .scroll-arrow.arr-start {
-    right: 5px;
+    right: clamp(5px, 1vw, 5px);
   }
   .scroll-arrow.arr-end {
-    left: 5px;
+    left: clamp(5px, 1vw, 5px);
   }
 }
 
@@ -369,7 +368,7 @@
 ========================================= */
 
 .our-collections-section {
-  padding: var(--space-7) 10px;
+  padding: clamp(20px, 3vw, var(--space-7)) clamp(5px, 1vw, 10px);
   max-width: var(--bp-wide);
   margin: auto;
 }
@@ -378,18 +377,19 @@
   display: flex;
   flex-direction: row-reverse;
   scroll-snap-type: x mandatory;
-  padding-inline: var(--space-3);
+  padding-inline: clamp(10px, 2vw, var(--space-3));
   overflow-x: auto;
   overflow-y: hidden;
-  scroll-padding-inline: 40px;
+  scroll-padding-inline: clamp(20px, 3vw, 40px);
   scroll-behavior: smooth;
-  gap: 18px;
+  gap: clamp(10px, 1vw, 18px);
   width: 100%;
   max-width: 100%;
+  -webkit-overflow-scrolling: touch;
 }
 
 .our-collections-card {
-  flex: 0 0 86%;
+  flex: 0 0 clamp(80%, 90vw, 86%);
   scroll-snap-align: center;
   transition: transform .45s ease, opacity .45s ease;
   transform: scale(.92) translateY(20px);
@@ -404,8 +404,8 @@
 .our-collections-mosaic {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
-  margin-bottom: 14px;
+  gap: clamp(5px, 1vw, var(--space-1));
+  margin-bottom: clamp(10px, 2vw, 14px);
 }
 
 .our-collections-mosaic .our-collections-main-img {
@@ -418,7 +418,7 @@
 .our-collections-bottom {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--space-1);
+  gap: clamp(5px, 1vw, var(--space-1));
 }
 
 .our-collections-bottom img {
@@ -431,30 +431,25 @@
 .our-collections-card h3 {
   font-size: var(--font-size-heading);
   color: var(--color-text-main);
-  margin-bottom: var(--space-2);
+  margin-bottom: clamp(5px, 1vw, var(--space-2));
 }
 
 .our-collections-card p {
   color: var(--color-text-muted);
   line-height: 1.7;
-  margin-bottom: var(--space-4);
+  margin-bottom: clamp(10px, 2vw, var(--space-4));
   flex-grow: 1;
 }
 
 .our-collections-price {
-  font-size: 17px;
-  margin-bottom: var(--space-5);
+  font-size: clamp(15px, 2vw, 17px);
+  margin-bottom: clamp(10px, 2vw, var(--space-5));
   color: var(--color-text-muted);
-}
-
-.our-collections-price span {
-  color: var(--color-primary);
-  font-weight: 700;
 }
 
 .our-collections-btn-more {
   display: inline-block;
-  padding: 7px 20px;
+  padding: clamp(5px, 1vw, 7px) clamp(15px, 2vw, 20px);
   border: 1px solid var(--color-text-main);
   color: var(--color-text-main);
   text-decoration: none;
@@ -474,8 +469,8 @@
 ========================================= */
 
 .inquire-section {
-  margin: 35px 0 60px;
-  padding: var(--space-4) 5px var(--space-4);
+  margin: clamp(20px, 3vw, 35px) 0 clamp(30px, 5vw, 60px);
+  padding: clamp(10px, 2vw, var(--space-4)) clamp(5px, 1vw, 5px) clamp(10px, 2vw, var(--space-4));
   background: var(--color-bg-light);
   border-top: 1px solid var(--color-border);
   border-bottom: 1px solid var(--color-border);
@@ -485,15 +480,15 @@
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-xs);
-  padding: 28px var(--space-6);
+  padding: clamp(15px, 3vw, 28px) clamp(15px, 3vw, var(--space-6));
   text-align: center;
   transition: border-color var(--transition-fast);
 }
 
 .inquire-icon {
-  width: 52px;
-  height: 52px;
-  margin: 0 auto 14px;
+  width: clamp(40px, 5vw, 52px);
+  height: clamp(40px, 5vw, 52px);
+  margin: 0 auto clamp(10px, 2vw, 14px);
   border-radius: var(--radius-full);
   display: flex;
   align-items: center;
@@ -503,8 +498,8 @@
 }
 
 .inquire-icon svg {
-  width: 24px;
-  height: 24px;
+  width: clamp(18px, 3vw, 24px);
+  height: clamp(18px, 3vw, 24px);
 }
 
 .inquire-card h2 {
@@ -515,8 +510,8 @@
 }
 
 .inquire-card p {
-  margin: 10px auto 20px;
-  max-width: 520px;
+  margin: clamp(5px, 1vw, 10px) auto clamp(10px, 2vw, 20px);
+  max-width: min(100%, 520px);
   font-size: var(--font-size-md);
   line-height: 1.7;
   color: var(--color-text-main);
@@ -525,8 +520,8 @@
 .inquire-btn {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
-  padding: 8px var(--space-4);
+  gap: clamp(5px, 1vw, var(--space-1));
+  padding: clamp(5px, 1vw, 8px) clamp(15px, 2vw, var(--space-4));
   border-radius: var(--radius-xs);
   border: 1px solid var(--color-primary);
   background: none;
@@ -546,8 +541,8 @@
 }
 
 .inquire-btn svg {
-  width: 16px;
-  height: 16px;
+  width: clamp(12px, 2vw, 16px);
+  height: clamp(12px, 2vw, 16px);
 }
 
 /* =========================================
@@ -564,12 +559,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: clamp(5px, 1vw, 8px);
   background-color: var(--color-primary);
   color: var(--color-bg-white);
   border: none;
   border-radius: var(--radius-xs);
-  padding: 12px 24px;
+  padding: clamp(8px, 2vw, 12px) clamp(15px, 3vw, 24px);
   font-size: var(--font-size-base);
   font-family: var(--font-family-main);
   font-weight: 600;
@@ -596,68 +591,4 @@
 .modal-submit-btn:active,
 .contact-btn:active {
   transform: scale(0.98);
-}
-
-.btn-secondary {
-  background-color: var(--color-bg-alt);
-  color: var(--color-text-main);
-  border: 1px solid var(--color-border);
-}
-
-.btn-secondary:hover {
-  background-color: var(--color-border);
-}
-
-/* =========================================
-   Scroll Arrows Styling (Integrated from configurator.css)
-========================================= */
-
-.cards-row > * { 
-  scroll-snap-align: center; 
-  flex: 0 0 220px; 
-}
-
-.scroll-arrow { 
-  position: absolute; 
-  top: 50%; 
-  transform: translateY(-50%); 
-  width: 34px; 
-  height: 34px; 
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
-  border-radius: var(--radius-xs); 
-  background: var(--color-bg-white); 
-  box-shadow: var(--shadow-scroll-arrow); 
-  border: 1px solid rgba(0, 0, 0, 0.04); 
-  cursor: pointer; 
-  z-index: 10; 
-}
-
-.scroll-arrow.hidden { 
-  opacity: 0; 
-  pointer-events: none; 
-  transform: translateY(-50%) scale(.95); 
-}
-
-.scroll-arrow.arr-start { 
-  right: 6px; /* RTL: start is right */
-} 
-
-.scroll-arrow.arr-end { 
-  left: 6px; 
-}
-
-.scroll-arrow svg { 
-  width: 18px; 
-  height: 18px; 
-  stroke: var(--color-text-main); 
-}
-
-.scroll-arrow:hover {
-  background: var(--color-text-main);
-}
-
-.scroll-arrow:hover svg {
-  stroke: var(--color-bg-white);
 }
