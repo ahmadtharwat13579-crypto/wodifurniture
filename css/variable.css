@@ -1,5 +1,8 @@
 /* variables.css */
 :root {
+
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+
   /* Colors */
   --color-primary: #9caf88;
   --color-primary-hover: #8a9e78;
@@ -95,4 +98,45 @@
 
   --product-availability-size: 12px;
   --product-availability-dot-size: 10px;
+}
+
+/* =========================================
+   Custom Sharp Rectangular Scrollbar (Zero Radius)
+========================================= */
+
+/* 1. إخفاء أسهم السكرول نهائياً */
+::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* 2. الأبعاد */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+/* 3. المسار الخلفي (بدون انحناء) */
+::-webkit-scrollbar-track {
+  background: #faf9f6;
+  border-radius: 0 !important;
+}
+
+/* 4. مقبض السكرول المستطيل (حواف حادة) */
+::-webkit-scrollbar-thumb {
+  background-color: rgba(51, 48, 40, 0.25);
+  border-radius: 0 !important;
+  border: none;
+  transition: background-color 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(51, 48, 40, 0.5);
+}
+
+/* 5. لمتصفح Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(51, 48, 40, 0.25) #faf9f6;
 }

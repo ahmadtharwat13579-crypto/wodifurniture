@@ -1383,9 +1383,20 @@ body {
 }
 
 /* Toast */
+:root {
+  /* الارتفاع الافتراضي للتوست */
+  --toast-bottom: 20px;
+}
+
+/* عندما يكون شريط السعر ظاهراً */
+body.has-sticky-bar {
+  /* عدل الـ 80px بناءً على ارتفاع شريط السعر لديك + المسافة المطلوبة */
+  --toast-bottom: 80px; 
+}
+
 .toast {
   position: fixed;
-  bottom: calc(20px + env(safe-area-inset-bottom,0));
+  bottom: calc(var(--toast-bottom) + env(safe-area-inset-bottom,0));
   left: 50%;
   transform: translateX(-50%);
   background: rgba(30,25,20,0.95);

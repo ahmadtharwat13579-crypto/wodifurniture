@@ -375,6 +375,20 @@ function getConfiguratorImageUrl(id, sinkType) {
   return GH + encodeURIComponent(finalImgId) + '.webp';
 }
 
+// Helper for lock overlay
+function mkLockOverlay() {
+  const overlay = document.createElement("div");
+  overlay.className = "card-overlay";
+  overlay.style.pointerEvents = "none"; // لضمان إمكانية النقر على الكارت الموجود تحته
+  overlay.innerHTML = `
+    <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#fff" stroke-width="2">
+      <rect x="5" y="11" width="14" height="10" rx="2"/>
+      <path d="M8 11V8a4 4 0 118 0v3"/>
+    </svg>
+  `;
+  return overlay;
+}
+
 // Build image node for cards and handles
 function mkImg(id, cardEl) {
   const w = document.createElement('div'); w.className = 'cimg';
@@ -473,15 +487,7 @@ function createDesignCard(d) {
   el.appendChild(mkImg(d.id, el));
 
   if (!S.size) {
-    const overlay = document.createElement("div");
-    overlay.className = "card-overlay";
-    overlay.innerHTML = `
-      <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#fff" stroke-width="2">
-        <rect x="5" y="11" width="14" height="10" rx="2"/>
-        <path d="M8 11V8a4 4 0 118 0v3"/>
-      </svg>
-      `;
-    el.querySelector(".cimg")?.appendChild(overlay);
+    el.querySelector(".cimg")?.appendChild(mkLockOverlay());
   }
 
   // ========= المقاسات =========
@@ -525,24 +531,37 @@ function createDesignCard(d) {
   el.appendChild(info);
 
   el.onclick = () => {
-    // ممنوع اختيار التصميم قبل اختيار المقاس
-    if (!S.size) return;
-    // أو لو التصميم غير متاح للمقاس المختار
-    if (!isAvailable) return;
+      // ممنوع اختيار التصميم قبل اختيار عرض الحوض
+      if (!S.size) {
+        showToast('يرجى اختيار عرض الحوض أولاً لتتمكن من اختيار التصميم.');
+        document.getElementById('sz')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+      
+      // إذا كان التصميم غير متاح للمقاس المختار
+      if (!isAvailable) {
+        showToast('عفواً، هذا التصميم لا يناسب عرض الحوض الذي اخترته.');
+        return;
+      }
 
-  S.design = d;
+      // إلغاء الاختيار (Unselect) إذا تم الضغط على التصميم المحدد حالياً
+      if (S.design && S.design.id === d.id) {
+        S.design = null;
+      } else {
+        S.design = d;
 
-  // اربط المقاس بالـ size object الخاص بالتصميم المختار
-  const matchedSize = d.sizes.find(s => s.size === S.size.size);
-  if (matchedSize) {
-    S.size = matchedSize;
-  }
+        // اربط المقاس بالـ size object الخاص بالتصميم المختار
+        const matchedSize = d.sizes.find(s => s.size === S.size.size);
+        if (matchedSize) {
+          S.size = matchedSize;
+        }
+      }
 
-  rDes();
-  rDiv();
-  rHnd();
-  upd();
-  };
+      rDes();
+      rDiv();
+      rHnd();
+      upd();
+    };
 
   // تم إزالة الإضافة التلقائية المباشرة عند إنشاء كارت التصميم
 
@@ -703,6 +722,10 @@ function rDiv() {
       el.className = "div-card" + (S.div && S.div.id === d.id ? " selected" : "");
       el.appendChild(mkImg(d.id, el));
 
+      if (!S.size) {
+        el.querySelector(".cimg")?.appendChild(mkLockOverlay());
+      }
+
       const info = document.createElement("div");
       info.className = "cinfo";
       const sg = S.size ? sgr(S.size.size) : null;
@@ -717,7 +740,20 @@ function rDiv() {
       el.appendChild(info);
 
       el.onclick = () => {
-        S.div = d;
+        // ممنوع اختيار التقسيمة الداخلية قبل اختيار عرض الحوض
+        if (!S.size) {
+          showToast('يرجى اختيار عرض الحوض أولاً لتتمكن من اختيار التقسيمة الداخلية.');
+          document.getElementById('sz')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          return;
+        }
+
+        // إلغاء الاختيار (Unselect) إذا تم الضغط على الكارت المحدد حالياً
+        if (S.div && S.div.id === d.id) {
+          S.div = null;
+        } else {
+          S.div = d;
+        }
+
         rDiv();
         upd();
       };
@@ -771,6 +807,14 @@ function showSizeSkeleton(count = 4) {
 function showConfiguratorLoading() {
   // لو العميل لسه م اخترش نوع حوض، متظهرش أي سكيلتون وتطلع بره الدالة فوراً
   if (!S.sinkType) return;
+
+  // في حالة عدم اختيار المقاس، تظل الـ Placeholders في باقي الأقسام مع تحميل المقاسات فقط
+  if (!S.size) {
+    document.getElementById("loading-sz")?.classList.add("show");
+    document.getElementById("sz")?.classList.remove("hidden");
+    showSizeSkeleton();
+    return;
+  }
 
   document.getElementById("loading-sz")?.classList.add("show");
   document.getElementById("loading-dc")?.classList.add("show");
@@ -841,46 +885,32 @@ function rHnd() {
   if (noH) {
     S.handle = null;
     desc.innerHTML = 'التصميم المختار لا يدعم استخدام المقابض.';
-
-    D.handles.forEach(h => {
-      const el = document.createElement('div');
-      el.className = 'handle-card disabled';
-      el.appendChild(mkImg(h.id, el));
-
-      const info = document.createElement('div');
-      info.className = 'cinfo';
-      const displayPrice =
-        (dataLoaded && h.price !== null)
-          ? '+ ' + h.price + ' EGP / ضلفة'
-          : '—';
-
-      info.innerHTML =
-        '<div class="cname">' + h.name + '</div>' +
-        '<div class="cprice' + (dataLoaded ? '' : ' loading') + '">' +
-        (dataLoaded ? displayPrice : '—') +
-        '</div>';
-
-      el.appendChild(info);
-      c.appendChild(el);
-    });
-
-    setTimeout(() => updateArrows('hc'), 50);
-    return;
   }
 
   D.handles.forEach(h => {
     const el = document.createElement('div');
-    el.className = 'handle-card' + (S.handle && S.handle.id === h.id ? ' selected' : '');
+    
+    // إذا كان التصميم لا يدعم المقابض يتم إضافة disabled
+    if (noH) {
+      el.className = 'handle-card disabled';
+    } else {
+      el.className = 'handle-card' + (S.handle && S.handle.id === h.id ? ' selected' : '');
+    }
+
     el.appendChild(mkImg(h.id, el));
+
+    // إظهار قفل التحكم إذا لم يتم اختيار عرض الحوض وكانت المقابض متاحة
+    if (!S.size && !noH) {
+      el.querySelector(".cimg")?.appendChild(mkLockOverlay());
+    }
 
     const info = document.createElement('div');
     info.className = 'cinfo';
-    const displayPrice =
-      (S.design && dataLoaded && h.price !== null)
-        ? '+ ' + h.price + ' EGP / ضلفة'
-        : '—';
+    
+    const isPriceVisible = !noH && S.design && dataLoaded && h.price !== null;
+    const displayPrice = isPriceVisible ? '+ ' + h.price + ' EGP / ضلفة' : '—';
 
-    info.innerHTML =
+    info.innerHTML = 
       '<div class="cname">' + h.name + '</div>' +
       '<div class="cprice' + (dataLoaded ? '' : ' loading') + '">' +
       (dataLoaded ? displayPrice : '—') +
@@ -888,8 +918,28 @@ function rHnd() {
 
     el.appendChild(info);
 
+    // تفعيل التفاعل عند الضغط
     el.onclick = () => {
-      S.handle = h;
+      // 1. إذا كان التصميم المختار لا يدعم المقابض
+      if (noH) {
+        showToast('لا يتطلب هذا التصميم تحديد نوع المقبض.');
+        return;
+      }
+
+      // 2. ممنوع اختيار نوع المقبض قبل اختيار عرض الحوض
+      if (!S.size) {
+        showToast('يرجى اختيار عرض الحوض أولاً لتتمكن من اختيار نوع المقبض.');
+        document.getElementById('sz')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+
+      // 3. إلغاء الاختيار (Unselect) إذا تم الضغط على الكارت المحدد حالياً
+      if (S.handle && S.handle.id === h.id) {
+        S.handle = null;
+      } else {
+        S.handle = h;
+      }
+
       rHnd();
       upd();
     };
@@ -1084,8 +1134,34 @@ async function getAddress(lat, lon, resElement) {
 }
 
 function openDesignRequestModal() {
-  if (!S.design || !S.size || !S.div || (S.design.hc !== 0 && !S.handle)) {
+
+  if (!S.size || !S.design || !S.div || (S.design.hc !== 0 && !S.handle)) {
     showToast('يرجى إكمال جميع اختيارات وحدة الحوض أولاً');
+
+    // تحديد أول سكشن غير مكتمل بالترتيب والتمرير إليه
+    if (!S.size) {
+      (document.getElementById('sz') || document.getElementById('sizes'))?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else if (!S.design) {
+      (document.getElementById('dc') || document.getElementById('design-cards'))?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else if (!S.div) {
+      // البحث عن أي عنصر متعلق بسكشن التقسيمة الداخلية بالتفصيل
+      const divTarget = 
+        document.getElementById('div-cards') || 
+        document.getElementById('div-group-title') || 
+        document.getElementById('division-title') || 
+        document.querySelector('.div-card')?.parentElement || 
+        document.querySelector('[data-group="div"]');
+      
+      divTarget?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else if (S.design.hc !== 0 && !S.handle) {
+      const handleTarget = 
+        document.getElementById('hc') || 
+        document.getElementById('handle-group-title') || 
+        document.querySelector('[data-group="hc"]');
+      
+      handleTarget?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
     return;
   }
 
@@ -2486,20 +2562,22 @@ function setupStickyPriceBar() {
       stickyEl.className = 'price-sticky';
       stickyEl.innerHTML =
         '<div class="total">' +
-        '<span class="lbl">الإجمالي</span>' +
+        '<span class="lbl">إجمالي الوحدة</span>' +
         '<span class="val" id="sticky-total">— EGP</span>' +
         '</div>' +
         '<div class="sticky-actions">' +
         '<button class="sticky-reset" id="sticky-reset">إعادة</button>' +
-        '<button class="sticky-order" id="sticky-order">إرسال الطلب</button>' +
+        '<button class="sticky-order" id="sticky-order">رؤية تفاصيل السعر</button>' +
         '</div>';
       document.body.appendChild(stickyEl);
 
       const orderBtn = document.getElementById('sticky-order');
       if (orderBtn) {
         orderBtn.addEventListener('click', function () {
-          if (typeof orderWA === 'function') orderWA();
-          else document.querySelector('.btn-order')?.click();
+          const targetSection = document.getElementById('sbar') || document.querySelector('.price-column.sbar') || document.querySelector('.details-section');
+          if (targetSection) {
+            targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
         });
       }
       const resetBtn = document.getElementById('sticky-reset');
@@ -2509,7 +2587,14 @@ function setupStickyPriceBar() {
           else document.querySelector('.btn-reset')?.click();
         });
       }
-      stickyEl.style.display = 'none';
+
+      // إضافة الانيميشن والحالة الابتدائية (مختفي تحت الشاشة)
+      stickyEl.style.transition = 'transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease';
+      stickyEl.style.transform = 'translateY(100%)';
+      stickyEl.style.opacity = '0';
+      stickyEl.style.pointerEvents = 'none';
+      stickyEl.style.display = 'flex';
+
       return stickyEl;
     }
 
@@ -2517,6 +2602,7 @@ function setupStickyPriceBar() {
       if (io) { io.disconnect(); io = null; }
       if (mutation) { mutation.disconnect(); mutation = null; }
       if (stickyEl) { stickyEl.remove(); stickyEl = null; }
+      document.body.classList.remove('has-sticky-bar');
     }
 
     function updateStickyValue() {
@@ -2553,12 +2639,20 @@ function setupStickyPriceBar() {
 
     function showSticky() {
       if (!stickyEl) createSticky();
-      stickyEl.style.display = 'flex';
+      stickyEl.style.transform = 'translateY(0)';
+      stickyEl.style.opacity = '1';
+      stickyEl.style.pointerEvents = 'auto';
+      document.body.classList.add('has-sticky-bar'); // إضافة الكلاس لرفع التوست فوق الشريط
       updateStickyValue();
     }
 
     function hideSticky() {
-      if (stickyEl) stickyEl.style.display = 'none';
+      if (stickyEl) {
+        stickyEl.style.transform = 'translateY(100%)';
+        stickyEl.style.opacity = '0';
+        stickyEl.style.pointerEvents = 'none';
+      }
+      document.body.classList.remove('has-sticky-bar'); // إزالة الكلاس لتنزيل التوست لمكانه الاصلي
     }
 
     function isElementPositionedFixedOrSticky(el) {
@@ -2636,13 +2730,21 @@ function setupStepperSticky() {
       if (!stepperEl || !targetSection) return;
       if (io) io.disconnect();
 
+      // إضافة سلاسة الحركة والانتقال للـ Stepper
+      stepperEl.style.transition = 'transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease, visibility 0.35s ease';
+
       io = new IntersectionObserver(function (entries) {
         entries.forEach(function (ent) {
-          if (ent.boundingClientRect.top < 0 && !ent.isIntersecting) {
+          // إذا وصل العميل لسكشن التفاصيل (سواء تقاطع معه أو تجاوزه للأسفل)، يتم إخفاء الـ Stepper تماماً
+          if (ent.isIntersecting || ent.boundingClientRect.top <= 60) {
+            stepperEl.style.transform = 'translateY(-100%)';
             stepperEl.style.opacity = '0';
+            stepperEl.style.visibility = 'hidden';
             stepperEl.style.pointerEvents = 'none';
           } else {
+            stepperEl.style.transform = 'translateY(0)';
             stepperEl.style.opacity = '1';
+            stepperEl.style.visibility = 'visible';
             stepperEl.style.pointerEvents = 'auto';
           }
         });
@@ -2909,8 +3011,18 @@ function outOfRangeWA() {
 }
 
 function resetAll() {
+  // 1. إعادة تصفير حالة التطبيق العامة
   S = { sinkType: null, design: null, size: null, div: null, handle: null };
-  userLat = null; userLng = null; installCost = null;
+  userLat = null; 
+  userLng = null; 
+  installCost = null;
+  
+  // 2. مسح البيانات المحفوظة في الـ LocalStorage والـ State المترسب
+  localStorage.removeItem('wodi_configurator_state');
+  localStorage.removeItem('wodi-config');
+  delete window.wodi_saved_state;
+
+  // 3. إعادة تعيين زر تحديد الموقع وحالة التوصيل
   const res = document.getElementById('loc-result');
   if (res) { res.className = 'loc-result'; res.textContent = ''; }
   const btn = document.getElementById('btn-locate');
@@ -2918,18 +3030,39 @@ function resetAll() {
     btn.disabled = false;
     btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg> تحديد موقعي الحالي';
   }
-  rDes(); rSz(); rDiv(); rHnd(); upd();
+
+  // 4. إزالة إشارة الاختيار من كروت نوع الحوض
+  document.querySelectorAll('.sink-type-card, .st-card, .sink-card').forEach(card => card.classList.remove('selected', 'active'));
+
+  // 5. إخفاء سكيلتون التحميل إن وجد
+  ['loading-sz', 'loading-dc', 'loading-vc-wall', 'loading-vc-floor', 'loading-hc'].forEach(id => {
+    document.getElementById(id)?.classList.remove('show');
+  });
+
+  // 6. إظهار الـ Placeholders مرة أخرى في جميع الأقسام
+  showPlaceholders();
+
+  // 7. إخفاء أقسام الاختيار الفعلية لحين اختيار نوع الحوض من جديد
+  ['sz', 'dc', 'vc-wall', 'vc-floor', 'hc', 'vc-wall-wrap', 'floor-wrap'].forEach(id => {
+    document.getElementById(id)?.classList.add('hidden');
+  });
+
+  // 8. تحديث الرندر والأسعار والشريط السفلي
+  rDes(); 
+  rSz(); 
+  rDiv(); 
+  rHnd(); 
+  upd();
 }
 
 function saveConfig() {
-  // NOTE: preserved original keys/bug: uses S.division (not S.div) to match original behavior
   localStorage.setItem("wodi-config", JSON.stringify({
     sinkType: S.sinkType || null,
     size: S.size ? S.size.size : null,
     design: S.design ? S.design.id : null,
-    division: S.division ? S.division.id : null,
+    division: S.div ? S.div.id : null,
     handle: S.handle ? S.handle.id : null,
-    location: S.loc || null
+    location: (userLat && userLng) ? { lat: userLat, lng: userLng } : null
   }));
 }
 

@@ -247,12 +247,14 @@
 
 #dr-stepper {
   width: 100%;
-  max-width: 500px;
+  min-width: 300px; /* Set a minimum width to ensure the stepper doesn't get too narrow */
+  max-width: 400px;
   margin: 4px auto 2px !important;
-  padding: 30px 2px;
+  padding: 20px 20px; /* Adjust the padding to ensure consistent padding on both sides */
   border: none;
   box-sizing: border-box;
   transform-origin: center center;
+  
 }
 
 #dr-stepper ol {
@@ -261,6 +263,17 @@
   margin: 0 auto;
   padding: 0;
   box-sizing: border-box;
+}
+
+/* إلغاء التثبيت وتثبيت الـ Stepper كـ Block داخل الـ Design Request حصرياً */
+#dr-stepper,
+#dr-stepper.is-sticky {
+  position: static !important;
+  top: auto !important;
+  transform: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  border: none !important;
 }
 
 /* =========================================
@@ -442,9 +455,17 @@
     opacity:.55;
     cursor:not-allowed;
 }
-.design-card.disabled, .div-card.disabled, .handle-card.disabled, .design-card.dis, .div-card.dis {
+.design-card.disabled, .div-card.disabled, .design-card.dis, .div-card.dis {
   opacity: 0.4;
-  pointer-events: none;
+  pointer-events: auto;
+  cursor: not-allowed;
+  filter: grayscale(40%);
+}
+
+/* في حالة إذا كان التصميم لا يدعم المقابض نهائياً (noH) */
+.handle-card.disabled {
+  opacity: 0.4;
+  pointer-events: auto;
   cursor: not-allowed;
   filter: grayscale(40%);
 }
@@ -1129,8 +1150,8 @@
   background: var(--color-bg-white);
   border-radius: var(--radius-md);
   max-width: 900px;
-  width: 100%;
-  max-height: 90vh;
+  width: 95%;
+  max-height: 85vh;
   overflow-y: auto;
   box-shadow: 0 10px 40px rgba(0,0,0,0.2);
   display: flex;
@@ -1484,7 +1505,7 @@
 }
 
 .dr-btn-whatsapp {
-  background: #25d366;
+  background: var(--color-primary);
   color: var(--color-bg-white);
 }
 
@@ -1519,29 +1540,6 @@
 #modal-staticMap {
   border: 0;
 }
-
-@media (max-width: 600px) {
-  .design-request-box {
-    max-height: 95vh;
-  }
-
-  .dr-footer {
-    flex-direction: column-reverse;
-  }
-
-  .dr-footer-left,
-  .dr-footer-right {
-    width: 100%;
-    flex-direction: column;
-  }
-
-  .dr-btn-primary,
-  .dr-btn-secondary,
-  .dr-btn-whatsapp {
-    width: 100%;
-  }
-}
-
 
 /* Lightbox */
 .lb {

@@ -397,20 +397,12 @@ body.side-nav-open {
         padding-bottom 0.3s ease-in-out;
 }
 
-.side-nav-dropdown-menu::-webkit-scrollbar {
-  width: 5px;
-}
-
-.side-nav-dropdown-menu::-webkit-scrollbar-thumb {
-  border-radius: 10px;
-}
-
 .side-nav-dropdown-menu.open {
     max-height: 400px;
 }
 
 .side-nav-dropdown-item {
-    padding: 8px 12px;
+    padding: 5px 12px;
     font-size: var(--font-size-md);
     color: #4a5568;
     text-decoration: none;
