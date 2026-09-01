@@ -583,12 +583,11 @@ fetch('nav.html')
         <div class="install-warning" id="install-warning" style="display: none;">* السعر يشمل الوحدة فقط — تكلفة النقل والتوصيل لم تُحسب بعد</div>
       </div>
 
-      <div class="actions">
-        <button class="btn-reset" onclick="resetAll()" aria-label="إعادة">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-          إعادة
+      <div class="actions" style="display: flex; gap: 10px; align-items: center;">
+        <button class="btn-reset" onclick="resetAll()" aria-label="إعادة التعيين" title="إعادة التعيين">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
         </button>
-        <button id="add-to-cart-btn" class="btn-order" onclick="openDesignRequestModal()" aria-label="طلب التصميم والمعاينة">
+        <button id="add-to-cart-btn" class="btn-order" onclick="openDesignRequestModal()" aria-label="طلب التصميم والمعاينة" style="flex: 1;">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
           طلب التصميم والمعاينة
         </button>
@@ -646,13 +645,8 @@ fetch('nav.html')
   <h2>الأسئلة الشائعة</h2>
 
   <details class="faq-item">
-    <summary>ماذا يحدث بعد الضغط على "إرسال الطلب"؟</summary>
-    <p>بعد الضغط على "اطلب الآن"، سيتواصل معك فريق WODI عبر واتساب لتأكيد التفاصيل، وسيصلك تصميم ثلاثي الأبعاد للموافقة عليه قبل بدء التصنيع.</p>
-  </details>
-
-  <details class="faq-item">
   <summary>هل السعر المعروض هو السعر النهائي؟</summary>
-  <p>نعم، يعكس السعر المعروض جميع اختياراتك من الوحدة والإضافات، ويُحدَّث تلقائيًا مع كل تعديل. أما تكلفة النقل فتُضاف بشكل منفصل بناءً على موقع التركيب بعد تحديده.</p>
+  <p>نعم، يعكس السعر المعروض جميع اختياراتك من الوحدة والإضافات، ويُحدَّث تلقائيًا مع كل تعديل. أما   تكلفة النقل والتركيب فتُضاف بشكل منفصل بناءً على موقع التركيب بعد تحديده.</p>
 </details>
 
 <details class="faq-item">
@@ -679,13 +673,7 @@ fetch('nav.html')
 
   <details class="faq-item">
     <summary>ماذا أفعل إذا حدثت مشكلة في الوحدة بعد التركيب؟</summary>
-    <p>نحن نقدم ضماناً لمدة سنة على كل وحداتنا. في حال واجهت أي مشكلة أو كان لديك أي استفسار بعد التركيب، الدعم الفني لدينا متاح دائماً عبر واتساب، وسنحرص على حل أي مشكلة في أسرع وقت ممكن.
-</p>
-  </details>
-
-  <details class="faq-item">
-    <summary>ماذا يغطي الضمان على وحدات الحوض؟</summary>
-    <p style="margin-bottom: 10px;">نحن نثق في جودة منتجاتنا، لذا نقدم ضماناً لمدة سنة يغطي أي عيوب قد تظهر نتيجة عملية التصنيع.</p>
+    <p style="margin-bottom: 10px;">  نحن نقدم ضماناً لمدة سنة على كل وحداتنا. في حال واجهت أي مشكلة أو كان لديك أي استفسار بعد التركيب، الدعم الفني لدينا متاح دائماً عبر واتساب، وسنحرص على حل أي مشكلة في أسرع وقت ممكن.</p>
         
         <strong style="display:block; margin-top:15px;">الضمان يشمل:</strong>
         <ul style="list-style-type: disc; padding-right: 20px; line-height: 1.8;">
@@ -1017,6 +1005,26 @@ fetch('nav.html')
       </div>
     </div>
   </div>
+
+<div id="config-loader-overlay" class="config-loader-overlay" style="display:none;">
+  <div class="config-loader-card">
+    <div class="loader-top">
+      <!-- أيقونة الساعة الرملية -->
+      <svg class="hourglass-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 22h14"></path>
+        <path d="M5 2h14"></path>
+        <path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"></path>
+        <path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"></path>
+      </svg>
+      <span class="loader-title">جاري تطبيق اختياراتك السابقة</span>
+    </div>
+    
+    <!-- شريط التحميل المستطيل -->
+    <div class="loader-bar-container">
+      <div class="loader-bar-fill"></div>
+    </div>
+  </div>
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script type="module" src="js/cart.js"></script>

@@ -26,9 +26,11 @@ let dataLoaded = false;
 let S = {
   sinkType: null,
   design: null,
+  selectedColors: [],
   size: null,
   div: null,
-  handle: null
+  handle: null,
+  selectedHandleShapes: []
 };
 
 let dt = null;
@@ -242,6 +244,10 @@ function loadConfiguratorData() {
           document.getElementById("placeholder-hc")?.classList.add("hidden");
         }
         
+        if (typeof hideConfigLoaderOverlay === 'function') {
+          hideConfigLoaderOverlay();
+        }
+
         console.log('Configurator data loaded successfully.');
         return;
       } else {
@@ -260,6 +266,7 @@ function loadConfiguratorData() {
       }
 
       hideConfiguratorLoading();
+      if (typeof hideConfigLoaderOverlay === 'function') hideConfigLoaderOverlay();
 
       if (!dataLoaded) {
         showToast('تعذر تحميل البيانات. تأكد من اتصالك وحاول مرة أخرى.');
@@ -605,6 +612,152 @@ function rDes() {
     });
 
   updateArrows("dc");
+
+  // إخفاء سكشن الألوان بالكامل إذا لم يتم اختيار نوع الحوض
+  if (!S.sinkType) return;
+
+  // إخفاء وتنظيف قسم الألوان تماماً لو لم يتم اختيار نوع الحوض
+  const oldColorSection = document.getElementById('unit-color-section');
+  if (oldColorSection) oldColorSection.remove();
+
+  if (!S.sinkType) return;
+
+  const colorContainer = document.createElement('div');
+  colorContainer.id = 'unit-color-section';
+  colorContainer.style.marginTop = '20px';
+
+  const divider = document.createElement('hr');
+  divider.style.border = '0';
+  divider.style.borderTop = '1px solid var(--color-border, #eee)';
+  divider.style.marginBottom = '16px';
+
+  const colorTitle = document.createElement('h4');
+  colorTitle.textContent = 'اختر لون الوحدة';
+  colorTitle.style.marginBottom = '6px';
+
+  const colorDesc = document.createElement('p');
+  colorDesc.textContent = 'يرجى اختيار لونين لوحدة الحوض مرتبين حسب الأولوية المناسبة لك، وذلك لضمان التوفر في حال عدم توفر اللون الأول.';
+  colorDesc.style.fontSize = '13px';
+  colorDesc.style.color = 'var(--color-text-muted, #666)';
+  colorDesc.style.marginBottom = '12px';
+
+  const wrapEl = document.createElement('div');
+  wrapEl.className = 'cards-row-wrap';
+
+  const startBtn = document.createElement('button');
+  startBtn.type = 'button';
+  startBtn.className = 'scroll-arrow start hidden';
+  startBtn.id = 'unit-colors-row-start';
+  startBtn.setAttribute('aria-label', 'Previous');
+  startBtn.onclick = () => scrollCards('unit-colors-row', -1);
+  startBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>';
+
+  const endBtn = document.createElement('button');
+  endBtn.type = 'button';
+  endBtn.className = 'scroll-arrow end hidden';
+  endBtn.id = 'unit-colors-row-end';
+  endBtn.setAttribute('aria-label', 'Next');
+  endBtn.onclick = () => scrollCards('unit-colors-row', 1);
+  endBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+
+  const cardsRow = document.createElement('div');
+  cardsRow.className = 'cards-row';
+  cardsRow.id = 'unit-colors-row';
+  cardsRow.innerHTML = ''; // تنظيف الكروت القديمة والـ Placeholders لمنع تكرار القفل
+  cardsRow.onscroll = () => updateArrows('unit-colors-row');
+
+  if (!S.selectedColors) S.selectedColors = [];
+
+  for (let i = 1; i <= 20; i++) {
+    const numStr = i < 10 ? `0${i}` : `${i}`;
+    const colorId = `clr_${numStr}`;
+
+    const colorCard = document.createElement('div');
+    colorCard.className = 'design-card color-shape-card';
+
+    const imgContainer = mkImg(colorId, colorCard);
+
+    // تفريغ أي overlays زائنة قد تكون متراكمة داخل الـ Container
+    imgContainer.querySelectorAll('.card-overlay').forEach(el => el.remove());
+
+    // إضافة اللوك فقط لو المقاس غير محدد
+    if (!S.size) {
+      imgContainer.appendChild(mkLockOverlay());
+    }
+
+    const img = imgContainer.querySelector('img');
+
+    if (img) {
+      const encoded = encodeURIComponent(colorId);
+      img.src = `images/conf/clr/${encoded}.webp`;
+
+      img.onerror = function () {
+        if (this.src.endsWith('.webp')) {
+          this.src = `images/conf/clr/${encoded}.png`;
+        } else {
+          colorCard.remove();
+          setTimeout(() => updateArrows('unit-colors-row'), 50);
+        }
+      };
+    }
+
+    colorCard.appendChild(imgContainer);
+
+    const zoomBtn = imgContainer.querySelector('.czoom, .zoom-btn, [data-action="zoom"]');
+    if (zoomBtn) {
+      zoomBtn.onclick = (e) => {
+        e.stopPropagation();
+        openLB(`images/conf/clr/${encodeURIComponent(colorId)}.webp`);
+      };
+    }
+
+    const cIndex = S.selectedColors.indexOf(colorId);
+    if (cIndex !== -1) {
+      colorCard.classList.add('selected');
+      const badge = document.createElement('div');
+      badge.className = 'handle-priority-badge';
+      badge.textContent = cIndex + 1;
+      colorCard.appendChild(badge);
+    }
+
+    colorCard.onclick = () => {
+      if (!S.size) {
+        showToast('يرجى اختيار عرض الحوض أولاً لتتمكن من اختيار لون الوحدة.');
+        const sizeSection = document.getElementById('size-group-title') || document.getElementById('sz');
+        if (sizeSection) {
+          sizeSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return;
+      }
+
+      const existingIdx = S.selectedColors.indexOf(colorId);
+      if (existingIdx !== -1) {
+        S.selectedColors.splice(existingIdx, 1);
+      } else {
+        if (S.selectedColors.length >= 2) {
+          S.selectedColors.shift();
+        }
+        S.selectedColors.push(colorId);
+      }
+      rDes();
+      if (typeof updateStepperProgress === 'function') updateStepperProgress();
+      if (typeof upd === 'function') upd();
+    };
+
+    cardsRow.appendChild(colorCard);
+  }
+
+  wrapEl.appendChild(startBtn);
+  wrapEl.appendChild(cardsRow);
+  wrapEl.appendChild(endBtn);
+
+  colorContainer.appendChild(divider);
+  colorContainer.appendChild(colorTitle);
+  colorContainer.appendChild(colorDesc);
+  colorContainer.appendChild(wrapEl);
+  box.parentNode.appendChild(colorContainer);
+
+  setTimeout(() => updateArrows('unit-colors-row'), 100);
 }
 
 /* ===== rSz ===== */
@@ -861,22 +1014,23 @@ function hidePlaceholders() {
 
 /* ===== rHnd ===== */
 function rHnd() {
+  const groupEl = document.querySelector('[data-group="hc"]');
+
+  // إخفاء القسم كاملاً إذا لم يحدد العميل نوع الحوض بعد
+  if (!S.sinkType) {
+    groupEl?.classList.add('hidden');
+    return;
+  }
+
+  // إظهار السكشن عند اختيار نوع الحوض
+  groupEl?.classList.remove('hidden');
+
   const c = document.getElementById('hc');
   const title = document.getElementById('handle-group-title');
   const desc = document.getElementById('handle-desc');
   if (!c || !title || !desc) return;
 
   c.innerHTML = '';
-
-  // لم يتم اختيار نوع الحوض
-  if (!S.sinkType) {
-    title.textContent = 'اختر نوع الحوض أولاً';
-    document.querySelector('[data-group="hc"]')?.classList.add('hidden');
-    return;
-  }
-
-  // إظهار السكشن بعد اختيار نوع الحوض
-  document.querySelector('[data-group="hc"]')?.classList.remove('hidden');
   title.textContent = 'اختر نوع المقبض';
   desc.replaceChildren();
 
@@ -884,6 +1038,7 @@ function rHnd() {
 
   if (noH) {
     S.handle = null;
+    S.selectedHandleShapes = [];
     desc.innerHTML = 'التصميم المختار لا يدعم استخدام المقابض.';
   }
 
@@ -936,8 +1091,10 @@ function rHnd() {
       // 3. إلغاء الاختيار (Unselect) إذا تم الضغط على الكارت المحدد حالياً
       if (S.handle && S.handle.id === h.id) {
         S.handle = null;
+        S.selectedHandleShapes = [];
       } else {
         S.handle = h;
+        S.selectedHandleShapes = [];
       }
 
       rHnd();
@@ -947,8 +1104,157 @@ function rHnd() {
     c.appendChild(el);
   });
 
+  // إضافة قسم اختيار شكل المقبض في حال اختيار مقبض سحابي أو مقبض دائري
+  const handleShapesSection = document.getElementById('handle-shapes-section');
+  if (handleShapesSection) handleShapesSection.remove();
+
+  if (S.handle && (S.handle.id === '4c_h&k01' || S.handle.id === '4c_h&k02')) {
+    const shapeContainer = document.createElement('div');
+    shapeContainer.id = 'handle-shapes-section';
+    shapeContainer.style.marginTop = '20px';
+
+    const shapeSubtitle = document.createElement('h4');
+    shapeSubtitle.textContent = 'اختر شكل المقبض';
+    shapeSubtitle.style.marginBottom = '6px';
+
+    const shapeDesc = document.createElement('p');
+    shapeDesc.textContent = 'يرجى اختيار شكلين لمقبض الوحدة مرتبين حسب الأولوية المناسبة لك، وذلك لضمان التوفر في حال عدم توفر الشكل الأول.';
+    shapeDesc.style.fontSize = '13px';
+    shapeDesc.style.color = 'var(--color-text-muted, #666)';
+    shapeDesc.style.marginBottom = '12px';
+
+    const wrapEl = document.createElement('div');
+    wrapEl.className = 'cards-row-wrap';
+
+    const startBtn = document.createElement('button');
+    startBtn.type = 'button';
+    startBtn.className = 'scroll-arrow start hidden';
+    startBtn.id = 'handle-shapes-row-start';
+    startBtn.setAttribute('aria-label', 'Previous');
+    startBtn.onclick = () => scrollCards('handle-shapes-row', -1);
+    startBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>';
+
+    const endBtn = document.createElement('button');
+    endBtn.type = 'button';
+    endBtn.className = 'scroll-arrow end hidden';
+    endBtn.id = 'handle-shapes-row-end';
+    endBtn.setAttribute('aria-label', 'Next');
+    endBtn.onclick = () => scrollCards('handle-shapes-row', 1);
+    endBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+
+    const cardsRow = document.createElement('div');
+    cardsRow.className = 'cards-row';
+    cardsRow.id = 'handle-shapes-row';
+    cardsRow.onscroll = () => updateArrows('handle-shapes-row');
+
+    if (!S.selectedHandleShapes) S.selectedHandleShapes = [];
+
+    // توليد الأشكال تلقائياً بناءً على الـ id الخاص بالمقبض المختار فقط
+    let availableShapes = S.handle.shapes || [];
+
+    // إذا لم تكن الأشكال محددة في الداتا، نولد تسلسل افتراضي للمقبض المختار فقط
+    if (!availableShapes.length) {
+      for (let i = 1; i <= 20; i++) {
+        const numStr = i < 10 ? `0${i}` : `${i}`;
+        availableShapes.push(`${S.handle.id}_${numStr}`);
+      }
+    }
+
+    availableShapes.forEach(shapeId => {
+      const shapeCard = document.createElement('div');
+      shapeCard.className = 'handle-card handle-shape-card';
+
+      const imgContainer = mkImg(shapeId, shapeCard);
+      const img = imgContainer.querySelector('img');
+
+      if (img) {
+        const encoded = encodeURIComponent(shapeId);
+        img.src = `images/conf/hnd/${encoded}.webp`;
+
+        img.onerror = function () {
+          if (this.src.endsWith('.webp')) {
+            // محاولة التحويل للـ PNG
+            this.src = `images/conf/hnd/${encoded}.png`;
+          } else {
+            // الصورة غير موجودة نهائياً: إخفاء الكارت تماماً وحذفه من الـ DOM
+            shapeCard.remove();
+            setTimeout(() => updateArrows('handle-shapes-row'), 50);
+          }
+        };
+      }
+
+      shapeCard.appendChild(imgContainer);
+
+      const zoomBtn = imgContainer.querySelector('.czoom, .zoom-btn, [data-action="zoom"]');
+      if (zoomBtn) {
+        zoomBtn.onclick = (e) => {
+          e.stopPropagation();
+          openShapeModal(`images/conf/hnd/${encodeURIComponent(shapeId)}.webp`, `images/conf/hnd/${encodeURIComponent(shapeId)}.png`);
+        };
+      }
+
+      const pIndex = S.selectedHandleShapes.indexOf(shapeId);
+      if (pIndex !== -1) {
+        shapeCard.classList.add('selected');
+        const badge = document.createElement('div');
+        badge.className = 'handle-priority-badge';
+        badge.textContent = pIndex + 1;
+        shapeCard.appendChild(badge);
+      }
+
+      shapeCard.onclick = () => {
+        const existingIdx = S.selectedHandleShapes.indexOf(shapeId);
+        if (existingIdx !== -1) {
+          S.selectedHandleShapes.splice(existingIdx, 1);
+        } else {
+          if (S.selectedHandleShapes.length >= 2) {
+            S.selectedHandleShapes.shift();
+          }
+          S.selectedHandleShapes.push(shapeId);
+        }
+        rHnd();
+        if (typeof updateStepperProgress === 'function') updateStepperProgress();
+        if (typeof upd === 'function') upd();
+      };
+
+      cardsRow.appendChild(shapeCard);
+    });
+
+    wrapEl.appendChild(startBtn);
+    wrapEl.appendChild(cardsRow);
+    wrapEl.appendChild(endBtn);
+
+    shapeContainer.appendChild(shapeSubtitle);
+    shapeContainer.appendChild(shapeDesc);
+    shapeContainer.appendChild(wrapEl);
+    c.parentNode.appendChild(shapeContainer);
+
+    // تحديث مكان الأسهم بعد بناء العناصر
+    setTimeout(() => updateArrows('handle-shapes-row'), 100);
+  }
+
+    /* دالة فتح الصورة في النافذة المكبرة */
+  function openShapeModal(webpSrc, pngSrc) {
+    let modal = document.getElementById('shape-lightbox-modal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'shape-lightbox-modal';
+      modal.className = 'shape-lightbox-modal';
+      modal.onclick = () => modal.remove();
+      document.body.appendChild(modal);
+    }
+    
+    modal.innerHTML = `
+      <div class="shape-lightbox-content" onclick="event.stopPropagation()">
+        <span class="shape-lightbox-close" onclick="document.getElementById('shape-lightbox-modal').remove()">&times;</span>
+        <img src="${webpSrc}" onerror="this.src='${pngSrc}'" alt="Handle Shape" />
+      </div>
+    `;
+  }
+
   setTimeout(() => updateArrows('hc'), 50);
 }
+
 
 /* ===== calc & upd ===== */
 function calc() {
@@ -976,23 +1282,27 @@ function upd() {
       localStorage.setItem('wodi_configurator_state', JSON.stringify({
         sinkType: S.sinkType,
         designId: S.design ? S.design.id : null,
+        selectedColors: S.selectedColors || [],
         sizeSize: S.size ? S.size.size : null,
         divId: S.div ? S.div.id : null,
-        handleId: S.handle ? S.handle.id : null
+        handleId: S.handle ? S.handle.id : null,
+        selectedHandleShapes: S.selectedHandleShapes || []
       }));
     } catch (e) { console.warn('Failed to save state', e); }
     const t = calc();
     const noH = S.design && S.design.hc === 0;
     const sg = S.size ? sgr(S.size.size) : '85';
 
+    const egpTag = '<small style="font-size: 0.75em; font-weight: normal; margin-left: 2px;">EGP</small>';
+
     // 1. تحديث السعر الإجمالي
     const totalEl = document.getElementById('total-price');
     const canShowPrice = S.design && S.size;
     if (totalEl) {
-      totalEl.textContent =
+      totalEl.innerHTML =
         canShowPrice && t !== null
-          ? t + ' EGP'
-          : '— EGP';
+          ? `${t.toLocaleString('en-US')} ${egpTag}`
+          : `— ${egpTag}`;
       pulsePrice(totalEl);
     }
 
@@ -1011,7 +1321,7 @@ function upd() {
     const siLabel = document.getElementById('si-label');
     const siPrice = document.getElementById('si-price');
     if (siLabel) siLabel.textContent = installCost !== null ? 'محسوبة' : '—';
-    if (siPrice) siPrice.textContent = installCost !== null ? installCost + ' EGP' : '—';
+    if (siPrice) siPrice.innerHTML = installCost !== null ? `${installCost.toLocaleString('en-US')} ${egpTag}` : '—';
 
     // تحديث النوع
     const sdTypeEl = document.getElementById('sd-type');
@@ -1031,7 +1341,7 @@ function upd() {
     if (sdEl) sdEl.textContent = S.design ? S.design.name : '—';
 
     const sdPriceEl = document.getElementById('sd-price');
-    if (sdPriceEl) sdPriceEl.textContent = S.size ? r5(S.size.price) + ' EGP' : '—';
+    if (sdPriceEl) sdPriceEl.innerHTML = S.size ? `${r5(S.size.price).toLocaleString('en-US')} ${egpTag}` : '—';
 
     const ssEl = document.getElementById('ss');
     if (ssEl) ssEl.textContent = S.size ? S.size.size : '—';
@@ -1044,18 +1354,132 @@ function upd() {
 
     const svPrice = document.getElementById('sv-price');
     const divPrice = S.div ? dvp(S.div, sg) : 0;
-    if (svPrice) svPrice.textContent = S.div ? (divPrice > 0 ? '+' + divPrice + ' EGP' : '+0 EGP') : '—';
+    if (svPrice) svPrice.innerHTML = S.div ? (divPrice > 0 ? `+${divPrice.toLocaleString('en-US')} ${egpTag}` : `+0 ${egpTag}`) : '—';
 
     const sh = document.getElementById('sh');
     if (sh) sh.textContent = S.handle ? S.handle.name : (noH ? 'بدون مقبض' : '—');
 
     const shPrice = document.getElementById('sh-price');
     const handlePrice = S.handle && !noH ? S.handle.price * S.design.hc : 0;
-    if (shPrice) shPrice.textContent = S.handle ? (handlePrice > 0 ? '+' + handlePrice + ' EGP' : '+0 EGP') : (noH ? '—' : '—');
+    if (shPrice) shPrice.innerHTML = S.handle ? (handlePrice > 0 ? `+${handlePrice.toLocaleString('en-US')} ${egpTag}` : `+0 ${egpTag}`) : (noH ? '—' : '—');
 
   updateStickyValue();
   }, 300);
 }
+
+async function loadConfiguratorState() {
+  const rawSaved = localStorage.getItem('wodi_configurator_state');
+  
+  // التحقق من وجود بيانات سابقة حقيقية وليست فارغة
+  let hasValidState = false;
+  if (rawSaved) {
+    try {
+      const parsed = JSON.parse(rawSaved);
+      // التأكد أن الكائن يحتوي على قيم غير فارغة (Not Null / Not Empty)
+      if (parsed && typeof parsed === 'object') {
+        const values = Object.values(parsed);
+        hasValidState = values.some(val => {
+          if (Array.isArray(val)) return val.length > 0;
+          if (typeof val === 'object' && val !== null) return Object.keys(val).length > 0;
+          return val !== null && val !== undefined && val !== '';
+        });
+      }
+    } catch (e) {
+      hasValidState = false;
+    }
+  }
+
+  // إذا لم توجد اختيارات سابقة حقيقية، اخرج فوراً دون إظهار الـ Overlay
+  if (!hasValidState && !window.wodi_saved_state) return;
+
+  const loader = document.getElementById('config-loader-overlay');
+  let timeoutId = null;
+
+  if (loader) {
+    loader.style.display = 'flex';
+    document.body.style.overflow = 'hidden'; // إيقاف السكرول
+
+    // مؤقت أقصاه 6 ثوانٍ
+    timeoutId = setTimeout(() => {
+      hideConfigLoaderOverlay();
+      showCustomErrorToast("فشل في استرجاع الاختيارات السابقة");
+    }, 6000);
+  }
+
+  try {
+    const parsed = JSON.parse(rawSaved);
+
+    // تطبيق الاختيارات المخزنة (سواء كانت مقابض أو أي كائن آخر)
+  if (parsed) {
+        if (Array.isArray(parsed.selectedHandleShapes)) {
+          S.selectedHandleShapes = parsed.selectedHandleShapes;
+        }
+        if (Array.isArray(parsed.selectedColors)) {
+          S.selectedColors = parsed.selectedColors;
+        }
+      }
+
+    if (typeof rHnd === 'function') rHnd();
+    if (typeof upd === 'function') upd();
+    if (typeof updateStepperProgress === 'function') {
+      updateStepperProgress();
+    }
+
+    // الانتظار لحين اكتمال رندر ورسم الصور
+    await new Promise(resolve => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(async () => {
+          const container = document.getElementById('handle-shapes-container');
+          const imgs = container
+            ? Array.from(container.querySelectorAll('img'))
+            : [];
+
+          if (imgs.length) {
+            await Promise.all(
+              imgs.map(img => {
+                if (img.complete && img.naturalWidth !== 0) {
+                  return Promise.resolve();
+                }
+
+                return new Promise(res => {
+                  img.onload = res;
+                  img.onerror = res;
+                });
+              })
+            );
+          }
+
+          resolve();
+        });
+      });
+    });
+
+  } catch (e) {
+    console.warn('Failed to load state:', e);
+  } finally {
+    if (typeof isRestoring !== 'undefined') {
+      isRestoring = false;
+    }
+  }
+}
+
+  function hideConfigLoaderOverlay() {
+    const loader = document.getElementById('config-loader-overlay');
+    if (loader && loader.style.display !== 'none') {
+      loader.style.transition = 'opacity 0.25s ease';
+      loader.style.opacity = '0';
+      setTimeout(() => {
+        loader.style.display = 'none';
+        loader.style.opacity = '1';
+      }, 250);
+    }
+  }
+  
+
+  // استرجاع البيانات عند فتح الصفحة
+  document.addEventListener('DOMContentLoaded', () => {
+    loadConfiguratorState();
+  });
 
 /*
 ================================================================================
@@ -1135,16 +1559,43 @@ async function getAddress(lat, lon, resElement) {
 
 function openDesignRequestModal() {
 
-  if (!S.size || !S.design || !S.div || (S.design.hc !== 0 && !S.handle)) {
-    showToast('يرجى إكمال جميع اختيارات وحدة الحوض أولاً');
+  const isMultiShapeHandle = S.handle && (S.handle.id === '4c_h&k01' || S.handle.id === '4c_h&k02');
+  const selectedShapesCount = (isMultiShapeHandle && Array.isArray(S.selectedHandleShapes)) ? S.selectedHandleShapes.length : 0;
+  const hasSelectedTwoShapes = selectedShapesCount >= 2;
+  const isHandleIncomplete = S.design && S.design.hc !== 0 && (!S.handle || (isMultiShapeHandle && !hasSelectedTwoShapes));
+  const hasSelectedTwoColors = Array.isArray(S.selectedColors) && S.selectedColors.length >= 2;
+  const isDesignIncomplete = !S.design || !hasSelectedTwoColors;
+
+  if (!S.sinkType || !S.size || isDesignIncomplete || !S.div || isHandleIncomplete) {
+    // تخصيص نص الرسالة بدقة حسب الحالة
+    if (S.design && !hasSelectedTwoColors) {
+      if (S.selectedColors.length === 1) {
+        showToast('لقد اخترت لونًا واحدًا فقط للوحدة، يرجى اختيار اللون الثاني.');
+      } else {
+        showToast('يرجى اختيار لون الوحدة أولاً.');
+      }
+    } else if (isMultiShapeHandle && selectedShapesCount === 1) {
+      showToast('لقد اخترت شكلاً واحدًا فقط للمقبض، يرجى اختيار الشكل الثاني.');
+    } else if (isMultiShapeHandle && selectedShapesCount === 0) {
+      showToast('يرجى اختيار الشكلين الخاصين بالمقبض أولاً');
+    } else {
+      showToast('يرجى إكمال جميع اختيارات وحدة الحوض أولاً');
+    }
 
     // تحديد أول سكشن غير مكتمل بالترتيب والتمرير إليه
-    if (!S.size) {
+    if (!S.sinkType) {
+      const sinkTarget = 
+        document.getElementById('sink-types') || 
+        document.getElementById('sinkType-group-title') || 
+        document.querySelector('[data-group="sink-types"]');
+      
+      sinkTarget?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else if (!S.size) {
       (document.getElementById('sz') || document.getElementById('sizes'))?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    } else if (!S.design) {
-      (document.getElementById('dc') || document.getElementById('design-cards'))?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else if (isDesignIncomplete) {
+      const target = (!S.design) ? (document.getElementById('dc') || document.getElementById('design-cards')) : document.getElementById('unit-colors-row');
+      target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     } else if (!S.div) {
-      // البحث عن أي عنصر متعلق بسكشن التقسيمة الداخلية بالتفصيل
       const divTarget = 
         document.getElementById('div-cards') || 
         document.getElementById('div-group-title') || 
@@ -1153,8 +1604,9 @@ function openDesignRequestModal() {
         document.querySelector('[data-group="div"]');
       
       divTarget?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    } else if (S.design.hc !== 0 && !S.handle) {
+    } else if (isHandleIncomplete) {
       const handleTarget = 
+        document.getElementById('handle-shapes-row') || 
         document.getElementById('hc') || 
         document.getElementById('handle-group-title') || 
         document.querySelector('[data-group="hc"]');
@@ -1164,7 +1616,6 @@ function openDesignRequestModal() {
 
     return;
   }
-
   const modal = document.getElementById('design-request-modal');
   if (!modal) return;
 
@@ -1966,13 +2417,20 @@ async function drRenderPreview() {
       content.querySelector('#sink-handle-items');
 
     if (handleTbody && config.handle) {
+      const p1Shape = S.selectedHandleShapes && S.selectedHandleShapes[0] 
+        ? `<img src="images/conf/hnd/${encodeURIComponent(S.selectedHandleShapes[0])}.webp" style="height:36px; object-fit:contain;" onerror="this.src='images/conf/hnd/${encodeURIComponent(S.selectedHandleShapes[0])}.png'" />` 
+        : '—';
+      const p2Shape = S.selectedHandleShapes && S.selectedHandleShapes[1] 
+        ? `<img src="images/conf/hnd/${encodeURIComponent(S.selectedHandleShapes[1])}.webp" style="height:36px; object-fit:contain;" onerror="this.src='images/conf/hnd/${encodeURIComponent(S.selectedHandleShapes[1])}.png'" />` 
+        : '—';
+
       handleTbody.innerHTML = `
         <tr class="item-row">
           <td class="col-section">نوع المقبض</td>
           <td class="col-name">${config.handle.name}</td>
           <td class="col-code">${config.handle.id}</td>
-          <td class="col-handle-priority">—</td>
-          <td class="col-handle-priority">—</td>
+          <td class="col-handle-priority">${p1Shape}</td>
+          <td class="col-handle-priority">${p2Shape}</td>
           <td class="col-price">${config.handle.price} ج.م</td>
         </tr>
       `;
@@ -2558,6 +3016,10 @@ function setupStickyPriceBar() {
 
     function createSticky() {
       if (stickyEl) return stickyEl;
+
+      const resetIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>';
+      const eyeIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+
       stickyEl = document.createElement('div');
       stickyEl.className = 'price-sticky';
       stickyEl.innerHTML =
@@ -2566,8 +3028,8 @@ function setupStickyPriceBar() {
         '<span class="val" id="sticky-total">— EGP</span>' +
         '</div>' +
         '<div class="sticky-actions">' +
-        '<button class="sticky-reset" id="sticky-reset">إعادة</button>' +
-        '<button class="sticky-order" id="sticky-order">رؤية تفاصيل السعر</button>' +
+        '<button class="sticky-reset" id="sticky-reset" aria-label="إعادة التعيين" title="إعادة التعيين">' + resetIcon + '</button>' +
+        '<button class="sticky-order" id="sticky-order" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px;">' + eyeIcon + ' <span>تفاصيل السعر</span></button>' +
         '</div>';
       document.body.appendChild(stickyEl);
 
@@ -2784,13 +3246,22 @@ function updateStepperProgress() {
   const stepHandle = document.getElementById('st-handle');
   const stepLocation = document.getElementById('st-location');
 
-  const hasDesign = (typeof S !== 'undefined' && S.design && (S.design.id || S.design.name || S.design.type));
+  const hasColors = (typeof S !== 'undefined' && Array.isArray(S.selectedColors) && S.selectedColors.length >= 2);
+  const hasDesign = (typeof S !== 'undefined' && S.design && (S.design.id || S.design.name || S.design.type) && hasColors);
   const hasSinkType = (typeof S !== 'undefined' && S.sinkType);
   const hasSize = (typeof S !== 'undefined' && S.size);
   const hasDiv = (typeof S !== 'undefined' && S.div);
 
   const noH = (typeof S !== 'undefined' && S.design && S.design.hc === 0);
-  const hasHandle = (typeof S !== 'undefined' && (S.handle || noH));
+  
+  // التحقق مما إذا كان المقبض المختار يتطلب أشكالاً فرعية (يشترط تحديد الشكلين بالكامل)
+  const isMultiShapeHandle = typeof S !== 'undefined' && S.handle && (S.handle.id === '4c_h&k01' || S.handle.id === '4c_h&k02');
+  const hasSelectedShapes = isMultiShapeHandle && Array.isArray(S.selectedHandleShapes) && S.selectedHandleShapes.length >= 2;
+
+  const hasHandle = typeof S !== 'undefined' && (
+    noH || 
+    (isMultiShapeHandle ? hasSelectedShapes : Boolean(S.handle))
+  );
 
   const errorMsgElement = document.body.innerText.includes('خارج نطاق خدمتنا');
   const isOutOfRange =
@@ -3053,17 +3524,14 @@ function resetAll() {
   rDiv(); 
   rHnd(); 
   upd();
-}
 
-function saveConfig() {
-  localStorage.setItem("wodi-config", JSON.stringify({
-    sinkType: S.sinkType || null,
-    size: S.size ? S.size.size : null,
-    design: S.design ? S.design.id : null,
-    division: S.div ? S.div.id : null,
-    handle: S.handle ? S.handle.id : null,
-    location: (userLat && userLng) ? { lat: userLat, lng: userLng } : null
-  }));
+  // 9. التمرير السلس لأعلى عند سكشن اختيار نوع الحوض
+  const sinkSection = document.getElementById('sink-type-section') || document.querySelector('.sink-type-card')?.closest('section');
+  if (sinkSection) {
+    sinkSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } else {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 }
 
 /*
@@ -3181,8 +3649,9 @@ window.calcInstall = calcInstall;
 window.calc = calc;
 window.updateStepperProgress = updateStepperProgress;
 window.loadConfiguratorData = loadConfiguratorData;
+window.loadConfiguratorState = loadConfiguratorState; // أضيفت لتسهيل التجربة والاختبار
+window.isRestoring = isRestoring; // أضيفت للوصول إلى حالة قفل التحميل
 window.resetAll = resetAll;
-window.saveConfig = saveConfig;
 window.openLB = openLB;
 window.closeLB = closeLB;
 window.orderWA = orderWA;
