@@ -19,9 +19,12 @@
     transition: transform 0.35s ease, background 0.3s ease, box-shadow 0.3s ease;
 }
 
+/* استخدام الكلاس بدلاً من الـ inline style في JS */
 .navbar.nav-hidden {
-    transform: translateY(-100%);
+    transform: translateY(-100%) !important;
 }
+
+bo
 
 body.home-page .navbar {
     background-color: var(--color-bg-white) !important;

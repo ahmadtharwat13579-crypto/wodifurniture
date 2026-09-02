@@ -84,13 +84,15 @@
   margin-bottom: 25px;
   direction: rtl;
   position: sticky;
-  top: 0px;
+  top: calc(var(--stepper-top, 10px));
   z-index: var(--z-stepper);
-  transition: all 0.3s ease;
+  transition: ease, transform 0.35s ease, opacity 0.3s ease;
   max-width: 800px;
   margin-left: auto;
   margin-right: auto;
-  transform-origin: top center; /* للحفاظ على محاذاة الأعلى أثناء التصغير */
+  transform-origin: top center;
+  align-self: start;
+  will-change: transform;
 }
 
 /* الحالة الـ Sticky: خلفية بيضاء مستطيلة ظل خفيف عند التمرير */
@@ -227,6 +229,52 @@
   color: #111827;
   font-weight: 700;
   transform: scale(1.02);
+}
+
+/* ==========================================
+   Half-Completed Stepper Icon (Fixed Sticky-Safe)
+   ========================================== */
+
+.stepper-item.half-completed .stepper-icon {
+  width: 32px; /* حدد الارتفاع والعرض الفعلي لأيقونتك لضمان ثبات المساحة */
+  height: 32px;
+  border-radius: 50% !important;
+  background: #ffffff !important;
+  border: 3px solid transparent !important;
+  background-image:
+    linear-gradient(#ffffff, #ffffff),
+    conic-gradient(
+      var(--main-color, #9caf88) 0deg 180deg,
+      #e0e0e0 180deg 360deg
+    ) !important;
+  background-origin: border-box !important;
+  background-clip: padding-box, border-box !important;
+  position: relative;
+  box-sizing: border-box;
+  /* تم إزالة box-shadow لمنع مشاكل الـ Render Layer التي تكسر الـ Sticky */
+}
+
+/* الأيقونة تظل واضحة في المنتصف */
+.stepper-item.half-completed .stepper-icon svg,
+.stepper-item.half-completed .stepper-icon i,
+.stepper-item.half-completed .stepper-icon span {
+  position: relative;
+  z-index: 2;
+  color: var(--main-color, #9caf88);
+}
+
+/* نقطة صغيرة في المركز لإعطاء إحساس بالـ progress */
+.stepper-item.half-completed .stepper-icon::after {
+  content: '';
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--main-color, #9caf88);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
 }
 
 /* Responsive adjustments for icon and title */
@@ -374,11 +422,6 @@
   position: sticky;
   top: 100px;
   box-sizing: border-box;
-}
-
-/* Animations */
-.price-pulse {
-  animation: priceSlide 0.35s ease;
 }
 
 .price-updated {
@@ -596,10 +639,56 @@
   background: var(--color-bg-white);
   transition: border-color 0.15s;
 }
-.design-card.selected {
-  border: 2px solid var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(156,175,136,0.25);
+
+/* 1. التنسيق الأساسي للكروت وحركة الانتقال */
+.design-card,
+.color-shape-card,
+.div-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+  position: relative;
 }
+
+/* 2. التأثيرات البصرية للكارت المختار (بروز وظل) */
+.selected {
+  border: 2px solid var(--main-color, #9caf88) !important;
+  transform: scale(1.03) !important;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12) !important;
+  opacity: 1 !important;
+}
+
+/* 3. إنشاء أيقونة الصح على الشمال باقتباس تنسيق الـ handle-priority-badge */
+/* استثناء أزرار عرض الحوض (.size-btn) وكروت المقابض (.handle-card) */
+.selected:not(.size-btn):not(.handle-card)::after {
+  content: '✓';
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 20px; /* تصغير قطر الدائرة من 28px إلى 20px */
+  height: 20px;
+  background-color: var(--main-color, #9caf88);
+  color: #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px; /* تصغير حجم أيقونة الصح نفسها لتناسب الدائرة */
+  font-weight: bold;
+  z-index: 2;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* 4. تخفيف إضاءة باقي الكروت لتركيز العين (باستثناء سكشن عرض الحوض) */
+#sz:has(.selected) .size-btn:not(.selected) {
+  opacity: 1; /* إبقاء أزرار المقاسات واضحة تماماً */
+}
+
+.cards-row:has(.selected) .design-card:not(.selected),
+.cards-row:has(.selected) .color-shape-card:not(.selected),
+.cards-row:has(.selected) .div-card:not(.selected) {
+  opacity: 0.65;
+}
+
+
 .design-card.disabled{
     opacity:.55;
     cursor:not-allowed;
@@ -1197,17 +1286,34 @@
   gap: 6px;
   flex-wrap: wrap;
 }
+/* 1. ضبط الحاوية الأب لتجبر كل الأزرار تكون في صف واحد متناسق */
+#sz {
+  display: flex !important;
+  flex-wrap: nowrap !important; /* يمنع نزول أي زرار للسطر الثاني */
+  gap: 8px !important; /* مسافة متناسقة صغيرة بين الأزرار */
+  justify-content: flex-start;
+  align-items: center;
+  overflow-x: auto; /* سكرول أفقي ناعم للموبايل إذا زادت الأزرار */
+  padding-bottom: 4px;
+}
+
+/* 2. توحيد عرض الأزرار وضغط المساحات الجانبية */
 .size-btn {
-  padding: 7px 14px;
+  flex: 1 0 auto; /* تجعل الأزرار تتوزع بالتساوي */
+  min-width: 72px; /* عرض أدنى موحد يضمن استيعاب 105 - 90 دون تمدد الزرار */
+  padding: 6px 4px; /* تقليل الـ padding الأفقي لمنع انتفاخ الزرار */
+  text-align: center;
   border: 2px solid rgba(51,48,40,0.15);
   border-radius: var(--radius-xs);
-  font-size: var(--font-size-sm);
+  font-size: 12px; /* حجم خط متناسق وصغير بما يكفي لوضعهم في صف واحد */
+  white-space: nowrap; /* يمنع انقسام النص على سطرين */
   cursor: pointer;
   background: var(--color-bg-white);
   color: var(--color-text-main);
   font-family: var(--font-family-main);
   transition: all 0.15s;
 }
+
 .size-btn.selected {
   background: var(--color-primary);
   color: var(--color-bg-white);

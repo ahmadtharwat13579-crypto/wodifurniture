@@ -16,10 +16,20 @@ function initNavbar() {
       const currentScrollY = window.scrollY;
 
       if (currentScrollY > lastScrollY && currentScrollY > 80) {
-        navbar.style.setProperty('transform', 'translateY(-100%)', 'important');
+        document.body.classList.add('nav-hidden');
+        navbar.classList.add('nav-hidden');
       } else {
-        navbar.style.setProperty('transform', 'translateY(0)', 'important');
+        document.body.classList.remove('nav-hidden');
+        navbar.classList.remove('nav-hidden');
       }
+
+      const navHeight = navbar.offsetHeight;
+      const navHidden = document.body.classList.contains('nav-hidden');
+
+      document.documentElement.style.setProperty(
+        '--stepper-top',
+        navHidden ? '10px' : `${navHeight + 10}px`
+      );
 
       lastScrollY = currentScrollY;
       ticking = false;

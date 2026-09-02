@@ -409,6 +409,29 @@ body {
   unicode-bidi: embed;
 }
 
+/* تحديد حجم أقصى للصور داخل خلايا الجدول */
+table td img {
+  max-width: 80px;      /* الأبعاد القصوى للعرض */
+  max-height: 80px;     /* الأبعاد القصوى للارتفاع */
+  width: auto;
+  height: auto;
+  object-fit: contain;  /* للحفاظ على أبعاد الصورة بدون تشويه */
+  display: block;
+  margin: 0 auto;       /* لتوسيط الصورة داخل الخلية */
+  border-radius: 4px;   /* تحسين مظهر الحواف (اختياري) */
+}
+
+/* التحكم في حجم الصور داخل خلايا الجدول */
+.sink-unit-table td img {
+  max-width: 45px;
+  max-height: 45px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+}
+
 /* ----------------------------------------------------------
    SHIPPING SECTION
    ---------------------------------------------------------- */

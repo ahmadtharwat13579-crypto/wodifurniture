@@ -20,7 +20,7 @@ const cur = 'ج.م.';
 */
 let userLat = null, userLng = null, installCost = null;
 let LOC = { workshop_lat: 30.061113, workshop_lng: 31.394701, correction_factor: 0, price_per_km: 0, fixed_cost: 0 };
-let D = { designs: [], divisions: [], handles: [] };
+let D = { designs: [], divisions: [], handles: [], colors: [] };
 let dataLoaded = false;
 
 let S = {
@@ -34,6 +34,8 @@ let S = {
 };
 
 let dt = null;
+
+let isRestoring = false;
 
 /*
 ================================================================================
@@ -123,13 +125,18 @@ function haversine(lat1, lng1, lat2, lng2) {
 }
 
 // small UI helper: pulse price animation
-function pulsePrice(el) {
+function pulsePrice(el, newPriceText) {
   if (!el) return;
-  const text = el.textContent?.trim() || '';
-  if (text === '— EGP' || text === '') return;
-  el.classList.remove('price-pulse');
-  void el.offsetWidth;
-  el.classList.add('price-pulse');
+  const formattedPrice = newPriceText || el.innerHTML;
+  
+  // التشغيل فقط في حال تغير النص/السعر فعلياً
+  if (el.innerHTML !== formattedPrice || newPriceText === undefined) {
+    if (newPriceText !== undefined) el.innerHTML = formattedPrice;
+    
+    el.classList.remove('price-updated', 'price-pulse');
+    void el.offsetWidth; // Reflow
+    el.classList.add('price-updated');
+  }
 }
 
 /*
@@ -197,6 +204,7 @@ function loadConfiguratorData() {
       }
 
       const rows = data && data.configurator;
+      const colorRows = data && data.colors;
 
       const settings = data && data.locationSettings;
       if (settings && settings.workshop_lat) {
@@ -204,7 +212,7 @@ function loadConfiguratorData() {
       }
 
       if (rows && rows.length > 0) {
-        D = build(rows);
+        D = build(rows, colorRows);
         dataLoaded = true;
         hideConfiguratorLoading();
         try { sessionStorage.setItem('wodi_configurator_cache', JSON.stringify(rows)); } catch (e) { console.warn('sessionStorage set failed', e); }
@@ -285,10 +293,32 @@ function loadConfiguratorData() {
 
 // Convert rows to structured data used by UI. Keeps original grouping logic.
 // Note: حفظت منطق تحديد الـ type وطرق التجميع كما كان.
-function build(rows) {
+function build(rows, colorRows = []) {
   const des = {};
   const divs = [];
   const hnd = [];
+  const colors = [];
+
+  if (Array.isArray(colorRows)) {
+    colorRows.forEach(r => {
+      if (!r) return;
+      // دعم القراءة سواء كانت الأسطر عبارة عن Objects أو Arrays من الشيت
+      const cId = String(r.clr_id || r.clrId || r.c || r.id || r[0] || '').trim();
+      const dName = String(r.display_name || r.displayName || r.name || r.title || r[1] || r[2] || '').trim();
+      const fName = String(r.clr_family || r.clr_familty || r.family || '').trim().toLowerCase();
+      
+      if (cId || dName) {
+        colors.push({
+          family: fName,
+          clr_id: cId,
+          id: cId,
+          display_name: dName,
+          name: dName,
+          price: parseFloat(r.added_value || r.extra_price || r.price || 0) || 0
+        });
+      }
+    });
+  }
 
   rows.forEach(r => {
     const id = r.product_name;
@@ -335,7 +365,11 @@ function build(rows) {
     }
   });
 
-  return { designs: Object.values(des), divisions: divs, handles: hnd };
+  const result = { designs: Object.values(des), divisions: divs, handles: hnd, colors: colors };
+  if (typeof D !== 'undefined') {
+    D.colors = colors;
+  }
+  return result;
 }
 
 /*
@@ -616,7 +650,6 @@ function rDes() {
   // إخفاء سكشن الألوان بالكامل إذا لم يتم اختيار نوع الحوض
   if (!S.sinkType) return;
 
-  // إخفاء وتنظيف قسم الألوان تماماً لو لم يتم اختيار نوع الحوض
   const oldColorSection = document.getElementById('unit-color-section');
   if (oldColorSection) oldColorSection.remove();
 
@@ -630,134 +663,173 @@ function rDes() {
   divider.style.border = '0';
   divider.style.borderTop = '1px solid var(--color-border, #eee)';
   divider.style.marginBottom = '16px';
-
-  const colorTitle = document.createElement('h4');
-  colorTitle.textContent = 'اختر لون الوحدة';
-  colorTitle.style.marginBottom = '6px';
-
-  const colorDesc = document.createElement('p');
-  colorDesc.textContent = 'يرجى اختيار لونين لوحدة الحوض مرتبين حسب الأولوية المناسبة لك، وذلك لضمان التوفر في حال عدم توفر اللون الأول.';
-  colorDesc.style.fontSize = '13px';
-  colorDesc.style.color = 'var(--color-text-muted, #666)';
-  colorDesc.style.marginBottom = '12px';
-
-  const wrapEl = document.createElement('div');
-  wrapEl.className = 'cards-row-wrap';
-
-  const startBtn = document.createElement('button');
-  startBtn.type = 'button';
-  startBtn.className = 'scroll-arrow start hidden';
-  startBtn.id = 'unit-colors-row-start';
-  startBtn.setAttribute('aria-label', 'Previous');
-  startBtn.onclick = () => scrollCards('unit-colors-row', -1);
-  startBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>';
-
-  const endBtn = document.createElement('button');
-  endBtn.type = 'button';
-  endBtn.className = 'scroll-arrow end hidden';
-  endBtn.id = 'unit-colors-row-end';
-  endBtn.setAttribute('aria-label', 'Next');
-  endBtn.onclick = () => scrollCards('unit-colors-row', 1);
-  endBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>';
-
-  const cardsRow = document.createElement('div');
-  cardsRow.className = 'cards-row';
-  cardsRow.id = 'unit-colors-row';
-  cardsRow.innerHTML = ''; // تنظيف الكروت القديمة والـ Placeholders لمنع تكرار القفل
-  cardsRow.onscroll = () => updateArrows('unit-colors-row');
+  colorContainer.appendChild(divider);
 
   if (!S.selectedColors) S.selectedColors = [];
 
-  for (let i = 1; i <= 20; i++) {
-    const numStr = i < 10 ? `0${i}` : `${i}`;
-    const colorId = `clr_${numStr}`;
+  const colorGroups = [
+    { family: 'solid', prefix: 'clr_sld_', defaultTitle: 'لون سادة (مط)', defaultPrice: 0 },
+    { family: 'wood', prefix: 'clr_wd_', defaultTitle: 'خشابي', defaultPrice: 800 },
+    { family: 'gloss', prefix: 'clr_gls_', defaultTitle: 'لامع', defaultPrice: 1100 }
+  ];
 
-    const colorCard = document.createElement('div');
-    colorCard.className = 'design-card color-shape-card';
+  colorGroups.forEach(group => {
+    const sheetData = (D.colors || []).find(c => c.family === group.family) || {};
+    const titleText = sheetData.name || group.defaultTitle;
+    const extraPrice = (sheetData.price !== undefined && sheetData.price !== null) ? sheetData.price : group.defaultPrice;
 
-    const imgContainer = mkImg(colorId, colorCard);
+    // إنشاء حاوية خاصة بكل عائلة ألوان لإخفائها بالكامل لو لم توجد صور
+    const groupWrapper = document.createElement('div');
+    groupWrapper.className = 'color-group-wrapper';
+    groupWrapper.id = `group-wrapper-${group.family}`;
 
-    // تفريغ أي overlays زائنة قد تكون متراكمة داخل الـ Container
-    imgContainer.querySelectorAll('.card-overlay').forEach(el => el.remove());
+    const subTitle = document.createElement('h4');
+    subTitle.className = 'subtitle';
+    subTitle.textContent = titleText;
+    subTitle.style.marginBottom = '4px';
+    groupWrapper.appendChild(subTitle);
 
-    // إضافة اللوك فقط لو المقاس غير محدد
-    if (!S.size) {
-      imgContainer.appendChild(mkLockOverlay());
+    if (extraPrice > 0) {
+      const subDesc = document.createElement('p');
+      subDesc.style.fontSize = '13px';
+      subDesc.style.color = 'var(--color-text-muted, #666)';
+      subDesc.style.marginBottom = '12px';
+      subDesc.innerHTML = `اختيار هذا النوع يزيد تكلفة الوحدة بمقدار <strong>${extraPrice.toLocaleString('en-US')} ج.م</strong>`;
+      groupWrapper.appendChild(subDesc);
+    } else {
+      subTitle.style.marginBottom = '12px';
     }
 
-    const img = imgContainer.querySelector('img');
+    const rowId = `unit-colors-row-${group.family}`;
+    const wrapEl = document.createElement('div');
+    wrapEl.className = 'cards-row-wrap';
+    wrapEl.style.marginBottom = '16px';
 
-    if (img) {
-      const encoded = encodeURIComponent(colorId);
-      img.src = `images/conf/clr/${encoded}.webp`;
+    const startBtn = document.createElement('button');
+    startBtn.type = 'button';
+    startBtn.className = 'scroll-arrow start hidden';
+    startBtn.id = `${rowId}-start`;
+    startBtn.setAttribute('aria-label', 'Previous');
+    startBtn.onclick = () => scrollCards(rowId, -1);
+    startBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>';
 
-      img.onerror = function () {
-        if (this.src.endsWith('.webp')) {
-          this.src = `images/conf/clr/${encoded}.png`;
+    const endBtn = document.createElement('button');
+    endBtn.type = 'button';
+    endBtn.className = 'scroll-arrow end hidden';
+    endBtn.id = `${rowId}-end`;
+    endBtn.setAttribute('aria-label', 'Next');
+    endBtn.onclick = () => scrollCards(rowId, 1);
+    endBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+
+    const cardsRow = document.createElement('div');
+    cardsRow.className = 'cards-row';
+    cardsRow.id = rowId;
+    cardsRow.onscroll = () => updateArrows(rowId);
+
+    // متابعة حذف الصور غير الموجودة لإخفاء السكشن بالكامل لو أصبحت الكروت 0
+    const checkGroupVisibility = () => {
+      setTimeout(() => {
+        if (cardsRow.children.length === 0) {
+          groupWrapper.style.display = 'none';
         } else {
-          colorCard.remove();
-          setTimeout(() => updateArrows('unit-colors-row'), 50);
+          groupWrapper.style.display = 'block';
         }
-      };
-    }
-
-    colorCard.appendChild(imgContainer);
-
-    const zoomBtn = imgContainer.querySelector('.czoom, .zoom-btn, [data-action="zoom"]');
-    if (zoomBtn) {
-      zoomBtn.onclick = (e) => {
-        e.stopPropagation();
-        openLB(`images/conf/clr/${encodeURIComponent(colorId)}.webp`);
-      };
-    }
-
-    const cIndex = S.selectedColors.indexOf(colorId);
-    if (cIndex !== -1) {
-      colorCard.classList.add('selected');
-      const badge = document.createElement('div');
-      badge.className = 'handle-priority-badge';
-      badge.textContent = cIndex + 1;
-      colorCard.appendChild(badge);
-    }
-
-    colorCard.onclick = () => {
-      if (!S.size) {
-        showToast('يرجى اختيار عرض الحوض أولاً لتتمكن من اختيار لون الوحدة.');
-        const sizeSection = document.getElementById('size-group-title') || document.getElementById('sz');
-        if (sizeSection) {
-          sizeSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-        return;
-      }
-
-      const existingIdx = S.selectedColors.indexOf(colorId);
-      if (existingIdx !== -1) {
-        S.selectedColors.splice(existingIdx, 1);
-      } else {
-        if (S.selectedColors.length >= 2) {
-          S.selectedColors.shift();
-        }
-        S.selectedColors.push(colorId);
-      }
-      rDes();
-      if (typeof updateStepperProgress === 'function') updateStepperProgress();
-      if (typeof upd === 'function') upd();
+        updateArrows(rowId);
+      }, 60);
     };
 
-    cardsRow.appendChild(colorCard);
-  }
+    for (let i = 1; i <= 20; i++) {
+      const numStr = i < 10 ? `0${i}` : `${i}`;
+      const colorId = `${group.prefix}${numStr}`;
 
-  wrapEl.appendChild(startBtn);
-  wrapEl.appendChild(cardsRow);
-  wrapEl.appendChild(endBtn);
+      const colorCard = document.createElement('div');
+      colorCard.className = 'design-card color-shape-card';
+      colorCard.dataset.colorId = colorId;
 
-  colorContainer.appendChild(divider);
-  colorContainer.appendChild(colorTitle);
-  colorContainer.appendChild(colorDesc);
-  colorContainer.appendChild(wrapEl);
+      const imgContainer = mkImg(colorId, colorCard);
+      imgContainer.querySelectorAll('.card-overlay').forEach(el => el.remove());
+
+      if (!S.size) {
+        imgContainer.appendChild(mkLockOverlay());
+      }
+
+      const img = imgContainer.querySelector('img');
+      if (img) {
+        const cleanColorId = String(colorId).replace(/\.(png|webp|jpg|jpeg)$/i, '');
+        const encoded = encodeURIComponent(cleanColorId);
+        
+        img.src = `images/conf/clr/${encoded}.png`;
+        
+        img.onerror = function () {
+          if (this.src.endsWith('.png')) {
+            this.src = `images/conf/clr/${encoded}.webp`;
+          } else {
+            // إذا لم توجد الصورة بصيغة png أو webp يتم حذف كارت اللون فوراً
+            if (colorCard) colorCard.remove();
+            if (typeof checkGroupVisibility === 'function') checkGroupVisibility();
+          }
+        };
+      }
+
+      colorCard.appendChild(imgContainer);
+
+      const zoomBtn = imgContainer.querySelector('.czoom, .zoom-btn, [data-action="zoom"]');
+      if (zoomBtn) {
+        zoomBtn.onclick = (e) => {
+          e.stopPropagation();
+          openLB(`images/conf/clr/${encodeURIComponent(colorId)}.webp`);
+        };
+      }
+
+      if (S.selectedColors && S.selectedColors[0] === colorId) {
+        colorCard.classList.add('selected');
+      }
+
+      colorCard.onclick = () => {
+        if (!S.size) {
+          showToast('يرجى اختيار عرض الحوض أولاً.');
+          const sizeSection = document.getElementById('size-group-title') || document.getElementById('sz');
+          if (sizeSection) {
+            sizeSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+          return;
+        }
+
+        const isAlreadySelected = S.selectedColors && S.selectedColors[0] === colorId;
+        if (isAlreadySelected) {
+          S.selectedColors = [];
+        } else {
+          S.selectedColors = [colorId];
+        }
+
+        // إزالة كلاس المحدد والتظليل/الـ Overlay عن كل كروت الألوان
+        document.querySelectorAll('#unit-color-section .design-card').forEach(card => {
+          card.classList.remove('selected', 'unselected', 'dimmed', 'has-overlay');
+          const overlay = card.querySelector('.card-overlay:not(.lock-overlay)');
+          if (overlay) overlay.remove();
+        });
+
+        if (!isAlreadySelected) {
+          colorCard.classList.add('selected');
+        }
+
+        if (typeof updateStepperProgress === 'function') updateStepperProgress();
+        if (typeof upd === 'function') upd();
+      };
+
+      cardsRow.appendChild(colorCard);
+    }
+
+    wrapEl.appendChild(startBtn);
+    wrapEl.appendChild(cardsRow);
+    wrapEl.appendChild(endBtn);
+    groupWrapper.appendChild(wrapEl);
+    colorContainer.appendChild(groupWrapper);
+
+    checkGroupVisibility();
+  });
+
   box.parentNode.appendChild(colorContainer);
-
-  setTimeout(() => updateArrows('unit-colors-row'), 100);
 }
 
 /* ===== rSz ===== */
@@ -1262,9 +1334,26 @@ function calc() {
   const noH = S.design.hc === 0;
   if (!noH && !S.handle) return null;
 
+  let colorExtra = 0;
+  if (S.selectedColors && S.selectedColors[0]) {
+    const selectedId = S.selectedColors[0];
+    let familyKey = 'solid';
+
+    if (selectedId.startsWith('clr_wd_')) familyKey = 'wood';
+    else if (selectedId.startsWith('clr_gls_')) familyKey = 'gloss';
+
+    const colorFamilyObj = (D.colors || []).find(c => c.family === familyKey);
+    if (colorFamilyObj) {
+      colorExtra = colorFamilyObj.price || 0;
+    } else {
+      if (familyKey === 'wood') colorExtra = 800;
+      else if (familyKey === 'gloss') colorExtra = 1100;
+    }
+  }
+
   const sg = sgr(S.size.size);
   const installationFee = 200; // البند الثابت للمعاينة والتركيب
-  const unitPrice = r5(S.size.price + dvp(S.div, sg) + (noH ? 0 : S.handle.price * S.design.hc));
+  const unitPrice = r5(S.size.price + colorExtra + dvp(S.div, sg) + (noH ? 0 : S.handle.price * S.design.hc));
 
   // إذا كان العميل لم يحدد موقعه بعد، نعيد سعر الوحدة + التركيب الثابت فقط
   if (installCost === null) return unitPrice + installationFee;
@@ -1274,6 +1363,20 @@ function calc() {
 }
 
 function upd() {
+  // إخفاء سكشن الألوان فوراً بأعلى أولوية إذا لم يتم اختيار نوع الحوض
+  const colorSecs = document.querySelectorAll('.colors-section, .color-section, .clr-section, #clr, #clr-wrap, #sc-section');
+  if (!S || !S.sinkType) {
+    colorSecs.forEach(sec => {
+      sec.classList.add('hidden');
+      sec.style.setProperty('display', 'none', 'important');
+    });
+  } else {
+    colorSecs.forEach(sec => {
+      sec.classList.remove('hidden');
+      sec.style.removeProperty('display');
+    });
+  }
+
   setTimeout(() => { if (typeof updateStickyValue === 'function') updateStickyValue(); }, 0);
   clearTimeout(dt);
   dt = setTimeout(() => {
@@ -1295,7 +1398,7 @@ function upd() {
 
     const egpTag = '<small style="font-size: 0.75em; font-weight: normal; margin-left: 2px;">EGP</small>';
 
-    // 1. تحديث السعر الإجمالي
+    // 1. تحديث السعر الإجمالي مع تفعيل الـ Pulse فقط عند تغير القيمة المالية فعلياً
     const totalEl = document.getElementById('total-price');
     const canShowPrice = S.design && S.size;
     if (totalEl) {
@@ -1303,7 +1406,15 @@ function upd() {
         canShowPrice && t !== null
           ? `${t.toLocaleString('en-US')} ${egpTag}`
           : `— ${egpTag}`;
-      pulsePrice(totalEl);
+
+      const currentNumericPrice = canShowPrice ? t : null;
+      const lastPrice = totalEl.dataset.lastTotal !== undefined ? JSON.parse(totalEl.dataset.lastTotal) : undefined;
+
+      // تشغيل الـ Pulse فقط في حال تغير الرقم المالي النهائي
+      if (lastPrice !== currentNumericPrice) {
+        totalEl.dataset.lastTotal = JSON.stringify(currentNumericPrice);
+        pulsePrice(totalEl);
+      }
     }
 
     // 2. تحديث التحذيرات (إن وجدت)
@@ -1323,7 +1434,7 @@ function upd() {
     if (siLabel) siLabel.textContent = installCost !== null ? 'محسوبة' : '—';
     if (siPrice) siPrice.innerHTML = installCost !== null ? `${installCost.toLocaleString('en-US')} ${egpTag}` : '—';
 
-    // تحديث النوع
+    // تحديث النوع وإخفاء سكشن الألوان تماماً إذا لم يتم اختيار نوع الحوض
     const sdTypeEl = document.getElementById('sd-type');
     if (sdTypeEl) {
       const sinkTypeNames = {
@@ -1333,7 +1444,15 @@ function upd() {
         'floor-standing': 'حوض برجل كاملة'
       };
       sdTypeEl.textContent = S.sinkType ? sinkTypeNames[S.sinkType] : '—';
-      updateStepperProgress();
+      if (typeof updateStepperProgress === 'function') updateStepperProgress();
+    }
+
+    // التحقق من حالة اختيار نوع الحوض للتحكم بظهور سكشن الألوان
+    if (!S.sinkType) {
+      document.querySelectorAll('.colors-section, .color-section, .clr-section, #clr, #clr-wrap').forEach(sec => {
+        sec.classList.add('hidden');
+        sec.style.display = 'none';
+      });
     }
 
     // تحديث تفاصيل الشريط الجانبي
@@ -1342,6 +1461,48 @@ function upd() {
 
     const sdPriceEl = document.getElementById('sd-price');
     if (sdPriceEl) sdPriceEl.innerHTML = S.size ? `${r5(S.size.price).toLocaleString('en-US')} ${egpTag}` : '—';
+
+    // تحديث صف لون الوحدة باستخدام الـ Hardcoding المباشر
+    const scEl = document.getElementById('sc');
+    if (scEl) {
+      const rawVal = (S.selectedColors && S.selectedColors.length > 0 && S.selectedColors[0]) ? String(S.selectedColors[0]) : '';
+      
+      if (rawVal) {
+        const cleanName = rawVal.split('/').pop().replace(/\.[^/.]+$/, "").toLowerCase().trim();
+        
+        // قاموس الأسماء المباشر (Hardcoded Color Names)
+        const colorMap = {
+          'wd': 'خشبي',
+          'wood': 'خشبي',
+          'sld': 'سادة',
+          'solid': 'سادة',
+          'gls': 'لامع',
+          'gloss': 'لامع'
+        };
+
+        let translatedName = '';
+
+        // البحث في الكود المكتوب بداخل اسم الصورة
+        for (const [code, name] of Object.entries(colorMap)) {
+          if (cleanName.includes(`_${code}_`) || cleanName.startsWith(`${code}_`) || cleanName.endsWith(`_${code}`) || cleanName === code) {
+            translatedName = name;
+            break;
+          }
+        }
+
+        scEl.textContent = translatedName || cleanName;
+      } else {
+        scEl.textContent = '—';
+      }
+    }
+
+    if (scPriceEl) {
+      if (matchedColorObj && matchedColorObj.price > 0) {
+        scPriceEl.innerHTML = `+${matchedColorObj.price.toLocaleString('en-US')} ${egpTag}`;
+      } else {
+        scPriceEl.textContent = '';
+      }
+    }
 
     const ssEl = document.getElementById('ss');
     if (ssEl) ssEl.textContent = S.size ? S.size.size : '—';
@@ -1513,8 +1674,6 @@ async function getAddress(lat, lon, resElement) {
     const response = await fetch(url);
     const data = await response.json();
     console.log(data);
-    // (ملاحظة) data.configurator قد لا تكون موجودة — إبقى على سلوك الطباعة كما كان
-    console.table(data.configurator);
     if (data.address) {
       const a = data.address;
     const neighbourhood =
@@ -1563,17 +1722,13 @@ function openDesignRequestModal() {
   const selectedShapesCount = (isMultiShapeHandle && Array.isArray(S.selectedHandleShapes)) ? S.selectedHandleShapes.length : 0;
   const hasSelectedTwoShapes = selectedShapesCount >= 2;
   const isHandleIncomplete = S.design && S.design.hc !== 0 && (!S.handle || (isMultiShapeHandle && !hasSelectedTwoShapes));
-  const hasSelectedTwoColors = Array.isArray(S.selectedColors) && S.selectedColors.length >= 2;
-  const isDesignIncomplete = !S.design || !hasSelectedTwoColors;
+  const hasSelectedColor = Array.isArray(S.selectedColors) && S.selectedColors.length >= 1;
+  const isDesignIncomplete = !S.design || !hasSelectedColor;
 
   if (!S.sinkType || !S.size || isDesignIncomplete || !S.div || isHandleIncomplete) {
     // تخصيص نص الرسالة بدقة حسب الحالة
-    if (S.design && !hasSelectedTwoColors) {
-      if (S.selectedColors.length === 1) {
-        showToast('لقد اخترت لونًا واحدًا فقط للوحدة، يرجى اختيار اللون الثاني.');
-      } else {
-        showToast('يرجى اختيار لون الوحدة أولاً.');
-      }
+    if (S.design && !hasSelectedColor) {
+      showToast('يرجى اختيار لون الوحدة أولاً.');
     } else if (isMultiShapeHandle && selectedShapesCount === 1) {
       showToast('لقد اخترت شكلاً واحدًا فقط للمقبض، يرجى اختيار الشكل الثاني.');
     } else if (isMultiShapeHandle && selectedShapesCount === 0) {
@@ -1593,7 +1748,10 @@ function openDesignRequestModal() {
     } else if (!S.size) {
       (document.getElementById('sz') || document.getElementById('sizes'))?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     } else if (isDesignIncomplete) {
-      const target = (!S.design) ? (document.getElementById('dc') || document.getElementById('design-cards')) : document.getElementById('unit-colors-row');
+      const target = (!S.design) 
+        ? (document.getElementById('dc') || document.getElementById('design-cards') || document.getElementById('design-group-title') || document.querySelector('[data-group="design"]')) 
+        : (document.getElementById('unit-color-section') || document.getElementById('unit-colors-row'));
+        
       target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     } else if (!S.div) {
       const divTarget = 
@@ -2128,6 +2286,37 @@ async function drRenderPreview() {
     const shippingCost = window.installCost;
 
     // --------------------------------------------------------
+    // Handles table
+    // --------------------------------------------------------
+    const handlesTbody = content.querySelector('#sink-handle-items');
+
+    if (handlesTbody) {
+      const h1 = S.selectedHandles && S.selectedHandles[0] ? S.selectedHandles[0] : null;
+      const h2 = S.selectedHandles && S.selectedHandles[1] ? S.selectedHandles[1] : null;
+
+      const h1Src = h1 ? await makeSquareImage(`images/conf/handles/${encodeURIComponent(h1)}.webp`) : '';
+      const h2Src = h2 ? await makeSquareImage(`images/conf/handles/${encodeURIComponent(h2)}.webp`) : '';
+
+      const h1Html = h1Src
+        ? `<img src="${h1Src}" style="width:40px; height:40px; object-fit:contain; background:#ffffff; display:block; margin:0 auto;" />`
+        : '—';
+
+      const h2Html = h2Src
+        ? `<img src="${h2Src}" style="width:40px; height:40px; object-fit:contain; background:#ffffff; display:block; margin:0 auto;" />`
+        : '—';
+
+      handlesTbody.innerHTML = `
+        <tr class="item-row">
+          <td class="col-section">المقابض</td>
+          <td class="col-code">${config.handle ? config.handle.id : '—'}</td>
+          <td class="col-priority-1">${h1Html}</td>
+          <td class="col-priority-2">${h2Html}</td>
+          <td class="col-price">${config.handle ? config.handle.price : 0} ج.م</td>
+        </tr>
+      `;
+    }
+
+    // --------------------------------------------------------
     // Configurator images
     // --------------------------------------------------------
 
@@ -2376,12 +2565,17 @@ async function drRenderPreview() {
       content.querySelector('#sink-design-items');
 
     if (designTbody) {
+      const selectedColorId = S.selectedColors && S.selectedColors[0] ? S.selectedColors[0] : null;
+      const colorImgHtml = selectedColorId
+        ? `<img src="images/conf/clr/${encodeURIComponent(selectedColorId)}.webp" style="height:36px; object-fit:contain;" onerror="this.src='images/conf/clr/${encodeURIComponent(selectedColorId)}.png'" />`
+        : '—';
+
       designTbody.innerHTML = `
         <tr class="item-row">
           <td class="col-section">التصميم</td>
           <td class="col-name">${config.design.name}</td>
           <td class="col-code">${config.design.id}</td>
-          <td class="col-color">أبيض</td>
+          <td class="col-color">${colorImgHtml}</td>
           <td class="col-price">${config.size.price} ج.م</td>
         </tr>
       `;
@@ -2531,6 +2725,35 @@ function updateCustomFileUI(inputId, imageBase64, defaultText = 'اضغط لرف
     wrapper.style.borderColor = '#d1d5db';
     wrapper.style.backgroundColor = '#f9fafb';
   }
+}
+
+function makeSquareImage(src, targetSize = 300) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'Anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = targetSize;
+      canvas.height = targetSize;
+      const ctx = canvas.getContext('2d');
+
+      // تعبئة الخلفية باللون الأبيض
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, targetSize, targetSize);
+
+      // حساب الأبعاد للسنترة مع الحفاظ على النسبة (Aspect Ratio)
+      const scale = Math.min(targetSize / img.width, targetSize / img.height);
+      const w = img.width * scale;
+      const h = img.height * scale;
+      const x = (targetSize - w) / 2;
+      const y = (targetSize - h) / 2;
+
+      ctx.drawImage(img, x, y, w, h);
+      resolve(canvas.toDataURL('image/jpeg', 0.9));
+    };
+    img.onerror = () => resolve(src); // في حال فشل التحميل يُرجع الرابط الأصلي
+    img.src = src;
+  });
 }
 
 // حفظ المسودة كاملة (بيانات + لوكيشن + صور)
@@ -3078,12 +3301,14 @@ function setupStickyPriceBar() {
       
       const applyAnimation = (el) => {
         if (!el) return;
-        // التحقق مما إذا كان السعر قد تغير فعلاً
-        if (el.innerHTML !== formattedPrice) {
-          el.innerHTML = formattedPrice;
+        const lastTotal = el.dataset.lastTotal !== undefined ? parseFloat(el.dataset.lastTotal) : null;
+        el.innerHTML = formattedPrice;
+
+        // تشغيل الـ Pulse فقط لو تغير الرقم الإجمالي فعلياً
+        if (lastTotal !== total) {
+          el.dataset.lastTotal = total;
           el.classList.remove('price-updated');
-          // إجبار المتصفح على إعادة تطبيق الـ CSS Class (Reflow)
-          void el.offsetWidth;
+          void el.offsetWidth; // Reflow
           el.classList.add('price-updated');
         }
       };
@@ -3180,7 +3405,7 @@ function setupStickyPriceBar() {
   })();
 }
 
-// Stepper sticky & visibility management (consolidated)
+// Stepper sticky & visibility management (Accelerated CSS Transform Sync)
 function setupStepperSticky() {
   (function () {
     let io = null;
@@ -3192,19 +3417,19 @@ function setupStepperSticky() {
       if (!stepperEl || !targetSection) return;
       if (io) io.disconnect();
 
-      // إضافة سلاسة الحركة والانتقال للـ Stepper
-      stepperEl.style.transition = 'transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease, visibility 0.35s ease';
+      // حساب ارتفاع الـ Navbar الفعلي تلقائياً وتحديثه
+      if (navbar) {
+        document.documentElement.style.setProperty('--nav-height', `${navbar.offsetHeight}px`);
+      }
 
+      // إدارة إخفاء الـ Stepper تماماً عند الوصول لسكشن التفاصيل
       io = new IntersectionObserver(function (entries) {
         entries.forEach(function (ent) {
-          // إذا وصل العميل لسكشن التفاصيل (سواء تقاطع معه أو تجاوزه للأسفل)، يتم إخفاء الـ Stepper تماماً
           if (ent.isIntersecting || ent.boundingClientRect.top <= 60) {
-            stepperEl.style.transform = 'translateY(-100%)';
             stepperEl.style.opacity = '0';
             stepperEl.style.visibility = 'hidden';
             stepperEl.style.pointerEvents = 'none';
           } else {
-            stepperEl.style.transform = 'translateY(0)';
             stepperEl.style.opacity = '1';
             stepperEl.style.visibility = 'visible';
             stepperEl.style.pointerEvents = 'auto';
@@ -3215,29 +3440,22 @@ function setupStepperSticky() {
       io.observe(targetSection);
 
       window.addEventListener('scroll', function () {
-        if (window.scrollY > 150) {
+        if (window.scrollY > 20) {
           stepperEl.classList.add('is-sticky');
-          
-          // حساب ارتفاع الـ Navbar وإضافته كمسافة أمان لكي لا تختفي تحته
-          if (navbar) {
-            const navHeight = navbar.offsetHeight;
-            // لو الـ Navbar ظاهرة (لم يتم إخفاؤها بـ translateY)، نترك مسافة تحتها
-            const isNavVisible = navbar.style.transform !== 'translateY(-100%)';
-            const offset = isNavVisible ? navHeight + 10 : 10; // 10px مسافة إضافية جمالية
-            stepperEl.style.setProperty('--stepper-top', `${offset}px`);
-          }
         } else {
           stepperEl.classList.remove('is-sticky');
-          stepperEl.style.removeProperty('--stepper-top');
         }
-      });
+      }, { passive: true });
     }
-    window.addEventListener('load', setup);
+
+    if (document.readyState === 'complete') setup();
+    else window.addEventListener('load', setup);
+    
     window.addEventListener('resize', setup);
   })();
 }
 
-// Update stepper progress (keeps original logic)
+// Update stepper progress (With Half-Completed State support)
 function updateStepperProgress() {
   const stepDesign = document.getElementById('st-design');
   const stepSinkType = document.getElementById('st-sink-type');
@@ -3246,47 +3464,69 @@ function updateStepperProgress() {
   const stepHandle = document.getElementById('st-handle');
   const stepLocation = document.getElementById('st-location');
 
-  const hasColors = (typeof S !== 'undefined' && Array.isArray(S.selectedColors) && S.selectedColors.length >= 2);
-  const hasDesign = (typeof S !== 'undefined' && S.design && (S.design.id || S.design.name || S.design.type) && hasColors);
-  const hasSinkType = (typeof S !== 'undefined' && S.sinkType);
-  const hasSize = (typeof S !== 'undefined' && S.size);
-  const hasDiv = (typeof S !== 'undefined' && S.div);
+  // --- 1. فحص حالة التصميم والألوان ---
+  const hasSelectedDesign = Boolean(typeof S !== 'undefined' && S.design && (S.design.id || S.design.name || S.design.type));
+  const hasSelectedColor = Boolean(typeof S !== 'undefined' && Array.isArray(S.selectedColors) && S.selectedColors.length >= 1);
 
-  const noH = (typeof S !== 'undefined' && S.design && S.design.hc === 0);
-  
-  // التحقق مما إذا كان المقبض المختار يتطلب أشكالاً فرعية (يشترط تحديد الشكلين بالكامل)
+  const isDesignFullyCompleted = hasSelectedDesign && hasSelectedColor;
+  const isDesignHalfCompleted = (hasSelectedDesign && !hasSelectedColor) || (!hasSelectedDesign && hasSelectedColor);
+
+  // --- 2. فحص حالة المقابض ---
+  const noH = Boolean(typeof S !== 'undefined' && S.design && S.design.hc === 0);
   const isMultiShapeHandle = typeof S !== 'undefined' && S.handle && (S.handle.id === '4c_h&k01' || S.handle.id === '4c_h&k02');
-  const hasSelectedShapes = isMultiShapeHandle && Array.isArray(S.selectedHandleShapes) && S.selectedHandleShapes.length >= 2;
-
-  const hasHandle = typeof S !== 'undefined' && (
+  
+  const handleShapesCount = (isMultiShapeHandle && Array.isArray(S.selectedHandleShapes)) ? S.selectedHandleShapes.length : 0;
+  
+  const isHandleFullyCompleted = typeof S !== 'undefined' && (
     noH || 
-    (isMultiShapeHandle ? hasSelectedShapes : Boolean(S.handle))
+    (isMultiShapeHandle ? handleShapesCount >= 2 : Boolean(S.handle))
   );
 
+  const isHandleHalfCompleted = !isHandleFullyCompleted && isMultiShapeHandle && handleShapesCount > 0;
+
+  // --- 3. باقى الخطوات ---
+  const hasSinkType = Boolean(typeof S !== 'undefined' && S.sinkType);
+  const hasSize = Boolean(typeof S !== 'undefined' && S.size);
+  const hasDiv = Boolean(typeof S !== 'undefined' && S.div);
+
   const errorMsgElement = document.body.innerText.includes('خارج نطاق خدمتنا');
-  const isOutOfRange =
-    (typeof locationError !== 'undefined' && locationError === true) ||
-    errorMsgElement;
-  const hasLocation =
-    typeof installCost !== 'undefined' &&
-    installCost !== null &&
-    !isOutOfRange;
+  const isOutOfRange = (typeof locationError !== 'undefined' && locationError === true) || errorMsgElement;
+  const hasLocation = typeof installCost !== 'undefined' && installCost !== null && !isOutOfRange;
+
+  // --- 4. تطبيق الكلاسات للـ UI ---
 
   if (stepSinkType) {
     if (hasSinkType) stepSinkType.classList.add('completed'); else stepSinkType.classList.remove('completed');
   }
+
+  // تطبيق حالة Half-Completed لخطوة التصميم
   if (stepDesign) {
-    if (hasDesign) stepDesign.classList.add('completed'); else stepDesign.classList.remove('completed');
+    stepDesign.classList.remove('completed', 'half-completed');
+    if (isDesignFullyCompleted) {
+      stepDesign.classList.add('completed');
+    } else if (isDesignHalfCompleted) {
+      stepDesign.classList.add('half-completed');
+    }
   }
+
   if (stepSize) {
     if (hasSize) stepSize.classList.add('completed'); else stepSize.classList.remove('completed');
   }
+
   if (stepPartition) {
     if (hasDiv) stepPartition.classList.add('completed'); else stepPartition.classList.remove('completed');
   }
+
+  // تطبيق حالة Half-Completed لخطوة المقبض
   if (stepHandle) {
-    if (hasHandle) stepHandle.classList.add('completed'); else stepHandle.classList.remove('completed');
+    stepHandle.classList.remove('completed', 'half-completed');
+    if (isHandleFullyCompleted) {
+      stepHandle.classList.add('completed');
+    } else if (isHandleHalfCompleted) {
+      stepHandle.classList.add('half-completed');
+    }
   }
+
   if (stepLocation) {
     if (hasLocation) {
       stepLocation.classList.add('completed');
@@ -3299,6 +3539,7 @@ function updateStepperProgress() {
     }
   }
 
+  // --- 5. تحديث الخطوة النشطة Active Step ---
   const allSteps = [stepSinkType, stepSize, stepDesign, stepPartition, stepHandle, stepLocation];
   allSteps.forEach(el => el && el.classList.remove('active'));
 
@@ -3306,11 +3547,11 @@ function updateStepperProgress() {
     if (stepSinkType) stepSinkType.classList.add('active');
   } else if (!hasSize) {
     if (stepSize) stepSize.classList.add('active');
-  } else if (!hasDesign) {
+  } else if (!isDesignFullyCompleted) {
     if (stepDesign) stepDesign.classList.add('active');
   } else if (!hasDiv) {
     if (stepPartition) stepPartition.classList.add('active');
-  } else if (!hasHandle) {
+  } else if (!isHandleFullyCompleted) {
     if (stepHandle) stepHandle.classList.add('active');
   } else if (!hasLocation) {
     if (stepLocation) stepLocation.classList.add('active');
@@ -3330,124 +3571,6 @@ function closeLB() { document.getElementById('lb').classList.remove('open'); }
 Order / WA actions, Reset, Save
 ================================================================================
 */
-// إضافة الوحدة المخصصة إلى السلة بالتوافق مع Cart API الحالي
-function addToCartFromConfigurator() {
-  // 1. التحقق من تسجيل الدخول
-  if (window.Auth && typeof window.Auth.isLoggedIn === 'function') {
-    if (!window.Auth.isLoggedIn()) {
-      if (typeof window.showToast === 'function') {
-        window.showToast('يرجى تسجيل الدخول أولاً لإضافة المنتج إلى السلة');
-      }
-      return;
-    }
-  } else if (window.currentUser === null && window.isLoggedIn === false) {
-    if (typeof window.showToast === 'function') {
-      window.showToast('يرجى تسجيل الدخول أولاً لإضافة المنتج إلى السلة');
-    }
-    return;
-  }
-
-  // 2. التحقق من إكمال خيارات المنتج
-  if (!S.design || !S.size || !S.div) {
-    showToast('يرجى إكمال الاختيارات الأساسية أولاً');
-    return;
-  }
-  const noH = S.design.hc === 0;
-  if (!noH && !S.handle) {
-    showToast('يرجى اختيار المقبض أو التأكيد بدون مقبض');
-    return;
-  }
-
-  const finalPrice = calc();
-  if (finalPrice === null) {
-    showToast('خطأ في حساب السعر، تأكد من الخيارات');
-    return;
-  }
-
-  const configuration = {
-    sinkType: S.sinkType,
-    design: S.design,
-    size: S.size,
-    division: S.div,
-    handle: noH ? null : S.handle,
-    installCost: typeof installCost !== 'undefined' ? installCost : null
-  };
-
-  if (typeof window.addToCartGlobal === 'function') {
-    window.addToCartGlobal(S.design.id, 1, {
-      unitPrice: finalPrice,
-      configuration: configuration
-    });
-  }
-
-  if (typeof openSinkOrderModal === 'function') {
-    openSinkOrderModal();
-  } else {
-    const modal = document.getElementById('order-preview-modal');
-    if (modal) {
-      modal.style.display = 'flex';
-      modal.setAttribute('aria-hidden', 'false');
-    }
-  }
-}
-
-
-function orderWA() {
-  const t = calc();
-  if (!t) {
-    showToast('الطلب غير مكتمل، يرجى إكمال جميع الخيارات');
-    return;
-  }
-
-  const noH = S.design.hc === 0;
-  const sinkTypeNames = {
-    "wall-hung": "حوض معلق",
-    "drop-in": "حوض ساقط",
-    "bowl": "حوض فوق الكاونتر",
-    "floor-standing": "حوض برجل كاملة"
-  };
-
-  const specs =
-`نوع الحوض: ${sinkTypeNames[S.sinkType]}
-عرض الحوض: ${S.size.size}
-تصميم الوحدة: ${S.design.name}
-التقسيمة الداخلية: ${S.div.name}
-نوع المقبض: ${noH ? 'بدون مقبض' : S.handle.name}
-`;
-
-  let msg;
-
-  // خارج نطاق الخدمة
-  if (installCost === null) {
-    msg =
-`السلام عليكم،
-
-أرغب في الاستفسار عن إمكانية تنفيذ وحدة حوض بالمواصفات التالية:
-
-${specs}
-
-هل يمكن تنفيذ وتركيب الوحدة في موقعي؟
-
-وشكرًا لكم.`;
-  } else {
-    // داخل نطاق الخدمة
-    msg =
-`السلام عليكم،
-
-أرغب في الاستفسار عن وحدة حوض بالمواصفات التالية:
-
-${specs}
-
-برجاء التواصل معي لمعرفة التفاصيل وإتمام الطلب.
-
-وشكرًا لكم.`;
-  }
-
-  window.open(
-    'https://wa.me/' + WA + '?text=' + encodeURIComponent(msg),
-    '_blank'
-  );
-}
 
 function customWA() {
   window.open(
@@ -3482,16 +3605,32 @@ function outOfRangeWA() {
 }
 
 function resetAll() {
-  // 1. إعادة تصفير حالة التطبيق العامة
-  S = { sinkType: null, design: null, size: null, div: null, handle: null };
+  // 1. إعادة تصفير حالة التطبيق العامة بجميع مصفوفات التحديد
+  S.sinkType = null;
+  S.design = null;
+  S.size = null;
+  S.div = null;
+  S.handle = null;
+  S.selectedColors = [];
+  S.selectedHandleShapes = [];
+
   userLat = null; 
   userLng = null; 
   installCost = null;
-  
-  // 2. مسح البيانات المحفوظة في الـ LocalStorage والـ State المترسب
-  localStorage.removeItem('wodi_configurator_state');
-  localStorage.removeItem('wodi-config');
+
+  // 2. مسح البيانات المحفوظة في الـ LocalStorage بشكل كامل
+  try {
+    localStorage.removeItem('wodi_configurator_state');
+    localStorage.removeItem('wodi-config');
+    localStorage.clear();
+  } catch(e) {}
   delete window.wodi_saved_state;
+
+  // 3. إزالة كلاسات الاختيار (active / selected / checked) من جميع كروت وأزرار الألوان في الشاشة
+  document.querySelectorAll('.color-card, .color-option, .clr-item, [data-color], [data-color-id]').forEach(el => {
+    el.classList.remove('selected', 'active', 'checked');
+    if (el.tagName === 'INPUT' && el.type === 'radio') el.checked = false;
+  });
 
   // 3. إعادة تعيين زر تحديد الموقع وحالة التوصيل
   const res = document.getElementById('loc-result');
@@ -3502,27 +3641,52 @@ function resetAll() {
     btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg> تحديد موقعي الحالي';
   }
 
-  // 4. إزالة إشارة الاختيار من كروت نوع الحوض
-  document.querySelectorAll('.sink-type-card, .st-card, .sink-card').forEach(card => card.classList.remove('selected', 'active'));
+  // 4. إزالة إشارة الاختيار من كروت نوع الحوض وألوان الوحدة
+  document.querySelectorAll('.sink-type-card, .st-card, .sink-card, .color-card, .color-option, .clr-item').forEach(card => card.classList.remove('selected', 'active'));
 
   // 5. إخفاء سكيلتون التحميل إن وجد
   ['loading-sz', 'loading-dc', 'loading-vc-wall', 'loading-vc-floor', 'loading-hc'].forEach(id => {
     document.getElementById(id)?.classList.remove('show');
   });
 
-  // 6. إظهار الـ Placeholders مرة أخرى في جميع الأقسام
+  // 6. إظهار الـ Placeholders وإخفاء سكشن الألوان المباشر
   showPlaceholders();
+  
+  // إخفاء حاوية الألوان الرئيسية ومسح محتواها الداخلي مؤقتاً
+  const clrContainer = document.getElementById('clr') || document.getElementById('clr-wrap') || document.querySelector('.colors-section');
+  if (clrContainer) {
+    clrContainer.classList.add('hidden');
+    clrContainer.style.setProperty('display', 'none', 'important');
+  }
 
-  // 7. إخفاء أقسام الاختيار الفعلية لحين اختيار نوع الحوض من جديد
-  ['sz', 'dc', 'vc-wall', 'vc-floor', 'hc', 'vc-wall-wrap', 'floor-wrap'].forEach(id => {
-    document.getElementById(id)?.classList.add('hidden');
+  // 7. إخفاء أقسام الاختيار الفعلية وسكشن الألوان كاملاً (سواء كان ID أو Class)
+  ['sz', 'dc', 'vc-wall', 'vc-floor', 'hc', 'vc-wall-wrap', 'floor-wrap', 'clr', 'clr-wrap', 'clr-section', 'color-section', 'sc-section', 'colors-section'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.classList.add('hidden');
+      el.style.display = 'none';
+    }
   });
 
-  // 8. تحديث الرندر والأسعار والشريط السفلي
+  // إخفاء أي سكشن يحتوي على كلاس الألوان في حال عدم وجود ID
+  document.querySelectorAll('.colors-section, .color-section, .clr-section, #clr, #clr-wrap').forEach(sec => {
+    sec.classList.add('hidden');
+    sec.style.display = 'none';
+  });
+
+  // 8. تحديث الرندر وإعادة رسم الألوان وإجبار نص اللون على التصفير
   rDes(); 
   rSz(); 
   rDiv(); 
   rHnd(); 
+  if (typeof rClr === 'function') rClr();
+
+  // إجبار نص السكشن على التصفير المباشر
+  const scEl = document.getElementById('sc');
+  const scPriceEl = document.getElementById('sc-price');
+  if (scEl) scEl.textContent = '—';
+  if (scPriceEl) scPriceEl.textContent = '';
+
   upd();
 
   // 9. التمرير السلس لأعلى عند سكشن اختيار نوع الحوض
@@ -3645,18 +3809,26 @@ function drZoom(factor) {
 }
 
 // expose some internals for debugging (kept as globals in original)
-window.calcInstall = calcInstall;
-window.calc = calc;
-window.updateStepperProgress = updateStepperProgress;
-window.loadConfiguratorData = loadConfiguratorData;
-window.loadConfiguratorState = loadConfiguratorState; // أضيفت لتسهيل التجربة والاختبار
-window.isRestoring = isRestoring; // أضيفت للوصول إلى حالة قفل التحميل
-window.resetAll = resetAll;
-window.openLB = openLB;
-window.closeLB = closeLB;
-window.orderWA = orderWA;
-window.customWA = customWA;
-window.outOfRangeWA = outOfRangeWA;
+// Expose internals safely without throwing ReferenceErrors
+if (typeof calcInstall !== 'undefined') window.calcInstall = calcInstall;
+if (typeof calc !== 'undefined') window.calc = calc;
+if (typeof updateStepperProgress !== 'undefined') window.updateStepperProgress = updateStepperProgress;
+if (typeof loadConfiguratorData !== 'undefined') window.loadConfiguratorData = loadConfiguratorData;
+if (typeof loadConfiguratorState !== 'undefined') window.loadConfiguratorState = loadConfiguratorState;
+if (typeof isRestoring !== 'undefined') window.isRestoring = isRestoring;
+if (typeof resetAll !== 'undefined') window.resetAll = resetAll;
+if (typeof openLB !== 'undefined') window.openLB = openLB;
+if (typeof closeLB !== 'undefined') window.closeLB = closeLB;
+if (typeof orderWA !== 'undefined') window.orderWA = orderWA;
+if (typeof customWA !== 'undefined') window.customWA = customWA;
+if (typeof outOfRangeWA !== 'undefined') window.outOfRangeWA = outOfRangeWA;
+
+// تعريف دالة التوست لمنع خطأ showCustomErrorToast is not defined
+if (typeof showCustomErrorToast !== 'function') {
+  window.showCustomErrorToast = function(msg) {
+    console.warn("Toast Warning:", msg);
+  };
+}
 
 /* ===========================
    Order Popup / Summary Integration
