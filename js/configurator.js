@@ -2,8 +2,7 @@
 
 /*
 ================================================================================
-1. Configuration & Constants
-   (روابط ومتغيرات ثابتة ولا تتغير خلال تشغيل التطبيق)
+Configuration & Constants
 ================================================================================
 */
 const WA = '201556840368';
@@ -11,11 +10,12 @@ const GH = 'https://raw.githubusercontent.com/ahmadtharwat13579-crypto/wodifurni
 const SHEET = 'https://script.google.com/macros/s/AKfycbz3xuCuZ6sU9QVo2nTRaItWFLplEhG7bKuzeZSQpk4DseShYrzycpRhyO2u2kuwPVkY/exec?pwd=double-protection-password';
 const GEOAPIFY_API_KEY = '5d919ff1fd3f4004a73ceb1fb508e805';
 const cur = 'ج.م.';
+const DR_STORAGE_KEY = 'dr_form_draft';
+const ORDER_POPUP_KEY = 'wodi_user_profile';
 
 /*
 ================================================================================
-2. Global State
-   (المتغيرات العامة المستخدمة في ملف الكونفيجوريتور)
+Global State
 ================================================================================
 */
 let userLat = null, userLng = null, installCost = null;
@@ -33,27 +33,27 @@ let S = {
   selectedHandleShapes: []
 };
 
-let dt = null;
+let toastTimeout;
 
-let isRestoring = false;
+// Initialization guard
+let initDone = false;
+
+// Restoration flow guard: set true in initConfigurator() if saved state exists,
+// and set false in applyStateIfReady() after restoration is complete.
+let stateRestorePending = false;
 
 /*
 ================================================================================
-3. Helper Functions
-   (دوال مساعدة عامة: تنسيقات، حسابات صغيرة، أدوات DOM، إلخ)
+Utility Helpers
 ================================================================================
 */
 
-// Round to nearest 5
 const r5 = n => Math.round(n / 5) * 5;
 
-// Convert number to Arabic numerals with thousands separator (kept as original)
 const toAr = n => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ',').replace(/[0-9]/g, d => '٠١٢٣٤٥٦٧٨٩'[d]).replace(',', '،');
 
-// Strip trailing size suffix like _45cm from product id
 const base = id => (id && typeof id.toString === 'function') ? id.toString().replace(/_\d+[\-\.]?\d*cm$/i, '') : '';
 
-// Safely escape HTML (fallback used in one place)
 function escapeHtmlSafe(str) {
   if (typeof str !== 'string') return '';
   return String(str)
@@ -64,33 +64,26 @@ function escapeHtmlSafe(str) {
     .replace(/>/g, '&gt;');
 }
 
-let toastTimeout;
-
 function showToast(msg, duration = 3500) {
   const t = document.getElementById('toast');
   if (!t) return;
 
-  // إلغاء أي مؤقت سابق لو التوست اتطلب ورا بعض
   clearTimeout(toastTimeout);
 
-  // إعداد النص وشريط التقدم
   t.innerHTML = `
     <span>${msg}</span>
     <div class="toast-progress" style="animation-duration: ${duration}ms;"></div>
   `;
 
-  // إعادة تفعيل كلاس الظهور
   t.classList.remove('show');
-  void t.offsetWidth; // إعادة تشغيل الأنيميشن من البداية (Reflow)
+  void t.offsetWidth;
   t.classList.add('show');
 
-  // إخفاء التوست بعد انتهاء المدة
   toastTimeout = setTimeout(() => {
     t.classList.remove('show');
   }, duration);
 }
 
-// CSV parser (kept for completeness — not used elsewhere in current file but preserved)
 function parseCSV(t) {
   const ls = t.trim().split('\n');
   const hs = ls[0].split(',').map(h => h.trim().replace(/^\uFEFF/, '').replace(/^"|"$/g, ''));
@@ -102,7 +95,6 @@ function parseCSV(t) {
   });
 }
 
-// Return group id like '4b_wh_cic01' from '4b_wh_cic01_45cm' or leave '4b_fp_cic00' as-is
 function divisionBase(id) {
   if (!id) return id;
   const s = String(id);
@@ -113,7 +105,6 @@ function divisionBase(id) {
   return s;
 }
 
-// Haversine distance (km)
 function haversine(lat1, lng1, lat2, lng2) {
   const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -124,32 +115,27 @@ function haversine(lat1, lng1, lat2, lng2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// small UI helper: pulse price animation
 function pulsePrice(el, newPriceText) {
   if (!el) return;
   const formattedPrice = newPriceText || el.innerHTML;
   
-  // التشغيل فقط في حال تغير النص/السعر فعلياً
   if (el.innerHTML !== formattedPrice || newPriceText === undefined) {
     if (newPriceText !== undefined) el.innerHTML = formattedPrice;
     
     el.classList.remove('price-updated', 'price-pulse');
-    void el.offsetWidth; // Reflow
+    void el.offsetWidth;
     el.classList.add('price-updated');
   }
 }
 
 /*
 ================================================================================
-4. Data Loading & Processing
-   - loadConfiguratorData: جلب البيانات من SHEET وتخزينها مؤقتاً
-   - build: تحويل صفوف الداتا إلى هيكل D.designs / D.divisions / D.handles
+Data Loading & Processing
 ================================================================================
 */
 
 function loadConfiguratorData() {
-
-  // 1) اذا في كاش محلي، استخدمه فوراً لتحسين السرعة
+  // Check for cached data first
   try {
     const cached = sessionStorage.getItem('wodi_configurator_cache');
     if (cached) {
@@ -157,14 +143,10 @@ function loadConfiguratorData() {
         const rows = JSON.parse(cached);
         D = build(rows);
         dataLoaded = true;
-        rDes(); rSz(); rDiv(); rHnd(); upd();
         
-        // إخفاء الـ placeholders فقط للبيانات المحددة بالفعل
-        if (S.size) document.getElementById("placeholder-sz")?.classList.add("hidden");
-        if (S.design) document.getElementById("placeholder-dc")?.classList.add("hidden");
-        if (S.div) document.getElementById("placeholder-div")?.classList.add("hidden");
-        if (S.handle || (S.design && S.design.hc === 0)) {
-          document.getElementById("placeholder-hc")?.classList.add("hidden");
+        // If state restoration is pending, apply it now
+        if (stateRestorePending) {
+          applyStateIfReady();
         }
       } catch (e) {
         console.warn('Failed to parse cached configurator', e);
@@ -174,7 +156,6 @@ function loadConfiguratorData() {
     console.warn('sessionStorage read failed', e);
   }
 
-  // 2) ثم حاول تحديث البيانات من السيرفر (خلفية) مع retries/timeout
   showConfiguratorLoading();
 
   const MAX_RETRIES = 3;
@@ -205,8 +186,8 @@ function loadConfiguratorData() {
 
       const rows = data && data.configurator;
       const colorRows = data && data.colors;
-
       const settings = data && data.locationSettings;
+
       if (settings && settings.workshop_lat) {
         LOC = settings;
       }
@@ -217,44 +198,8 @@ function loadConfiguratorData() {
         hideConfiguratorLoading();
         try { sessionStorage.setItem('wodi_configurator_cache', JSON.stringify(rows)); } catch (e) { console.warn('sessionStorage set failed', e); }
         
-        // Restore saved state if available
-        if (window.wodi_saved_state) {
-          const saved = window.wodi_saved_state;
-          if (saved.sinkType) {
-            S.sinkType = saved.sinkType;
-            document.querySelectorAll('.sink-type-card').forEach(c => {
-              c.classList.toggle('selected', c.dataset.type === saved.sinkType);
-            });
-          }
-          if (saved.sizeSize) {
-            const sz = D.designs.flatMap(d => d.sizes).find(s => s.size === saved.sizeSize);
-            if (sz) S.size = sz;
-          }
-          if (saved.designId) {
-            S.design = D.designs.find(d => d.id === saved.designId);
-          }
-          if (saved.divId) {
-            S.div = D.divisions.find(d => d.id === saved.divId);
-          }
-          if (saved.handleId) {
-            S.handle = D.handles.find(h => h.id === saved.handleId);
-          }
-          delete window.wodi_saved_state;
-        }
-        
-        rDes(); rSz(); rDiv(); rHnd(); upd();
-        
-        // إخفاء الـ placeholders فقط للبيانات المحددة بالفعل
-        if (S.size) document.getElementById("placeholder-sz")?.classList.add("hidden");
-        if (S.design) document.getElementById("placeholder-dc")?.classList.add("hidden");
-        if (S.div) document.getElementById("placeholder-div")?.classList.add("hidden");
-        if (S.handle || (S.design && S.design.hc === 0)) {
-          document.getElementById("placeholder-hc")?.classList.add("hidden");
-        }
-        
-        if (typeof hideConfigLoaderOverlay === 'function') {
-          hideConfigLoaderOverlay();
-        }
+        // Apply pending state restoration only after data is loaded
+        applyStateIfReady();
 
         console.log('Configurator data loaded successfully.');
         return;
@@ -274,7 +219,6 @@ function loadConfiguratorData() {
       }
 
       hideConfiguratorLoading();
-      if (typeof hideConfigLoaderOverlay === 'function') hideConfigLoaderOverlay();
 
       if (!dataLoaded) {
         showToast('تعذر تحميل البيانات. تأكد من اتصالك وحاول مرة أخرى.');
@@ -291,8 +235,6 @@ function loadConfiguratorData() {
   });
 }
 
-// Convert rows to structured data used by UI. Keeps original grouping logic.
-// Note: حفظت منطق تحديد الـ type وطرق التجميع كما كان.
 function build(rows, colorRows = []) {
   const des = {};
   const divs = [];
@@ -302,7 +244,6 @@ function build(rows, colorRows = []) {
   if (Array.isArray(colorRows)) {
     colorRows.forEach(r => {
       if (!r) return;
-      // دعم القراءة سواء كانت الأسطر عبارة عن Objects أو Arrays من الشيت
       const cId = String(r.clr_id || r.clrId || r.c || r.id || r[0] || '').trim();
       const dName = String(r.display_name || r.displayName || r.name || r.title || r[1] || r[2] || '').trim();
       const fName = String(r.clr_family || r.clr_familty || r.family || '').trim().toLowerCase();
@@ -330,7 +271,6 @@ function build(rows, colorRows = []) {
     if (cat === 'sink_cabinets') {
       const b = base(id);
       if (!des[b]) {
-        // تحديد النوع بناءً على المعرف
         let type;
         if (id.includes('_fp_')) {
           type = 'floor-standing';
@@ -348,7 +288,6 @@ function build(rows, colorRows = []) {
       des[b].sizes.push({ id, size: sz, price: p });
 
     } else if (cat === 'cabinet_inside_config') {
-      // group divisions preserving _wh_/_fp_ but removing size suffix
       const b = divisionBase(id);
       const type = id.includes('_fp_') ? 'floor-standing' : 'wall-hung';
       let g = divs.find(d => d.id === b);
@@ -374,12 +313,111 @@ function build(rows, colorRows = []) {
 
 /*
 ================================================================================
-5. UI Rendering & Configurator Logic
-   (رسم وتحديث الواجهة: rDes, rSz, rDiv, rHnd, upd، وإدارة شاشات التحميل)
+State Persistence
 ================================================================================
 */
 
-// Unavailable designs map (كما كان)
+// loadConfiguratorState() removed — replaced by applyStateIfReady()
+
+function applyStateIfReady() {
+  if (!dataLoaded || !stateRestorePending) return;
+
+  try {
+    const rawSaved = localStorage.getItem('wodi_configurator_state');
+    if (!rawSaved) {
+      stateRestorePending = false;
+      return;
+    }
+
+    const parsed = JSON.parse(rawSaved);
+
+    if (parsed) {
+      // Restore sink type and update UI
+      if (parsed.sinkType) {
+        S.sinkType = parsed.sinkType;
+        document.querySelectorAll('.sink-type-card').forEach(c => {
+          c.classList.toggle('selected', c.dataset.type === parsed.sinkType);
+        });
+      }
+      
+      // Restore size (must be done before design to validate availability)
+      if (parsed.sizeSize) {
+        const sz = D.designs.flatMap(d => d.sizes).find(s => s.size === parsed.sizeSize);
+        if (sz) S.size = sz;
+      }
+      
+      // Restore design (depends on size)
+      if (parsed.designId) {
+        S.design = D.designs.find(d => d.id === parsed.designId);
+      }
+      
+      // Restore division
+      if (parsed.divId) {
+        S.div = D.divisions.find(d => d.id === parsed.divId);
+      }
+      
+      // Restore handle
+      if (parsed.handleId) {
+        S.handle = D.handles.find(h => h.id === parsed.handleId);
+      }
+      
+      // Restore handle shapes and colors (optional)
+      if (Array.isArray(parsed.selectedHandleShapes)) {
+        S.selectedHandleShapes = parsed.selectedHandleShapes;
+      }
+      if (Array.isArray(parsed.selectedColors)) {
+        S.selectedColors = parsed.selectedColors;
+      }
+    }
+
+    // Render all dependent views with restored state
+    rDes(); 
+    rSz(); 
+    rDiv(); 
+    rHnd(); 
+    upd();
+    
+    if (typeof updateStepperProgress === 'function') {
+      updateStepperProgress();
+    }
+    
+    // Hide placeholders for restored selections
+    if (S.size) document.getElementById("placeholder-sz")?.classList.add("hidden");
+    if (S.design) document.getElementById("placeholder-dc")?.classList.add("hidden");
+    if (S.div) document.getElementById("placeholder-div")?.classList.add("hidden");
+    if (S.handle || (S.design && S.design.hc === 0)) {
+      document.getElementById("placeholder-hc")?.classList.add("hidden");
+    }
+
+    stateRestorePending = false;
+  } catch (e) {
+    console.warn('Failed to apply saved state:', e);
+    stateRestorePending = false;
+  }
+}
+
+function saveConfiguratorState() {
+  try {
+    localStorage.setItem('wodi_configurator_state', JSON.stringify({
+      sinkType: S.sinkType,
+      designId: S.design ? S.design.id : null,
+      selectedColors: S.selectedColors || [],
+      sizeSize: S.size ? S.size.size : null,
+      divId: S.div ? S.div.id : null,
+      handleId: S.handle ? S.handle.id : null,
+      selectedHandleShapes: S.selectedHandleShapes || []
+    }));
+  } catch (e) { 
+    console.warn('Failed to save state', e); 
+  }
+}
+
+/*
+================================================================================
+UI Rendering
+================================================================================
+*/
+
 const unavailableDesigns = {
   'drop-in': ['4a_wh_sc02'],
   'bowl': ['4a_wh_sc02']
@@ -396,9 +434,7 @@ function getConfiguratorImageUrl(id, sinkType) {
     imgBaseId = base(id);
   }
 
-  const isDivision =
-    typeof id === 'string' && id.includes('_cic');
-
+  const isDivision = typeof id === 'string' && id.includes('_cic');
   const typeCodeMap = {
     'drop-in': 'di',
     'bowl': 'bw'
@@ -407,20 +443,16 @@ function getConfiguratorImageUrl(id, sinkType) {
   let finalImgId = imgBaseId;
 
   if (!isDivision && sinkType && typeCodeMap[sinkType]) {
-    finalImgId = finalImgId.replace(
-      /_wh_/,
-      '_' + typeCodeMap[sinkType] + '_'
-    );
+    finalImgId = finalImgId.replace(/_wh_/, '_' + typeCodeMap[sinkType] + '_');
   }
 
   return GH + encodeURIComponent(finalImgId) + '.webp';
 }
 
-// Helper for lock overlay
 function mkLockOverlay() {
   const overlay = document.createElement("div");
   overlay.className = "card-overlay";
-  overlay.style.pointerEvents = "none"; // لضمان إمكانية النقر على الكارت الموجود تحته
+  overlay.style.pointerEvents = "none";
   overlay.innerHTML = `
     <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#fff" stroke-width="2">
       <rect x="5" y="11" width="14" height="10" rx="2"/>
@@ -430,15 +462,14 @@ function mkLockOverlay() {
   return overlay;
 }
 
-// Build image node for cards and handles
 function mkImg(id, cardEl) {
-  const w = document.createElement('div'); w.className = 'cimg';
+  const w = document.createElement('div'); 
+  w.className = 'cimg';
   const img = document.createElement('img');
   img.alt = '';
   img.loading = 'eager';
   img.decoding = 'async';
 
-  // determine which base id to use for image files
   let imgBaseId = id;
   if (id && typeof id === 'string' && id.includes('_cic')) {
     imgBaseId = divisionBase(id);
@@ -471,7 +502,6 @@ function mkImg(id, cardEl) {
   };
   w.appendChild(img);
 
-  // zoom button unchanged
   const zoomBtn = document.createElement('div');
   zoomBtn.className = 'zoom-btn';
   zoomBtn.innerHTML = `
@@ -489,7 +519,6 @@ function mkImg(id, cardEl) {
   return w;
 }
 
-// Scroll helpers & arrow updates
 function scrollCards(id, dir) {
   const el = document.getElementById(id);
   if (!el) return;
@@ -512,7 +541,6 @@ function updateArrows(id) {
   endBtn.classList.toggle('hidden', atEnd);
 }
 
-/* ===== rDes & createDesignCard ===== */
 function createDesignCard(d) {
   const validPrices = d.sizes.map(s => s.price).filter(p => p !== null);
   const minP = validPrices.length ? Math.min(...validPrices) : null;
@@ -522,8 +550,7 @@ function createDesignCard(d) {
 
   el.className =
     "design-card" +
-    (S.design && S.design.id === d.id ? " selected" : "") +
-    (S.size && !isAvailable ? " disabled" : "");
+    (S.design && S.design.id === d.id ? " selected" : "");
 
   el.appendChild(mkImg(d.id, el));
 
@@ -531,7 +558,6 @@ function createDesignCard(d) {
     el.querySelector(".cimg")?.appendChild(mkLockOverlay());
   }
 
-  // ========= المقاسات =========
   const availableSizes = d.sizes.map(s => s.size);
   let sizeText = "";
   if (availableSizes.length) {
@@ -541,13 +567,11 @@ function createDesignCard(d) {
     const lastMax = last.split("-")[1].replace("cm", "").replace("سم", "").trim();
     sizeText = `${firstMin}–${lastMax} سم`;
   }
-  // ============================
 
   const info = document.createElement("div");
   info.className = "cinfo";
   info.innerHTML = `
     <div class="cname">${d.name}</div>
-
     ${
     !S.size
       ?
@@ -564,7 +588,6 @@ function createDesignCard(d) {
       </div>
       `
     }
-
     <div class="cprice">
       يبدأ من ${r5(minP)} EGP
     </div>
@@ -572,26 +595,22 @@ function createDesignCard(d) {
   el.appendChild(info);
 
   el.onclick = () => {
-      // ممنوع اختيار التصميم قبل اختيار عرض الحوض
       if (!S.size) {
         showToast('يرجى اختيار عرض الحوض أولاً لتتمكن من اختيار التصميم.');
         document.getElementById('sz')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         return;
       }
       
-      // إذا كان التصميم غير متاح للمقاس المختار
       if (!isAvailable) {
         showToast('عفواً، هذا التصميم لا يناسب عرض الحوض الذي اخترته.');
         return;
       }
 
-      // إلغاء الاختيار (Unselect) إذا تم الضغط على التصميم المحدد حالياً
       if (S.design && S.design.id === d.id) {
         S.design = null;
       } else {
         S.design = d;
 
-        // اربط المقاس بالـ size object الخاص بالتصميم المختار
         const matchedSize = d.sizes.find(s => s.size === S.size.size);
         if (matchedSize) {
           S.size = matchedSize;
@@ -604,56 +623,77 @@ function createDesignCard(d) {
       upd();
     };
 
-  // تم إزالة الإضافة التلقائية المباشرة عند إنشاء كارت التصميم
-
   return el;
 }
 
 function rDes() {
   const box = document.getElementById("dc");
-  const title = document.getElementById("design-group-title");
   if (!box) return;
 
   box.innerHTML = "";
 
-  const desc = document.getElementById("design-desc");
+  // إيجاد العنصر عبر الـ ID أو البحث داخل السكشن لضمان عدم إرجاع null
+  const desc = document.getElementById("step-desc") || document.querySelector(".design-step-desc");
 
   const sharedTypes = ['wall-hung', 'drop-in', 'bowl'];
   const effectiveType = sharedTypes.includes(S.sinkType) ? 'wall-hung' : S.sinkType;
   const excluded = unavailableDesigns[S.sinkType] || [];
 
-  // تحديث النص الوصفي فقط (بدون بناء كروت هنا)
+  const totalCount = D.designs.filter(d => d.type === effectiveType && !excluded.includes(d.id)).length;
+
   if (desc) {
+    desc.style.fontSize = '13px';
+    desc.style.color = 'var(--color-text-muted, #666)';
+    desc.style.marginBottom = '12px';
+
     if (!S.sinkType) {
       desc.innerHTML = "";
     } else if (!S.size) {
       desc.innerHTML = 'اختر <strong>عرض الحوض</strong> لعرض التصميمات المتوافقة.';
     } else {
-      const count = D.designs.filter(d =>
+      const currentSizeVal = (typeof S.size === 'object' && S.size !== null) ? S.size.size : S.size;
+
+      const availableCount = D.designs.filter(d =>
         d.type === effectiveType &&
         !excluded.includes(d.id) &&
-        d.sizes.some(s => s.size === S.size.size)
+        d.sizes.some(s => s.size === currentSizeVal)
       ).length;
-      desc.innerHTML = `تم العثور على <strong>${count}</strong> تصميمات مناسبة.`;
+
+    if  (availableCount === totalCount) {
+        desc.innerHTML = `جميع التصميمات متوافقة مع عرض الحوض`;
+      } else {
+        desc.innerHTML = `يوجد <strong>${availableCount}</strong> تصميمات متوافقة مع عرض الحوض`;
+      }
     }
   }
 
-  // بناء الكروت مرة واحدة
+  // Store card elements for later styling
+  const cardElements = [];
+
   D.designs
     .filter(d => d.type === effectiveType && !excluded.includes(d.id))
     .forEach(d => {
-      box.appendChild(createDesignCard(d));
+      const card = createDesignCard(d);
+      cardElements.push({ card, design: d });
+      box.appendChild(card);
     });
+
+  // Apply disabled overlay ONLY to genuinely incompatible designs, and do not apply if a design is selected
+  cardElements.forEach(({ card, design }) => {
+    const isAvailable = !S.size || design.sizes.some(s => s.size === S.size.size);
+    if (!isAvailable) {
+      card.classList.add('disabled');
+    } else if (!S.design) {
+      card.classList.remove('disabled');
+    }
+  });
 
   updateArrows("dc");
 
-  // إخفاء سكشن الألوان بالكامل إذا لم يتم اختيار نوع الحوض
   if (!S.sinkType) return;
 
   const oldColorSection = document.getElementById('unit-color-section');
   if (oldColorSection) oldColorSection.remove();
-
-  if (!S.sinkType) return;
 
   const colorContainer = document.createElement('div');
   colorContainer.id = 'unit-color-section';
@@ -678,7 +718,6 @@ function rDes() {
     const titleText = sheetData.name || group.defaultTitle;
     const extraPrice = (sheetData.price !== undefined && sheetData.price !== null) ? sheetData.price : group.defaultPrice;
 
-    // إنشاء حاوية خاصة بكل عائلة ألوان لإخفائها بالكامل لو لم توجد صور
     const groupWrapper = document.createElement('div');
     groupWrapper.className = 'color-group-wrapper';
     groupWrapper.id = `group-wrapper-${group.family}`;
@@ -726,7 +765,6 @@ function rDes() {
     cardsRow.id = rowId;
     cardsRow.onscroll = () => updateArrows(rowId);
 
-    // متابعة حذف الصور غير الموجودة لإخفاء السكشن بالكامل لو أصبحت الكروت 0
     const checkGroupVisibility = () => {
       setTimeout(() => {
         if (cardsRow.children.length === 0) {
@@ -738,9 +776,20 @@ function rDes() {
       }, 60);
     };
 
-    for (let i = 1; i <= 20; i++) {
-      const numStr = i < 10 ? `0${i}` : `${i}`;
-      const colorId = `${group.prefix}${numStr}`;
+    const availableColors = (D.colors || []).filter(c => c.family === group.family || (c.id && c.id.startsWith(group.prefix)));
+
+    const defaultAvailableIds = {
+      solid: ['clr_sld_01', 'clr_sld_02', 'clr_sld_03'],
+      wood: ['clr_wd_01', 'clr_wd_02'],
+      gloss: []
+    };
+
+    const colorItems = availableColors.length > 0 
+      ? availableColors 
+      : (defaultAvailableIds[group.family] || []).map(id => ({ id: id }));
+
+    colorItems.forEach(cItem => {
+      const colorId = cItem.id;
 
       const colorCard = document.createElement('div');
       colorCard.className = 'design-card color-shape-card';
@@ -758,16 +807,11 @@ function rDes() {
         const cleanColorId = String(colorId).replace(/\.(png|webp|jpg|jpeg)$/i, '');
         const encoded = encodeURIComponent(cleanColorId);
         
-        img.src = `images/conf/clr/${encoded}.png`;
+        img.src = `images/conf/clr/${encoded}.webp`;
         
         img.onerror = function () {
-          if (this.src.endsWith('.png')) {
-            this.src = `images/conf/clr/${encoded}.webp`;
-          } else {
-            // إذا لم توجد الصورة بصيغة png أو webp يتم حذف كارت اللون فوراً
-            if (colorCard) colorCard.remove();
-            if (typeof checkGroupVisibility === 'function') checkGroupVisibility();
-          }
+          if (colorCard) colorCard.remove();
+          if (typeof checkGroupVisibility === 'function') checkGroupVisibility();
         };
       }
 
@@ -784,6 +828,7 @@ function rDes() {
       if (S.selectedColors && S.selectedColors[0] === colorId) {
         colorCard.classList.add('selected');
       }
+      colorCard.classList.remove('disabled');
 
       colorCard.onclick = () => {
         if (!S.size) {
@@ -802,11 +847,8 @@ function rDes() {
           S.selectedColors = [colorId];
         }
 
-        // إزالة كلاس المحدد والتظليل/الـ Overlay عن كل كروت الألوان
         document.querySelectorAll('#unit-color-section .design-card').forEach(card => {
-          card.classList.remove('selected', 'unselected', 'dimmed', 'has-overlay');
-          const overlay = card.querySelector('.card-overlay:not(.lock-overlay)');
-          if (overlay) overlay.remove();
+          card.classList.remove('selected');
         });
 
         if (!isAlreadySelected) {
@@ -818,7 +860,7 @@ function rDes() {
       };
 
       cardsRow.appendChild(colorCard);
-    }
+    });
 
     wrapEl.appendChild(startBtn);
     wrapEl.appendChild(cardsRow);
@@ -832,7 +874,6 @@ function rDes() {
   box.parentNode.appendChild(colorContainer);
 }
 
-/* ===== rSz ===== */
 function rSz() {
   const box = document.getElementById("sz");
   if (!box) return;
@@ -844,7 +885,6 @@ function rSz() {
   const sharedTypes = ['wall-hung', 'drop-in', 'bowl'];
   const effectiveType = sharedTypes.includes(S.sinkType) ? 'wall-hung' : S.sinkType;
 
-  // جمع المقاسات بدون تكرار
   const sizesMap = new Map();
   D.designs
     .filter(d => d.type === effectiveType)
@@ -857,7 +897,6 @@ function rSz() {
   const sizes = [...sizesMap.values()];
   
   if (sizes.length > 0) {
-    // إخفاء الـ placeholder وإظهار قائمة المقاسات
     if (placeholder) placeholder.classList.add("hidden");
     if (loading) loading.classList.add("hidden");
     box.classList.remove("hidden");
@@ -884,7 +923,6 @@ function rSz() {
   });
 }
 
-/* ===== Division price helpers ===== */
 function sgr(s) {
   if (!s || s === 'any') return 'any';
   const n = s.replace(/\s/g, '');
@@ -904,7 +942,6 @@ function dvp(div, sg) {
   return f ? f.price : div.sizes[div.sizes.length - 1].price;
 }
 
-/* ===== rDiv ===== */
 function rDiv() {
   const wall = document.getElementById("vc-wall");
   const floor = document.getElementById("vc-floor");
@@ -917,10 +954,9 @@ function rDiv() {
   wall.innerHTML = "";
   floor.innerHTML = "";
 
-  // لم يتم اختيار نوع الحوض
   if (!S.sinkType) {
     S.div = null;
-    title.textContent = "ما هي التقسيمة الداخلية المناسبة لك؟";
+    if (title) title.textContent = "ما هي التقسيمة الداخلية المناسبة لك؟";
     wallWrap.classList.add("hidden");
     floorWrap.classList.add("hidden");
     updateArrows("vc-wall");
@@ -930,22 +966,39 @@ function rDiv() {
 
   const divisionType = S.sinkType === "floor-standing" ? "floor-standing" : "wall-hung";
 
-  if (divisionType === "wall-hung") {
-    wallWrap.classList.remove("hidden");
-    floorWrap.classList.add("hidden");
-  } else {
+  if (divisionType === "floor-standing") {
     floorWrap.classList.remove("hidden");
     wallWrap.classList.add("hidden");
+  } else {
+    wallWrap.classList.remove("hidden");
+    floorWrap.classList.add("hidden");
   }
 
-  title.textContent = "ما هي التقسيمة الداخلية المناسبة لك؟";
+  if (title) title.textContent = "ما هي التقسيمة الداخلية المناسبة لك؟";
 
   D.divisions
     .filter(d => d.type === divisionType)
     .forEach(d => {
       const el = document.createElement("div");
       el.className = "div-card" + (S.div && S.div.id === d.id ? " selected" : "");
-      el.appendChild(mkImg(d.id, el));
+      el.classList.remove("disabled");
+      
+      const imgContainer = mkImg(d.id, el);
+      const img = imgContainer.querySelector('img');
+      if (img) {
+        const cleanId = String(d.id).replace(/\.(png|webp|jpg|jpeg)$/i, '');
+        const encoded = encodeURIComponent(cleanId);
+        img.src = `images/conf/${encoded}.webp`;
+        img.onerror = function () {
+          if (this.src.endsWith('.webp')) {
+            this.src = `images/conf/${encoded}.png`;
+          } else {
+            this.style.display = 'none';
+          }
+        };
+      }
+
+      el.appendChild(imgContainer);
 
       if (!S.size) {
         el.querySelector(".cimg")?.appendChild(mkLockOverlay());
@@ -965,14 +1018,12 @@ function rDiv() {
       el.appendChild(info);
 
       el.onclick = () => {
-        // ممنوع اختيار التقسيمة الداخلية قبل اختيار عرض الحوض
         if (!S.size) {
           showToast('يرجى اختيار عرض الحوض أولاً لتتمكن من اختيار التقسيمة الداخلية.');
           document.getElementById('sz')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
           return;
         }
 
-        // إلغاء الاختيار (Unselect) إذا تم الضغط على الكارت المحدد حالياً
         if (S.div && S.div.id === d.id) {
           S.div = null;
         } else {
@@ -996,7 +1047,6 @@ function rDiv() {
   }, 50);
 }
 
-/* ===== Loading placeholders & skeletons ===== */
 function showSkeleton(containerId, cardClass, count = 4) {
   const container = document.getElementById(containerId);
   if (!container) return;
@@ -1030,10 +1080,8 @@ function showSizeSkeleton(count = 4) {
 }
 
 function showConfiguratorLoading() {
-  // لو العميل لسه م اخترش نوع حوض، متظهرش أي سكيلتون وتطلع بره الدالة فوراً
   if (!S.sinkType) return;
 
-  // في حالة عدم اختيار المقاس، تظل الـ Placeholders في باقي الأقسام مع تحميل المقاسات فقط
   if (!S.size) {
     document.getElementById("loading-sz")?.classList.add("show");
     document.getElementById("sz")?.classList.remove("hidden");
@@ -1084,17 +1132,18 @@ function hidePlaceholders() {
   document.getElementById("placeholder-hc")?.classList.add("hidden");
 }
 
-/* ===== rHnd ===== */
+function isNoHandle() {
+  return Boolean(S.design && S.design.hc === 0);
+}
+
 function rHnd() {
   const groupEl = document.querySelector('[data-group="hc"]');
 
-  // إخفاء القسم كاملاً إذا لم يحدد العميل نوع الحوض بعد
   if (!S.sinkType) {
     groupEl?.classList.add('hidden');
     return;
   }
 
-  // إظهار السكشن عند اختيار نوع الحوض
   groupEl?.classList.remove('hidden');
 
   const c = document.getElementById('hc');
@@ -1106,18 +1155,21 @@ function rHnd() {
   title.textContent = 'اختر نوع المقبض';
   desc.replaceChildren();
 
-  const noH = S.design && S.design.hc === 0;
+  const noH = isNoHandle();
+
+  desc.style.fontSize = '13px';
+  desc.style.color = 'var(--color-text-muted, #666)';
+  desc.style.marginBottom = '12px';
 
   if (noH) {
     S.handle = null;
     S.selectedHandleShapes = [];
-    desc.innerHTML = 'التصميم المختار لا يدعم استخدام المقابض.';
+    desc.innerHTML = '<strong>ملحوظة:</strong> لا يتطلب هذا التصميم تحديد نوع المقبض.';
   }
 
   D.handles.forEach(h => {
     const el = document.createElement('div');
     
-    // إذا كان التصميم لا يدعم المقابض يتم إضافة disabled
     if (noH) {
       el.className = 'handle-card disabled';
     } else {
@@ -1126,7 +1178,6 @@ function rHnd() {
 
     el.appendChild(mkImg(h.id, el));
 
-    // إظهار قفل التحكم إذا لم يتم اختيار عرض الحوض وكانت المقابض متاحة
     if (!S.size && !noH) {
       el.querySelector(".cimg")?.appendChild(mkLockOverlay());
     }
@@ -1145,22 +1196,18 @@ function rHnd() {
 
     el.appendChild(info);
 
-    // تفعيل التفاعل عند الضغط
     el.onclick = () => {
-      // 1. إذا كان التصميم المختار لا يدعم المقابض
       if (noH) {
         showToast('لا يتطلب هذا التصميم تحديد نوع المقبض.');
         return;
       }
 
-      // 2. ممنوع اختيار نوع المقبض قبل اختيار عرض الحوض
       if (!S.size) {
         showToast('يرجى اختيار عرض الحوض أولاً لتتمكن من اختيار نوع المقبض.');
         document.getElementById('sz')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         return;
       }
 
-      // 3. إلغاء الاختيار (Unselect) إذا تم الضغط على الكارت المحدد حالياً
       if (S.handle && S.handle.id === h.id) {
         S.handle = null;
         S.selectedHandleShapes = [];
@@ -1176,7 +1223,6 @@ function rHnd() {
     c.appendChild(el);
   });
 
-  // إضافة قسم اختيار شكل المقبض في حال اختيار مقبض سحابي أو مقبض دائري
   const handleShapesSection = document.getElementById('handle-shapes-section');
   if (handleShapesSection) handleShapesSection.remove();
 
@@ -1221,12 +1267,15 @@ function rHnd() {
 
     if (!S.selectedHandleShapes) S.selectedHandleShapes = [];
 
-    // توليد الأشكال تلقائياً بناءً على الـ id الخاص بالمقبض المختار فقط
     let availableShapes = S.handle.shapes || [];
 
-    // إذا لم تكن الأشكال محددة في الداتا، نولد تسلسل افتراضي للمقبض المختار فقط
     if (!availableShapes.length) {
-      for (let i = 1; i <= 20; i++) {
+      const maxShapesMap = {
+        '4c_h&k01': 7,
+        '4c_h&k02': 3
+      };
+      const maxCount = maxShapesMap[S.handle.id] || 7;
+      for (let i = 1; i <= maxCount; i++) {
         const numStr = i < 10 ? `0${i}` : `${i}`;
         availableShapes.push(`${S.handle.id}_${numStr}`);
       }
@@ -1244,14 +1293,8 @@ function rHnd() {
         img.src = `images/conf/hnd/${encoded}.webp`;
 
         img.onerror = function () {
-          if (this.src.endsWith('.webp')) {
-            // محاولة التحويل للـ PNG
-            this.src = `images/conf/hnd/${encoded}.png`;
-          } else {
-            // الصورة غير موجودة نهائياً: إخفاء الكارت تماماً وحذفه من الـ DOM
-            shapeCard.remove();
-            setTimeout(() => updateArrows('handle-shapes-row'), 50);
-          }
+          shapeCard.remove();
+          setTimeout(() => updateArrows('handle-shapes-row'), 50);
         };
       }
 
@@ -1284,7 +1327,34 @@ function rHnd() {
           }
           S.selectedHandleShapes.push(shapeId);
         }
-        rHnd();
+        
+        const savedScrollLeft = cardsRow.scrollLeft;
+        
+        // Update selection states in-place to avoid re-rendering and resetting scroll
+        document.querySelectorAll('#handle-shapes-row .handle-shape-card').forEach(c => {
+          c.classList.remove('selected');
+          c.querySelector('.handle-priority-badge')?.remove();
+        });
+
+        // إدارة كلاس التعتيم بناءً على وصول العميل للشكلين المختارين
+        if (S.selectedHandleShapes.length >= 2) {
+          cardsRow.classList.add('has-max-shapes');
+        } else {
+          cardsRow.classList.remove('has-max-shapes');
+        }
+
+        S.selectedHandleShapes.forEach((id, idx) => {
+          const cardToSelect = Array.from(document.querySelectorAll('#handle-shapes-row .handle-shape-card'))
+            .find(c => c.querySelector('img')?.src.includes(encodeURIComponent(id)));
+          if (cardToSelect) {
+            cardToSelect.classList.add('selected');
+            const badge = document.createElement('div');
+            badge.className = 'handle-priority-badge';
+            badge.textContent = idx + 1;
+            cardToSelect.appendChild(badge);
+          }
+        });
+        
         if (typeof updateStepperProgress === 'function') updateStepperProgress();
         if (typeof upd === 'function') upd();
       };
@@ -1301,11 +1371,9 @@ function rHnd() {
     shapeContainer.appendChild(wrapEl);
     c.parentNode.appendChild(shapeContainer);
 
-    // تحديث مكان الأسهم بعد بناء العناصر
     setTimeout(() => updateArrows('handle-shapes-row'), 100);
   }
 
-    /* دالة فتح الصورة في النافذة المكبرة */
   function openShapeModal(webpSrc, pngSrc) {
     let modal = document.getElementById('shape-lightbox-modal');
     if (!modal) {
@@ -1327,11 +1395,15 @@ function rHnd() {
   setTimeout(() => updateArrows('hc'), 50);
 }
 
+/*
+================================================================================
+Pricing & Calculations
+================================================================================
+*/
 
-/* ===== calc & upd ===== */
 function calc() {
   if (!S.design || !S.size || !S.div) return null;
-  const noH = S.design.hc === 0;
+  const noH = isNoHandle();
   if (!noH && !S.handle) return null;
 
   let colorExtra = 0;
@@ -1352,18 +1424,17 @@ function calc() {
   }
 
   const sg = sgr(S.size.size);
-  const installationFee = 200; // البند الثابت للمعاينة والتركيب
+  const installationFee = 200;
   const unitPrice = r5(S.size.price + colorExtra + dvp(S.div, sg) + (noH ? 0 : S.handle.price * S.design.hc));
 
-  // إذا كان العميل لم يحدد موقعه بعد، نعيد سعر الوحدة + التركيب الثابت فقط
   if (installCost === null) return unitPrice + installationFee;
 
-  // إذا حدد موقعه، نضيف سعر التوصيل أيضاً
   return unitPrice + installationFee + installCost;
 }
 
+let updateTimeout = null;
+
 function upd() {
-  // إخفاء سكشن الألوان فوراً بأعلى أولوية إذا لم يتم اختيار نوع الحوض
   const colorSecs = document.querySelectorAll('.colors-section, .color-section, .clr-section, #clr, #clr-wrap, #sc-section');
   if (!S || !S.sinkType) {
     colorSecs.forEach(sec => {
@@ -1378,27 +1449,17 @@ function upd() {
   }
 
   setTimeout(() => { if (typeof updateStickyValue === 'function') updateStickyValue(); }, 0);
-  clearTimeout(dt);
-  dt = setTimeout(() => {
-    // Persist state to localStorage
-    try {
-      localStorage.setItem('wodi_configurator_state', JSON.stringify({
-        sinkType: S.sinkType,
-        designId: S.design ? S.design.id : null,
-        selectedColors: S.selectedColors || [],
-        sizeSize: S.size ? S.size.size : null,
-        divId: S.div ? S.div.id : null,
-        handleId: S.handle ? S.handle.id : null,
-        selectedHandleShapes: S.selectedHandleShapes || []
-      }));
-    } catch (e) { console.warn('Failed to save state', e); }
+  
+  clearTimeout(updateTimeout);
+  updateTimeout = setTimeout(() => {
+    saveConfiguratorState();
+    
     const t = calc();
-    const noH = S.design && S.design.hc === 0;
+    const noH = isNoHandle();
     const sg = S.size ? sgr(S.size.size) : '85';
 
     const egpTag = '<small style="font-size: 0.75em; font-weight: normal; margin-left: 2px;">EGP</small>';
 
-    // 1. تحديث السعر الإجمالي مع تفعيل الـ Pulse فقط عند تغير القيمة المالية فعلياً
     const totalEl = document.getElementById('total-price');
     const canShowPrice = S.design && S.size;
     if (totalEl) {
@@ -1410,14 +1471,12 @@ function upd() {
       const currentNumericPrice = canShowPrice ? t : null;
       const lastPrice = totalEl.dataset.lastTotal !== undefined ? JSON.parse(totalEl.dataset.lastTotal) : undefined;
 
-      // تشغيل الـ Pulse فقط في حال تغير الرقم المالي النهائي
       if (lastPrice !== currentNumericPrice) {
         totalEl.dataset.lastTotal = JSON.stringify(currentNumericPrice);
         pulsePrice(totalEl);
       }
     }
 
-    // 2. تحديث التحذيرات (إن وجدت)
     const warn = document.getElementById('price-warning');
     if (warn) {
       const needsWarn = S.design && !S.size;
@@ -1428,13 +1487,11 @@ function upd() {
     const instWarn = document.getElementById('install-warning');
     if (instWarn) instWarn.classList.toggle('show', allSelected && installCost === null);
 
-    // 3. تحديث بيانات التوصيل
     const siLabel = document.getElementById('si-label');
     const siPrice = document.getElementById('si-price');
     if (siLabel) siLabel.textContent = installCost !== null ? 'محسوبة' : '—';
     if (siPrice) siPrice.innerHTML = installCost !== null ? `${installCost.toLocaleString('en-US')} ${egpTag}` : '—';
 
-    // تحديث النوع وإخفاء سكشن الألوان تماماً إذا لم يتم اختيار نوع الحوض
     const sdTypeEl = document.getElementById('sd-type');
     if (sdTypeEl) {
       const sinkTypeNames = {
@@ -1444,25 +1501,26 @@ function upd() {
         'floor-standing': 'حوض برجل كاملة'
       };
       sdTypeEl.textContent = S.sinkType ? sinkTypeNames[S.sinkType] : '—';
-      if (typeof updateStepperProgress === 'function') updateStepperProgress();
+      // Only update stepper if NOT in restoration mode
+      if (!stateRestorePending && typeof updateStepperProgress === 'function') updateStepperProgress();
     }
 
-    // التحقق من حالة اختيار نوع الحوض للتحكم بظهور سكشن الألوان
     if (!S.sinkType) {
-      document.querySelectorAll('.colors-section, .color-section, .clr-section, #clr, #clr-wrap').forEach(sec => {
+      const unitColorSec = document.getElementById('unit-color-section');
+      if (unitColorSec) unitColorSec.remove();
+      
+      document.querySelectorAll('.colors-section, .color-section, .clr-section, #clr, #clr-wrap, #unit-color-section').forEach(sec => {
         sec.classList.add('hidden');
         sec.style.display = 'none';
       });
     }
 
-    // تحديث تفاصيل الشريط الجانبي
     const sdEl = document.getElementById('sd');
     if (sdEl) sdEl.textContent = S.design ? S.design.name : '—';
 
     const sdPriceEl = document.getElementById('sd-price');
     if (sdPriceEl) sdPriceEl.innerHTML = S.size ? `${r5(S.size.price).toLocaleString('en-US')} ${egpTag}` : '—';
 
-    // تحديث صف لون الوحدة باستخدام الـ Hardcoding المباشر
     const scEl = document.getElementById('sc');
     if (scEl) {
       const rawVal = (S.selectedColors && S.selectedColors.length > 0 && S.selectedColors[0]) ? String(S.selectedColors[0]) : '';
@@ -1470,7 +1528,6 @@ function upd() {
       if (rawVal) {
         const cleanName = rawVal.split('/').pop().replace(/\.[^/.]+$/, "").toLowerCase().trim();
         
-        // قاموس الأسماء المباشر (Hardcoded Color Names)
         const colorMap = {
           'wd': 'خشبي',
           'wood': 'خشبي',
@@ -1482,7 +1539,6 @@ function upd() {
 
         let translatedName = '';
 
-        // البحث في الكود المكتوب بداخل اسم الصورة
         for (const [code, name] of Object.entries(colorMap)) {
           if (cleanName.includes(`_${code}_`) || cleanName.startsWith(`${code}_`) || cleanName.endsWith(`_${code}`) || cleanName === code) {
             translatedName = name;
@@ -1496,11 +1552,36 @@ function upd() {
       }
     }
 
+    const scPriceEl = document.getElementById('sc-price');
     if (scPriceEl) {
-      if (matchedColorObj && matchedColorObj.price > 0) {
-        scPriceEl.innerHTML = `+${matchedColorObj.price.toLocaleString('en-US')} ${egpTag}`;
+      const rawColorVal = (S.selectedColors && S.selectedColors.length > 0 && S.selectedColors[0]) ? String(S.selectedColors[0]) : '';
+      let extraPrice = 0;
+
+      if (rawColorVal && typeof D !== 'undefined' && D.unitColors) {
+        const cleanVal = rawColorVal.split('/').pop().replace(/\.[^/.]+$/, "").toLowerCase();
+
+        for (const group of D.unitColors) {
+          const matchedItem = group.items?.find(item => {
+            if (!item) return false;
+            const itemId = String(item.id || '').toLowerCase();
+            const itemImg = String(item.img || '').toLowerCase();
+            return itemId === rawColorVal.toLowerCase() || 
+                   itemImg === rawColorVal.toLowerCase() ||
+                   itemId.includes(cleanVal) || 
+                   itemImg.includes(cleanVal);
+          });
+
+          if (matchedItem) {
+            extraPrice = matchedItem.extraPrice !== undefined ? matchedItem.extraPrice : (group.extraPrice || 0);
+            break;
+          }
+        }
+      }
+
+      if (rawColorVal) {
+        scPriceEl.innerHTML = `+${extraPrice.toLocaleString('en-US')} ${egpTag}`;
       } else {
-        scPriceEl.textContent = '';
+        scPriceEl.textContent = '—';
       }
     }
 
@@ -1524,200 +1605,659 @@ function upd() {
     const handlePrice = S.handle && !noH ? S.handle.price * S.design.hc : 0;
     if (shPrice) shPrice.innerHTML = S.handle ? (handlePrice > 0 ? `+${handlePrice.toLocaleString('en-US')} ${egpTag}` : `+0 ${egpTag}`) : (noH ? '—' : '—');
 
-  updateStickyValue();
+    updateStickyValue();
   }, 300);
 }
 
-async function loadConfiguratorState() {
-  const rawSaved = localStorage.getItem('wodi_configurator_state');
-  
-  // التحقق من وجود بيانات سابقة حقيقية وليست فارغة
-  let hasValidState = false;
-  if (rawSaved) {
-    try {
-      const parsed = JSON.parse(rawSaved);
-      // التأكد أن الكائن يحتوي على قيم غير فارغة (Not Null / Not Empty)
-      if (parsed && typeof parsed === 'object') {
-        const values = Object.values(parsed);
-        hasValidState = values.some(val => {
-          if (Array.isArray(val)) return val.length > 0;
-          if (typeof val === 'object' && val !== null) return Object.keys(val).length > 0;
-          return val !== null && val !== undefined && val !== '';
-        });
-      }
-    } catch (e) {
-      hasValidState = false;
-    }
-  }
-
-  // إذا لم توجد اختيارات سابقة حقيقية، اخرج فوراً دون إظهار الـ Overlay
-  if (!hasValidState && !window.wodi_saved_state) return;
-
-  const loader = document.getElementById('config-loader-overlay');
-  let timeoutId = null;
-
-  if (loader) {
-    loader.style.display = 'flex';
-    document.body.style.overflow = 'hidden'; // إيقاف السكرول
-
-    // مؤقت أقصاه 6 ثوانٍ
-    timeoutId = setTimeout(() => {
-      hideConfigLoaderOverlay();
-      showCustomErrorToast("فشل في استرجاع الاختيارات السابقة");
-    }, 6000);
-  }
-
-  try {
-    const parsed = JSON.parse(rawSaved);
-
-    // تطبيق الاختيارات المخزنة (سواء كانت مقابض أو أي كائن آخر)
-  if (parsed) {
-        if (Array.isArray(parsed.selectedHandleShapes)) {
-          S.selectedHandleShapes = parsed.selectedHandleShapes;
-        }
-        if (Array.isArray(parsed.selectedColors)) {
-          S.selectedColors = parsed.selectedColors;
-        }
-      }
-
-    if (typeof rHnd === 'function') rHnd();
-    if (typeof upd === 'function') upd();
-    if (typeof updateStepperProgress === 'function') {
-      updateStepperProgress();
-    }
-
-    // الانتظار لحين اكتمال رندر ورسم الصور
-    await new Promise(resolve => {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(async () => {
-          const container = document.getElementById('handle-shapes-container');
-          const imgs = container
-            ? Array.from(container.querySelectorAll('img'))
-            : [];
-
-          if (imgs.length) {
-            await Promise.all(
-              imgs.map(img => {
-                if (img.complete && img.naturalWidth !== 0) {
-                  return Promise.resolve();
-                }
-
-                return new Promise(res => {
-                  img.onload = res;
-                  img.onerror = res;
-                });
-              })
-            );
-          }
-
-          resolve();
-        });
-      });
-    });
-
-  } catch (e) {
-    console.warn('Failed to load state:', e);
-  } finally {
-    if (typeof isRestoring !== 'undefined') {
-      isRestoring = false;
-    }
-  }
-}
-
-  function hideConfigLoaderOverlay() {
-    const loader = document.getElementById('config-loader-overlay');
-    if (loader && loader.style.display !== 'none') {
-      loader.style.transition = 'opacity 0.25s ease';
-      loader.style.opacity = '0';
-      setTimeout(() => {
-        loader.style.display = 'none';
-        loader.style.opacity = '1';
-      }, 250);
-    }
-  }
-  
-
-  // استرجاع البيانات عند فتح الصفحة
-  document.addEventListener('DOMContentLoaded', () => {
-    loadConfiguratorState();
-  });
+// hideConfigLoaderOverlay() removed - restoration overlay no longer used
 
 /*
 ================================================================================
-6. Geolocation & Location Services
-   (جلب الموقع، Reverse Geocoding، حساب المسافات وتكلفة التركيب)
+Stepper & Progress
 ================================================================================
 */
 
-// calcInstall uses LOC & haversine to compute a rounded cost or null if out-of-range
+function updateStepperProgress() {
+  // Do not update stepper progress during restoration
+  if (stateRestorePending) return;
+
+  const stepDesign = document.getElementById('st-design');
+  const stepSinkType = document.getElementById('st-sink-type');
+  const stepSize = document.getElementById('st-size');
+  const stepPartition = document.getElementById('st-partition');
+  const stepHandle = document.getElementById('st-handle');
+  const stepLocation = document.getElementById('st-location');
+
+  // Reset all stepper steps to initial state
+  const allSteps = [stepSinkType, stepSize, stepDesign, stepPartition, stepHandle, stepLocation];
+  allSteps.forEach(el => {
+    if (el) {
+      el.classList.remove('completed', 'half-completed', 'active', 'out-of-range');
+    }
+  });
+
+  const hasSelectedDesign = Boolean(typeof S !== 'undefined' && S.design && (S.design.id || S.design.name || S.design.type));
+  const hasSelectedColor = Boolean(typeof S !== 'undefined' && Array.isArray(S.selectedColors) && S.selectedColors.length >= 1);
+
+  const isDesignFullyCompleted = hasSelectedDesign && hasSelectedColor;
+  const isDesignHalfCompleted = (hasSelectedDesign && !hasSelectedColor) || (!hasSelectedDesign && hasSelectedColor);
+
+  const noH = Boolean(typeof S !== 'undefined' && S.design && S.design.hc === 0);
+  const isMultiShapeHandle = typeof S !== 'undefined' && S.handle && (S.handle.id === '4c_h&k01' || S.handle.id === '4c_h&k02');
+  
+  const handleShapesCount = (isMultiShapeHandle && Array.isArray(S.selectedHandleShapes)) ? S.selectedHandleShapes.length : 0;
+  
+  const isHandleFullyCompleted = typeof S !== 'undefined' && (
+    noH || 
+    (isMultiShapeHandle ? handleShapesCount >= 2 : Boolean(S.handle))
+  );
+
+  const isHandleHalfCompleted = !isHandleFullyCompleted && isMultiShapeHandle && handleShapesCount > 0;
+
+  const hasSinkType = Boolean(typeof S !== 'undefined' && S.sinkType);
+  const hasSize = Boolean(typeof S !== 'undefined' && S.size);
+  const hasDiv = Boolean(typeof S !== 'undefined' && S.div);
+
+  const errorMsgElement = document.body.innerText.includes('خارج نطاق خدمتنا');
+  const isOutOfRange = (typeof locationError !== 'undefined' && locationError === true) || errorMsgElement;
+  const hasLocation = typeof installCost !== 'undefined' && installCost !== null && !isOutOfRange;
+
+  if (stepSinkType) {
+    if (hasSinkType) stepSinkType.classList.add('completed'); else stepSinkType.classList.remove('completed');
+  }
+
+  if (stepDesign) {
+    stepDesign.classList.remove('completed', 'half-completed');
+    if (isDesignFullyCompleted) {
+      stepDesign.classList.add('completed');
+    } else if (isDesignHalfCompleted) {
+      stepDesign.classList.add('half-completed');
+    }
+  }
+
+  if (stepSize) {
+    if (hasSize) stepSize.classList.add('completed'); else stepSize.classList.remove('completed');
+  }
+
+  if (stepPartition) {
+    if (hasDiv) stepPartition.classList.add('completed'); else stepPartition.classList.remove('completed');
+  }
+
+  if (stepHandle) {
+    stepHandle.classList.remove('completed', 'half-completed');
+    if (isHandleFullyCompleted) {
+      stepHandle.classList.add('completed');
+    } else if (isHandleHalfCompleted) {
+      stepHandle.classList.add('half-completed');
+    }
+  }
+
+  if (stepLocation) {
+    if (hasLocation) {
+      stepLocation.classList.add('completed');
+      stepLocation.classList.remove('out-of-range');
+    } else if (isOutOfRange) {
+      stepLocation.classList.remove('completed');
+      stepLocation.classList.add('out-of-range');
+    } else {
+      stepLocation.classList.remove('completed', 'out-of-range');
+    }
+  }
+
+  allSteps.forEach(el => el && el.classList.remove('active'));
+
+  if (!hasSinkType) {
+    if (stepSinkType) stepSinkType.classList.add('active');
+  } else if (!hasSize) {
+    if (stepSize) stepSize.classList.add('active');
+  } else if (!isDesignFullyCompleted) {
+    if (stepDesign) stepDesign.classList.add('active');
+  } else if (!hasDiv) {
+    if (stepPartition) stepPartition.classList.add('active');
+  } else if (!isHandleFullyCompleted) {
+    if (stepHandle) stepHandle.classList.add('active');
+  } else if (!hasLocation) {
+    if (stepLocation) stepLocation.classList.add('active');
+  }
+}
+
+/*
+================================================================================
+Scroll & Sticky UI
+================================================================================
+*/
+
+function setupScrollArrowButtons() {
+  document.querySelectorAll('.scroll-arrow').forEach(btn => {
+    if (btn.dataset.setupDone) return;
+    btn.dataset.setupDone = 'true';
+    btn.addEventListener('click', function () {
+      const targetId = btn.dataset.target;
+      const dir = parseInt(btn.dataset.dir || '1', 10);
+      const row = document.getElementById(targetId);
+      if (!row) return;
+      const chunk = row.clientWidth * 0.6;
+      row.scrollBy({ left: dir * chunk * -1, behavior: 'smooth' });
+    });
+  });
+}
+
+function setupCardsRowScrollListeners() {
+  document.querySelectorAll('.cards-row').forEach(row => {
+    if (row.dataset.scrollListenerSetup) return;
+    row.dataset.scrollListenerSetup = 'true';
+    row.addEventListener('scroll', () => {
+      document.querySelectorAll('.scroll-wrap').forEach(wrap => {
+        const r = wrap.querySelector('.cards-row');
+        const startBtn = wrap.querySelector('.scroll-arrow.arr-start');
+        const endBtn = wrap.querySelector('.scroll-arrow.arr-end');
+        if (!r) return;
+        const maxScroll = r.scrollWidth - r.clientWidth;
+        if (maxScroll <= 0) {
+          if (startBtn) startBtn.classList.add('hidden');
+          if (endBtn) endBtn.classList.add('hidden');
+          return;
+        }
+        const current = Math.abs(r.scrollLeft);
+        const canScrollRight = current > 10;
+        const canScrollLeft = current < (maxScroll - 10);
+        if (startBtn) startBtn.classList.toggle('hidden', !canScrollRight);
+        if (endBtn) endBtn.classList.toggle('hidden', !canScrollLeft);
+      });
+    });
+  });
+}
+
+function setupSinkTypeCards() {
+  document.querySelectorAll('.sink-type-card').forEach(card => {
+    if (card.dataset.clickSetup) return;
+    card.dataset.clickSetup = 'true';
+    card.addEventListener('click', function () {
+      document.querySelectorAll('.sink-type-card').forEach(c => c.classList.remove('selected'));
+      this.classList.add('selected');
+      S.sinkType = this.dataset.type;
+
+      hidePlaceholders();
+
+      S.design = null;
+      S.size = null;
+      S.div = null;
+      S.handle = null;
+
+      if (!dataLoaded) {
+        showConfiguratorLoading();
+        loadConfiguratorData();
+      } else {
+        rDes();
+        rSz();
+        rDiv();
+        rHnd();
+        upd();
+      }
+    });
+  });
+
+  updateArrows('sink-types');
+  const sinkRow = document.getElementById('sink-types');
+  if (sinkRow && !sinkRow.dataset.scrollListenerSetup) {
+    sinkRow.dataset.scrollListenerSetup = 'true';
+    sinkRow.addEventListener('scroll', () => updateArrows('sink-types'));
+  }
+}
+
+let stickySetupDone = false;
+
+function setupStickyPriceBar() {
+  if (stickySetupDone) return;
+  stickySetupDone = true;
+
+  const MOBILE_BREAK = 900;
+  let stickyEl = null;
+  let io = null;
+
+  function createSticky() {
+    if (stickyEl) return stickyEl;
+
+    const resetIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>';
+    const eyeIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+
+    stickyEl = document.createElement('div');
+    stickyEl.className = 'price-sticky';
+    stickyEl.innerHTML =
+      '<div class="total">' +
+      '<span class="lbl">إجمالي الوحدة</span>' +
+      '<span class="val" id="sticky-total">— EGP</span>' +
+      '</div>' +
+      '<div class="sticky-actions">' +
+      '<button class="sticky-reset" id="sticky-reset" aria-label="إعادة التعيين" title="إعادة التعيين">' + resetIcon + '</button>' +
+      '<button class="sticky-order" id="sticky-order" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px;">' + eyeIcon + ' <span>تفاصيل السعر</span></button>' +
+      '</div>';
+    document.body.appendChild(stickyEl);
+
+    const orderBtn = document.getElementById('sticky-order');
+    if (orderBtn) {
+      orderBtn.addEventListener('click', function () {
+        const targetSection = document.getElementById('sbar') || document.querySelector('.price-column.sbar') || document.querySelector('.details-section');
+        if (targetSection) {
+          targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    }
+    const resetBtn = document.getElementById('sticky-reset');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', function () {
+        if (typeof resetAll === 'function') resetAll();
+        else document.querySelector('.btn-reset')?.click();
+      });
+    }
+
+    stickyEl.style.transition = 'transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease';
+    stickyEl.style.transform = 'translateY(100%)';
+    stickyEl.style.opacity = '0';
+    stickyEl.style.pointerEvents = 'none';
+    stickyEl.style.display = 'flex';
+
+    return stickyEl;
+  }
+
+  function destroySticky() {
+    if (io) { io.disconnect(); io = null; }
+    if (stickyEl) { stickyEl.remove(); stickyEl = null; }
+    document.body.classList.remove('has-sticky-bar');
+  }
+
+  function updateStickyValue() {
+    const total = typeof calc === 'function' ? calc() : null;
+    const formattedPrice = (total !== null && total > 0) 
+      ? `${total.toLocaleString('en-US')} <small style="font-size: 0.75em; font-weight: normal; margin-left: 2px;">EGP</small>` 
+      : '— EGP';
+    
+    const el1 = document.getElementById('sticky-price-val');
+    const el2 = document.getElementById('sticky-total');
+    
+    const applyAnimation = (el) => {
+      if (!el) return;
+      const lastTotal = el.dataset.lastTotal !== undefined ? parseFloat(el.dataset.lastTotal) : null;
+      el.innerHTML = formattedPrice;
+
+      if (lastTotal !== total) {
+        el.dataset.lastTotal = total;
+        el.classList.remove('price-updated');
+        void el.offsetWidth;
+        el.classList.add('price-updated');
+      }
+    };
+
+    applyAnimation(el1);
+    applyAnimation(el2);
+
+    const stickyBtn = document.querySelector('.mobile-checkout-cta-btn');
+    if (stickyBtn) {
+      stickyBtn.textContent = 'طلب التصميم والمعاينة';
+      stickyBtn.onclick = () => openSinkOrderModal();
+    }
+  }
+  window.updateStickyValue = updateStickyValue;
+
+  function showSticky() {
+    if (!stickyEl) createSticky();
+    stickyEl.style.transform = 'translateY(0)';
+    stickyEl.style.opacity = '1';
+    stickyEl.style.pointerEvents = 'auto';
+    document.body.classList.add('has-sticky-bar');
+    updateStickyValue();
+  }
+
+  function hideSticky() {
+    if (stickyEl) {
+      stickyEl.style.transform = 'translateY(100%)';
+      stickyEl.style.opacity = '0';
+      stickyEl.style.pointerEvents = 'none';
+    }
+    document.body.classList.remove('has-sticky-bar');
+  }
+
+  function isElementPositionedFixedOrSticky(el) {
+    if (!el) return false;
+    const cs = window.getComputedStyle(el);
+    return cs.position === 'fixed' || cs.position === 'sticky';
+  }
+
+  function setupObservers() {
+    const target = document.getElementById('sbar') || document.querySelector('.price-column.sbar');
+    if (!target) {
+      showSticky();
+      return;
+    }
+    if (isElementPositionedFixedOrSticky(target)) {
+      destroySticky();
+      return;
+    }
+    createSticky();
+    if (io) io.disconnect();
+
+    io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (ent) {
+        if (ent.isIntersecting || ent.boundingClientRect.top < 0) {
+          hideSticky();
+        } else {
+          showSticky();
+        }
+      });
+    }, { root: null, threshold: 0 });
+
+    io.observe(target);
+  }
+
+  function enableIfMobile() {
+    if (window.innerWidth > MOBILE_BREAK) {
+      destroySticky();
+      return;
+    }
+    const target = document.getElementById('sbar') || document.querySelector('.price-column.sbar');
+    if (target && isElementPositionedFixedOrSticky(target)) {
+      destroySticky();
+      return;
+    }
+    setupObservers();
+  }
+
+  window.addEventListener('load', () => {
+    enableIfMobile();
+    if (window.innerWidth <= MOBILE_BREAK) {
+      createSticky();
+    }
+  });
+
+  let resizeTimeout;
+  window.addEventListener('resize', function () {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(enableIfMobile, 120);
+  });
+
+  window.addEventListener('orientationchange', function () {
+    setTimeout(enableIfMobile, 300);
+  });
+
+  window.updateStickyValue = updateStickyValue;
+}
+
+let stepperStickySetupDone = false;
+
+function setupStepperSticky() {
+  if (stepperStickySetupDone) return;
+  stepperStickySetupDone = true;
+
+  function setup() {
+    const stepperEl = document.getElementById('design-stepper');
+    const navbar = document.querySelector('.navbar');
+    const targetSection = document.getElementById('sbar') || document.querySelector('.price-column.sbar') || document.querySelector('.details-section');
+    
+    if (!stepperEl || !targetSection) return;
+
+    if (navbar) {
+      document.documentElement.style.setProperty('--nav-height', `${navbar.offsetHeight}px`);
+    }
+
+    let io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (ent) {
+        if (ent.isIntersecting || ent.boundingClientRect.top <= 60) {
+          stepperEl.style.opacity = '0';
+          stepperEl.style.visibility = 'hidden';
+          stepperEl.style.pointerEvents = 'none';
+        } else {
+          stepperEl.style.opacity = '1';
+          stepperEl.style.visibility = 'visible';
+          stepperEl.style.pointerEvents = 'auto';
+        }
+      });
+    }, { root: null, threshold: 0 });
+
+    io.observe(targetSection);
+
+    window.addEventListener('scroll', function () {
+      if (window.scrollY > 20) {
+        stepperEl.classList.add('is-sticky');
+      } else {
+        stepperEl.classList.remove('is-sticky');
+      }
+    }, { passive: true });
+  }
+
+  if (document.readyState === 'complete') setup();
+  else window.addEventListener('load', setup);
+  
+  window.addEventListener('resize', setup);
+}
+
+function openLB(s) { 
+  document.getElementById('lb-img').src = s; 
+  document.getElementById('lb').classList.add('open'); 
+}
+
+function closeLB() { 
+  document.getElementById('lb').classList.remove('open'); 
+}
+
+/*
+================================================================================
+Location & Shipping
+================================================================================
+*/
+
 function calcInstall(lat, lng) {
   const dist = haversine(LOC.workshop_lat, LOC.workshop_lng, lat, lng);
   const maxDist = (LOC.max_distance_km !== undefined && LOC.max_distance_km !== null)
     ? parseFloat(LOC.max_distance_km)
     : 25;
 
-  // التحقق من المسافة
   if (dist > maxDist) {
-    return null; // نعيد null فقط، والتحكم في عرض الرسالة يكون في دالة requestLocation
+    return null;
   }
 
-  // الحساب إذا كان داخل النطاق
   const adjusted = dist * LOC.correction_factor;
-  // أصلحت الحساب هنا بإزالة الـ 4 التي كانت مضافة بدون داعٍ (احتفظت بالصيغة كما في الملف الأصلي المقدم)
   return r5(4 * adjusted * LOC.price_per_km + LOC.fixed_cost);
 }
 
-// Reverse geocoding using Nominatim to show neighbourhood & city (best-effort)
 async function getAddress(lat, lon, resElement) {
   const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=ar`;
   try {
     const response = await fetch(url);
     const data = await response.json();
-    console.log(data);
     if (data.address) {
       const a = data.address;
-    const neighbourhood =
-      a.neighbourhood ||
-      a.suburb ||
-      a.quarter ||
-      '';
+      const neighbourhood = a.neighbourhood || a.suburb || a.quarter || '';
+      const city = a.city || a.town || a.state_district || a.state || a.county || '';
+      const governorate = a.state || a.state_district || '';
+      const address = [neighbourhood, city].filter(Boolean).join('، ');
 
-    const city =
-      a.city ||
-      a.town ||
-      a.state_district ||
-      a.state ||
-      a.county ||
-      '';
+      window.userLocationAddress = {
+        governorate,
+        district: neighbourhood,
+        city,
+        fullAddress: address
+      };
 
-    const governorate =
-      a.state ||
-      a.state_district ||
-      '';
-
-    const address = [neighbourhood, city]
-      .filter(Boolean)
-      .join('، ');
-
-    // Store location address data for the Design Request PDF
-    window.userLocationAddress = {
-      governorate,
-      district: neighbourhood,
-      city,
-      fullAddress: address
-    };
-
-    if (address && resElement) {
-      resElement.innerHTML += `<br><small>الموقع: ${address}</small>`;
-    }
+      if (address && resElement) {
+        resElement.innerHTML += `<br><small>الموقع: ${address}</small>`;
+      }
     }
   } catch (e) {
     console.error("تعذر جلب العنوان", e);
   }
 }
 
-function openDesignRequestModal() {
+function buildStaticMapUrl(lat, lng, width = 600, height = 350) {
+  if (
+    typeof lat !== 'number' ||
+    typeof lng !== 'number' ||
+    !GEOAPIFY_API_KEY
+  ) {
+    return '';
+  }
 
+  const params = new URLSearchParams({
+    style: 'osm-bright',
+    width: String(width),
+    height: String(height),
+    center: `lonlat:${lng},${lat}`,
+    zoom: '15',
+    marker: `lonlat:${lng},${lat};type:material;color:#9caf88;size:large`,
+    apiKey: GEOAPIFY_API_KEY
+  });
+
+  return `https://maps.geoapify.com/v1/staticmap?${params.toString()}`;
+}
+
+function getLocation(btn, res, mapContainer, mapImage) {
+  btn = (typeof btn === 'string') ? document.getElementById(btn) : btn;
+  res = (typeof res === 'string') ? document.getElementById(res) : res;
+  mapContainer = (typeof mapContainer === 'string') ? document.getElementById(mapContainer) : mapContainer;
+  mapImage = (typeof mapImage === 'string') ? document.getElementById(mapImage) : mapImage;
+
+  if (!navigator.geolocation) {
+    if (res) { res.textContent = 'خدمة تحديد الموقع غير متاحة حالياً'; res.className = 'loc-result error show'; }
+    if (btn) { btn.disabled = false; btn.innerHTML = 'تحديد موقعي الحالي'; }
+    return;
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<svg class="spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> جارٍ تحديد موقعك...';
+  }
+  if (res) {
+    res.innerHTML = '<span style="display:inline-flex;align-items:center;gap:8px"><svg class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg><span>يتم تحديد موقعك... الرجاء الانتظار</span></span>';
+    res.className = 'loc-result';
+    res.style.display = 'block';
+  }
+
+  setTimeout(() => {
+    if (!navigator.geolocation) {
+      if (res) { res.textContent = 'متصفحك لا يدعم تحديد الموقع'; res.className = 'loc-result error show'; }
+      if (btn) { btn.disabled = false; btn.innerHTML = 'تحديد موقعي الحالي'; }
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async pos => {
+        try {
+          userLat = pos.coords.latitude;
+          userLng = pos.coords.longitude;
+          window.userLat = userLat;
+          window.userLng = userLng;
+
+          if (mapImage) {
+            const mapUrl = buildStaticMapUrl(userLat, userLng, 600, 300);
+            if (mapUrl) {
+              mapImage.src = mapUrl;
+            }
+          }
+
+          if (mapContainer) {
+            mapContainer.hidden = false;
+            mapContainer.style.display = 'block';
+          }
+
+          try {
+            installCost = (typeof calcInstall === 'function') ? calcInstall(userLat, userLng) : null;
+          } catch (e) {
+            console.warn('calcInstall error', e);
+            installCost = null;
+          }
+          window.installCost = installCost;
+
+          let isForbidden = false;
+          try {
+            const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${userLat}&lon=${userLng}&accept-language=ar`;
+            const response = await fetch(url);
+            if (response && response.ok) {
+              const data = await response.json();
+              if (data && data.address) {
+                const addr = JSON.stringify(data.address);
+                const forbiddenKeywords = ['أشمون', 'بشتيل', 'أوسيم', 'أبو زعبل', 'القناطر', 'طنان'];
+                isForbidden = forbiddenKeywords.some(keyword => addr.includes(keyword));
+              }
+            }
+          } catch (e) {
+            console.warn("تعذر التحقق من اسم المنطقة، سنعتمد على المسافة فقط.", e);
+          }
+
+          if (installCost === null || isForbidden) {
+            if (res) {
+              res.innerHTML = `نعتذر، موقعك خارج نطاق خدمتنا. <button onclick="outOfRangeWA()" style="background:none;border:none;color:#9caf88;cursor:pointer;font-family:'Cairo',sans-serif;font-size:12px;text-decoration:underline;">هل يمكن التنفيذ في منطقتي؟</button>`;
+              res.className = 'loc-result show out-of-range';
+            }
+            if (btn) {
+              btn.disabled = false;
+              btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="9" stroke-dasharray="4 2"/></svg> تحديد موقعي الحالي';
+            }
+            if (typeof upd === 'function') try { upd(); } catch (e) { console.warn(e); }
+            return;
+          }
+
+          if (res) {
+            res.innerHTML = 'تم تحديد موقعك — تكلفة التوصيل: ' + (installCost !== null ? installCost + ' EGP' : '—');
+            res.className = 'loc-result show';
+          }
+
+          if (typeof getAddress === 'function') {
+            try { await getAddress(userLat, userLng, res); } catch (e) { console.warn('getAddress failed', e); }
+          }
+
+          const expBtn = document.getElementById('export-location');
+          if (expBtn) expBtn.disabled = false;
+
+          if (btn) {
+            btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> تم تحديد الموقع';
+            btn.disabled = false;
+          }
+
+          if (typeof completeStep === 'function') {
+            try { completeStep('step-location'); } catch (e) { /* ignore */ }
+          }
+          if (typeof upd === 'function') {
+            try { upd(); } catch (e) { console.warn(e); }
+          }
+
+        } catch (err) {
+          console.error('Error in getLocation success handler', err);
+          if (res) { res.textContent = 'حدث خطأ أثناء معالجة الموقع'; res.className = 'loc-result error show'; }
+          if (btn) { btn.disabled = false; btn.innerHTML = 'إعادة المحاولة'; }
+        }
+      },
+      err => {
+        let msg = 'لم يتم السماح بالوصول للموقع';
+        if (err && err.code === 1) msg = 'يرجى السماح للمتصفح بالوصول لموقعك';
+        if (res) { res.textContent = msg; res.className = 'loc-result error show'; }
+        if (btn) { btn.disabled = false; btn.innerHTML = 'إعادة المحاولة'; }
+      },
+      { timeout: 15000, maximumAge: 60000 }
+    );
+  }, 500);
+}
+
+function requestLocation() {
+  const btn = document.getElementById('btn-locate');
+  const res = document.getElementById('loc-result');
+  const mapContainer = document.getElementById('mapContainer');
+  const mapImage = document.getElementById('staticMap');
+
+  if (!navigator.geolocation) {
+    if (res) { res.textContent = 'خدمة تحديد الموقع غير متاحة حالياً'; res.className = 'loc-result error show'; }
+    if (btn) { btn.disabled = false; btn.innerHTML = 'تحديد موقعي الحالي'; }
+    return;
+  }
+
+  getLocation(btn, res, mapContainer, mapImage);
+}
+
+/*
+================================================================================
+Design Request Modal
+================================================================================
+*/
+
+function openDesignRequestModal() {
   const isMultiShapeHandle = S.handle && (S.handle.id === '4c_h&k01' || S.handle.id === '4c_h&k02');
   const selectedShapesCount = (isMultiShapeHandle && Array.isArray(S.selectedHandleShapes)) ? S.selectedHandleShapes.length : 0;
   const hasSelectedTwoShapes = selectedShapesCount >= 2;
@@ -1726,7 +2266,6 @@ function openDesignRequestModal() {
   const isDesignIncomplete = !S.design || !hasSelectedColor;
 
   if (!S.sinkType || !S.size || isDesignIncomplete || !S.div || isHandleIncomplete) {
-    // تخصيص نص الرسالة بدقة حسب الحالة
     if (S.design && !hasSelectedColor) {
       showToast('يرجى اختيار لون الوحدة أولاً.');
     } else if (isMultiShapeHandle && selectedShapesCount === 1) {
@@ -1737,13 +2276,11 @@ function openDesignRequestModal() {
       showToast('يرجى إكمال جميع اختيارات وحدة الحوض أولاً');
     }
 
-    // تحديد أول سكشن غير مكتمل بالترتيب والتمرير إليه
     if (!S.sinkType) {
       const sinkTarget = 
         document.getElementById('sink-types') || 
         document.getElementById('sinkType-group-title') || 
         document.querySelector('[data-group="sink-types"]');
-      
       sinkTarget?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     } else if (!S.size) {
       (document.getElementById('sz') || document.getElementById('sizes'))?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1751,7 +2288,6 @@ function openDesignRequestModal() {
       const target = (!S.design) 
         ? (document.getElementById('dc') || document.getElementById('design-cards') || document.getElementById('design-group-title') || document.querySelector('[data-group="design"]')) 
         : (document.getElementById('unit-color-section') || document.getElementById('unit-colors-row'));
-        
       target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     } else if (!S.div) {
       const divTarget = 
@@ -1760,7 +2296,6 @@ function openDesignRequestModal() {
         document.getElementById('division-title') || 
         document.querySelector('.div-card')?.parentElement || 
         document.querySelector('[data-group="div"]');
-      
       divTarget?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     } else if (isHandleIncomplete) {
       const handleTarget = 
@@ -1768,22 +2303,20 @@ function openDesignRequestModal() {
         document.getElementById('hc') || 
         document.getElementById('handle-group-title') || 
         document.querySelector('[data-group="hc"]');
-      
       handleTarget?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
     return;
   }
+
   const modal = document.getElementById('design-request-modal');
   if (!modal) return;
 
-  // Prevent scroll on configurator page
   document.body.style.overflow = 'hidden';
 
   modal.style.display = 'flex';
   modal.setAttribute('aria-hidden', 'false');
 
-  // Store config in modal state
   window.drDesignConfig = {
     sinkType: S.sinkType,
     design: S.design,
@@ -1793,16 +2326,13 @@ function openDesignRequestModal() {
     unitPrice: calc()
   };
 
-  // نوع الحوض الحالي من الـ Configurator
   document.getElementById('dr-sink-type').value =
     S.sinkType === 'wall-hung' ? 'حوض معلق' :
     S.sinkType === 'floor-standing' ? 'حوض برجل كاملة' :
     S.sinkType === 'drop-in' ? 'حوض ساقط' : 'حوض فوق الكاونتر';
 
-  // 1) استرجاع المسودة وبيانات Firebase
   loadDRDraft();
 
-  // 2) ربط مستمعي الحفظ التلقائي للحقول النصية ومرفقات الصور
   const inputIds = [
     'dr-sink-brand',
     'dr-sink-width',
@@ -1828,7 +2358,6 @@ function openDesignRequestModal() {
     }
   });
 
-  // Show Step 1
   drShowStep(1);
 }
 
@@ -1841,11 +2370,10 @@ function closeDesignRequestModal() {
   modal.setAttribute('aria-hidden', 'true');
   document.body.style.overflow = '';
 }
+
 window.closeDesignRequestModal = closeDesignRequestModal;
 
 function drShowStep(stepNum) {
-
-  // Apply text color to all labels
   document.querySelectorAll('.dr-label').forEach(el => {
     el.style.color = 'var(--color-text-main)';
   });
@@ -1855,12 +2383,10 @@ function drShowStep(stepNum) {
     el.style.opacity = '0.6';
   });
 
-  // Hide all step contents
   document.querySelectorAll('.dr-step-content').forEach(el => {
     el.style.display = 'none';
   });
 
-  // Show current step
   const currentStep = document.querySelector(
     `.dr-step-content[data-step="${stepNum}"]`
   );
@@ -1869,7 +2395,6 @@ function drShowStep(stepNum) {
     currentStep.style.display = 'block';
   }
 
-  // Update modal stepper using the SAME classes as configurator
   const stepperItems = document.querySelectorAll(
     '#dr-stepper .stepper-item'
   );
@@ -1877,25 +2402,21 @@ function drShowStep(stepNum) {
   stepperItems.forEach(el => {
     const step = parseInt(el.dataset.step, 10);
 
-    // Current step
     if (step === stepNum) {
       el.classList.add('active');
     } else {
       el.classList.remove('active');
     }
 
-    // Previous steps are completed
     if (step < stepNum) {
       el.classList.add('completed');
     } else {
       el.classList.remove('completed');
     }
 
-    // Make sure this state isn't used in the modal
     el.classList.remove('out-of-range');
   });
 
-  // Update buttons
   const prevBtn = document.getElementById('dr-btn-prev');
   const nextBtn = document.getElementById('dr-btn-next');
   const downloadBtn = document.getElementById('dr-btn-download');
@@ -1922,6 +2443,8 @@ function drShowStep(stepNum) {
     closeBtn.style.display = stepNum === 1 ? 'inline-flex' : 'none';
   }
 }
+
+window.drShowStep = drShowStep;
 
 function drValidateStep(stepNum) {
   if (stepNum === 1) {
@@ -1972,6 +2495,7 @@ function drNextStep() {
     setTimeout(drRenderPreview, 100);
   }
 }
+
 window.drNextStep = drNextStep;
 
 function drPrevStep() {
@@ -1986,17 +2510,47 @@ function drPrevStep() {
     drShowStep(2);
   }
 }
+
 window.drPrevStep = drPrevStep;
+
+function fitPreviewToWidth() {
+  const frame = document.getElementById('dr-invoice-preview');
+  const content = frame?.querySelector('.dr-preview-document');
+  const pages = content?.querySelectorAll('.page');
+
+  if (!frame || !content || !pages || pages.length === 0) return;
+
+  const availableWidth = frame.clientWidth - 20;
+  const pageWidth = pages[0].offsetWidth;
+
+  if (!availableWidth || !pageWidth) return;
+
+  let scale = availableWidth / pageWidth;
+  scale = Math.min(1, scale);
+  scale = Math.max(0.5, scale);
+
+  pages.forEach(page => {
+    page.style.transformOrigin = 'top center';
+    page.style.transform = `scale(${scale})`;
+    page.style.marginLeft = '0';
+    page.style.marginRight = '0';
+  });
+
+  requestAnimationFrame(() => {
+    const maxScroll = frame.scrollWidth - frame.clientWidth;
+    if (maxScroll > 0) {
+      frame.scrollLeft = maxScroll / 2;
+    } else {
+      frame.scrollLeft = 0;
+    }
+  });
+}
 
 async function drRenderPreview() {
   const previewEl = document.getElementById('dr-invoice-preview');
   if (!previewEl) return;
 
   previewEl.innerHTML = '';
-
-  // ----------------------------------------------------------
-  // Preview container
-  // ----------------------------------------------------------
 
   const frame = previewEl;
 
@@ -2027,11 +2581,6 @@ async function drRenderPreview() {
 
   frame.appendChild(zoomControls);
 
-  // ----------------------------------------------------------
-  // Load product-order-summary.html directly
-  // No iframe
-  // ----------------------------------------------------------
-
   let response;
 
   try {
@@ -2044,10 +2593,7 @@ async function drRenderPreview() {
   }
 
   if (!response.ok) {
-    console.error(
-      'Failed to load product-order-summary.html:',
-      response.status
-    );
+    console.error('Failed to load product-order-summary.html:', response.status);
     return;
   }
 
@@ -2056,13 +2602,7 @@ async function drRenderPreview() {
   const parser = new DOMParser();
   const parsedDoc = parser.parseFromString(html, 'text/html');
 
-  // ----------------------------------------------------------
-  // Load the summary page CSS
-  // ----------------------------------------------------------
-
-  const summaryStyles = parsedDoc.querySelectorAll(
-    'link[rel="stylesheet"]'
-  );
+  const summaryStyles = parsedDoc.querySelectorAll('link[rel="stylesheet"]');
 
   summaryStyles.forEach(link => {
     const href = link.getAttribute('href');
@@ -2074,7 +2614,6 @@ async function drRenderPreview() {
       new URL('product-order-summary.html', window.location.href)
     ).href;
 
-    // Avoid loading the same stylesheet more than once
     const alreadyLoaded = [
       ...document.querySelectorAll('link[rel="stylesheet"]')
     ].some(existing => existing.href === absoluteHref);
@@ -2086,10 +2625,6 @@ async function drRenderPreview() {
       document.head.appendChild(styleLink);
     }
   });
-
-  // ----------------------------------------------------------
-  // Insert the summary page content directly
-  // ----------------------------------------------------------
 
   const content = document.createElement('div');
   content.className = 'dr-preview-document';
@@ -2106,64 +2641,19 @@ async function drRenderPreview() {
 
   frame.appendChild(content);
 
-  setTimeout(() => {
-  console.log('=== HORIZONTAL SCROLL DEBUG ===');
-
-  console.log('FRAME:', {
-    clientWidth: frame.clientWidth,
-    scrollWidth: frame.scrollWidth,
-    scrollLeft: frame.scrollLeft
-  });
-
-  console.log('CONTENT:', {
-    clientWidth: content.clientWidth,
-    scrollWidth: content.scrollWidth,
-    offsetWidth: content.offsetWidth,
-    rectWidth: content.getBoundingClientRect().width,
-    rectLeft: content.getBoundingClientRect().left,
-    rectRight: content.getBoundingClientRect().right
-  });
-
-  const pages = content.querySelectorAll('.page');
-
-  pages.forEach((page, index) => {
-    const rect = page.getBoundingClientRect();
-
-    console.log(`PAGE ${index + 1}:`, {
-      offsetWidth: page.offsetWidth,
-      rectWidth: rect.width,
-      left: rect.left,
-      right: rect.right,
-      marginLeft: getComputedStyle(page).marginLeft,
-      marginRight: getComputedStyle(page).marginRight
-    });
-  });
-
-  console.log('=== END HORIZONTAL DEBUG ===');
-}, 1000);
-
   const pages = content.querySelectorAll('.page');
 
   if (pages.length) {
     pages[pages.length - 1].style.marginBottom = '0';
   }
 
-  // Start the horizontal scroll centered
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       fitPreviewToWidth();
     });
   });
 
-  // ----------------------------------------------------------
-  // Preview zoom
-  // ----------------------------------------------------------
-
   let previewZoom = 1;
-
-  // ----------------------------------------------------------
-  // Center preview pages
-  // ----------------------------------------------------------
 
   content.style.width = '100%';
   content.style.display = 'flex';
@@ -2179,65 +2669,20 @@ async function drRenderPreview() {
     pages.forEach(page => {
       page.style.transformOrigin = 'top center';
       page.style.transform = `scale(${previewZoom})`;
-
-      // لا نعتمد على auto margins لتوسيط صفحة A4
       page.style.marginLeft = '0';
       page.style.marginRight = '0';
     });
 
-    zoomResetBtn.textContent =
-      `${Math.round(previewZoom * 100)}%`;
-  }
-
-
-  function fitPreviewToWidth() {
-    const pages = content.querySelectorAll('.page');
-
-    if (!pages.length) return;
-
-    const availableWidth = frame.clientWidth - 20;
-    const pageWidth = pages[0].offsetWidth;
-
-    if (!availableWidth || !pageWidth) return;
-
-    let scale = availableWidth / pageWidth;
-
-    scale = Math.min(1, scale);
-    scale = Math.max(0.5, scale);
-
-    previewZoom = scale;
-
-    applyPreviewZoom();
-
-    requestAnimationFrame(() => {
-      const maxScroll =
-        frame.scrollWidth - frame.clientWidth;
-
-      if (maxScroll > 0) {
-        frame.scrollLeft = maxScroll / 2;
-      } else {
-        frame.scrollLeft = 0;
-      }
-    });
+    zoomResetBtn.textContent = `${Math.round(previewZoom * 100)}%`;
   }
 
   zoomInBtn.addEventListener('click', () => {
-    previewZoom =
-      Math.min(
-        2,
-        +(previewZoom + 0.1).toFixed(2)
-      );
-
+    previewZoom = Math.min(2, +(previewZoom + 0.1).toFixed(2));
     applyPreviewZoom();
   });
 
   zoomOutBtn.addEventListener('click', () => {
-    previewZoom =
-      Math.max(
-        0.5,
-        +(previewZoom - 0.1).toFixed(2)
-      );
-
+    previewZoom = Math.max(0.5, +(previewZoom - 0.1).toFixed(2));
     applyPreviewZoom();
   });
 
@@ -2246,30 +2691,12 @@ async function drRenderPreview() {
     applyPreviewZoom();
   });
 
-  // ----------------------------------------------------------
-  // Populate data
-  // ----------------------------------------------------------
-
   try {
-    const brand =
-      document.getElementById('dr-sink-brand')?.value ||
-      'غير متوفر';
-
-    const width =
-      document.getElementById('dr-sink-width')?.value ||
-      'غير متوفر';
-
-    const code =
-      document.getElementById('dr-sink-code')?.value ||
-      'غير متوفر';
-
-    const name =
-      document.getElementById('dr-customer-name')?.value ||
-      'غير متوفر';
-
-    const phone =
-      document.getElementById('dr-customer-phone')?.value ||
-      'غير متوفر';
+    const brand = document.getElementById('dr-sink-brand')?.value || 'غير متوفر';
+    const width = document.getElementById('dr-sink-width')?.value || 'غير متوفر';
+    const code = document.getElementById('dr-sink-code')?.value || 'غير متوفر';
+    const name = document.getElementById('dr-customer-name')?.value || 'غير متوفر';
+    const phone = document.getElementById('dr-customer-phone')?.value || 'غير متوفر';
 
     const config = window.drDesignConfig;
 
@@ -2278,24 +2705,19 @@ async function drRenderPreview() {
       return;
     }
 
-    const locationAddress =
-      window.userLocationAddress || {};
-
+    const locationAddress = window.userLocationAddress || {};
     const lat = window.userLat;
     const lng = window.userLng;
     const shippingCost = window.installCost;
 
-    // --------------------------------------------------------
-    // Handles table
-    // --------------------------------------------------------
     const handlesTbody = content.querySelector('#sink-handle-items');
 
     if (handlesTbody) {
-      const h1 = S.selectedHandles && S.selectedHandles[0] ? S.selectedHandles[0] : null;
-      const h2 = S.selectedHandles && S.selectedHandles[1] ? S.selectedHandles[1] : null;
+      const h1 = S.selectedHandleShapes && S.selectedHandleShapes[0] ? S.selectedHandleShapes[0] : null;
+      const h2 = S.selectedHandleShapes && S.selectedHandleShapes[1] ? S.selectedHandleShapes[1] : null;
 
-      const h1Src = h1 ? await makeSquareImage(`images/conf/handles/${encodeURIComponent(h1)}.webp`) : '';
-      const h2Src = h2 ? await makeSquareImage(`images/conf/handles/${encodeURIComponent(h2)}.webp`) : '';
+      const h1Src = h1 ? await makeSquareImage(`images/conf/hnd/${encodeURIComponent(h1)}.webp`) : '';
+      const h2Src = h2 ? await makeSquareImage(`images/conf/hnd/${encodeURIComponent(h2)}.webp`) : '';
 
       const h1Html = h1Src
         ? `<img src="${h1Src}" style="width:40px; height:40px; object-fit:contain; background:#ffffff; display:block; margin:0 auto;" />`
@@ -2316,52 +2738,25 @@ async function drRenderPreview() {
       `;
     }
 
-    // --------------------------------------------------------
-    // Configurator images
-    // --------------------------------------------------------
-
-    const designImg =
-      content.querySelector('#design-img');
-
-    const divisionImg =
-      content.querySelector('#division-img');
-
-    const handleImg =
-      content.querySelector('#handle-img');
+    const designImg = content.querySelector('#design-img');
+    const divisionImg = content.querySelector('#division-img');
+    const handleImg = content.querySelector('#handle-img');
 
     if (designImg && config.design?.id) {
-      designImg.src = getConfiguratorImageUrl(
-        config.design.id,
-        config.sinkType
-      );
+      designImg.src = getConfiguratorImageUrl(config.design.id, config.sinkType);
     }
 
     if (divisionImg && config.division?.id) {
-      divisionImg.src = getConfiguratorImageUrl(
-        config.division.id,
-        config.sinkType
-      );
+      divisionImg.src = getConfiguratorImageUrl(config.division.id, config.sinkType);
     }
 
     if (handleImg && config.handle?.id) {
-      handleImg.src = getConfiguratorImageUrl(
-        config.handle.id,
-        config.sinkType
-      );
+      handleImg.src = getConfiguratorImageUrl(config.handle.id, config.sinkType);
     }
 
-    // --------------------------------------------------------
-    // Wall image
-    // --------------------------------------------------------
-
-    const wallImageEl =
-      content.querySelector('#sink-wall-image');
-
-    const wallImageInput =
-      document.getElementById('dr-sink-image');
-
-    const wallImageFile =
-      wallImageInput?.files?.[0];
+    const wallImageEl = content.querySelector('#sink-wall-image');
+    const wallImageInput = document.getElementById('dr-sink-image');
+    const wallImageFile = wallImageInput?.files?.[0];
 
     if (wallImageFile && wallImageEl) {
       const reader = new FileReader();
@@ -2375,18 +2770,9 @@ async function drRenderPreview() {
       wallImageEl.src = window.drSavedImages.wall;
     }
 
-    // --------------------------------------------------------
-    // Sink image
-    // --------------------------------------------------------
-
-    const sinkImageEl =
-      content.querySelector('#sink-image');
-
-    const sinkImageInput =
-      document.getElementById('dr-sink-photo');
-
-    const sinkImageFile =
-      sinkImageInput?.files?.[0];
+    const sinkImageEl = content.querySelector('#sink-image');
+    const sinkImageInput = document.getElementById('dr-sink-photo');
+    const sinkImageFile = sinkImageInput?.files?.[0];
 
     if (sinkImageFile && sinkImageEl) {
       const reader = new FileReader();
@@ -2400,18 +2786,9 @@ async function drRenderPreview() {
       sinkImageEl.src = window.drSavedImages.photo;
     }
 
-    // --------------------------------------------------------
-    // Sticker image
-    // --------------------------------------------------------
-
-    const stickerImageEl =
-      content.querySelector('#sink-label-image');
-
-    const stickerImageInput =
-      document.getElementById('dr-sink-sticker');
-
-    const stickerImageFile =
-      stickerImageInput?.files?.[0];
+    const stickerImageEl = content.querySelector('#sink-label-image');
+    const stickerImageInput = document.getElementById('dr-sink-sticker');
+    const stickerImageFile = stickerImageInput?.files?.[0];
 
     if (stickerImageFile && stickerImageEl) {
       const reader = new FileReader();
@@ -2425,12 +2802,7 @@ async function drRenderPreview() {
       stickerImageEl.src = window.drSavedImages.sticker;
     }
 
-    // --------------------------------------------------------
-    // Sink type
-    // --------------------------------------------------------
-
-    const sinkTypeEl =
-      content.querySelector('#sink-type');
+    const sinkTypeEl = content.querySelector('#sink-type');
 
     if (sinkTypeEl) {
       const sinkTypeNames = {
@@ -2440,130 +2812,68 @@ async function drRenderPreview() {
         'bowl': 'حوض فوق الكاونتر'
       };
 
-      sinkTypeEl.textContent =
-        sinkTypeNames[config.sinkType] ||
-        config.sinkType;
+      sinkTypeEl.textContent = sinkTypeNames[config.sinkType] || config.sinkType;
     }
 
-    // --------------------------------------------------------
-    // Sink specifications
-    // --------------------------------------------------------
-
-    const sinkBrandEl =
-      content.querySelector('#sink-brand');
-
+    const sinkBrandEl = content.querySelector('#sink-brand');
     if (sinkBrandEl) {
       sinkBrandEl.textContent = brand;
     }
 
-    const sinkWidthEl =
-      content.querySelector('#sink-width');
-
+    const sinkWidthEl = content.querySelector('#sink-width');
     if (sinkWidthEl) {
       sinkWidthEl.textContent = width ? `${width} سم` : '';
     }
 
-    const sinkCodeEl =
-      content.querySelector('#sink-code');
-
+    const sinkCodeEl = content.querySelector('#sink-code');
     if (sinkCodeEl) {
       sinkCodeEl.textContent = code;
     }
 
-    // --------------------------------------------------------
-    // Customer information
-    // --------------------------------------------------------
-
-    const custNameEl =
-      content.querySelector('#customer-name');
-
+    const custNameEl = content.querySelector('#customer-name');
     if (custNameEl) {
       custNameEl.textContent = name;
     }
 
-    const custPhoneEl =
-      content.querySelector('#customer-phone');
-
+    const custPhoneEl = content.querySelector('#customer-phone');
     if (custPhoneEl) {
       custPhoneEl.textContent = phone;
     }
 
-    // --------------------------------------------------------
-    // Location information
-    // --------------------------------------------------------
-
-    const governorateEl =
-      content.querySelector('#shipping-governorate');
-
+    const governorateEl = content.querySelector('#shipping-governorate');
     if (governorateEl) {
-      governorateEl.textContent =
-        locationAddress.governorate ||
-        'غير متوفر';
+      governorateEl.textContent = locationAddress.governorate || 'غير متوفر';
     }
 
-    const districtEl =
-      content.querySelector('#shipping-district');
-
+    const districtEl = content.querySelector('#shipping-district');
     if (districtEl) {
-      districtEl.textContent =
-        locationAddress.district ||
-        locationAddress.city ||
-        'غير متوفر';
+      districtEl.textContent = locationAddress.district || locationAddress.city || 'غير متوفر';
     }
 
-    const lngEl =
-      content.querySelector('#shipping-lng');
-
+    const lngEl = content.querySelector('#shipping-lng');
     if (lngEl) {
-      lngEl.textContent =
-        typeof lng === 'number'
-          ? lng.toFixed(6)
-          : 'غير متوفر';
+      lngEl.textContent = typeof lng === 'number' ? lng.toFixed(6) : 'غير متوفر';
     }
 
-    const latEl =
-      content.querySelector('#shipping-lat');
-
+    const latEl = content.querySelector('#shipping-lat');
     if (latEl) {
-      latEl.textContent =
-        typeof lat === 'number'
-          ? lat.toFixed(6)
-          : 'غير متوفر';
+      latEl.textContent = typeof lat === 'number' ? lat.toFixed(6) : 'غير متوفر';
     }
 
-    // --------------------------------------------------------
-    // Static map
-    // --------------------------------------------------------
-
-    const shippingMapEl =
-      content.querySelector('#shipping-map-image');
-
+    const shippingMapEl = content.querySelector('#shipping-map-image');
     if (
       shippingMapEl &&
       typeof lat === 'number' &&
       typeof lng === 'number'
     ) {
-      const mapUrl =
-        buildStaticMapUrl(
-          lat,
-          lng,
-          700,
-          350
-        );
-
+      const mapUrl = buildStaticMapUrl(lat, lng, 700, 350);
       if (mapUrl) {
         shippingMapEl.src = mapUrl;
         shippingMapEl.hidden = false;
       }
     }
 
-    // --------------------------------------------------------
-    // Design table
-    // --------------------------------------------------------
-
-    const designTbody =
-      content.querySelector('#sink-design-items');
-
+    const designTbody = content.querySelector('#sink-design-items');
     if (designTbody) {
       const selectedColorId = S.selectedColors && S.selectedColors[0] ? S.selectedColors[0] : null;
       const colorImgHtml = selectedColorId
@@ -2581,17 +2891,10 @@ async function drRenderPreview() {
       `;
     }
 
-    // --------------------------------------------------------
-    // Division table
-    // --------------------------------------------------------
-
-    const divisionTbody =
-      content.querySelector('#sink-division-items');
-
+    const divisionTbody = content.querySelector('#sink-division-items');
     if (divisionTbody) {
       const sg = sgr(config.size.size);
-      const divPrice =
-        dvp(config.division, sg);
+      const divPrice = dvp(config.division, sg);
 
       divisionTbody.innerHTML = `
         <tr class="item-row">
@@ -2603,13 +2906,7 @@ async function drRenderPreview() {
       `;
     }
 
-    // --------------------------------------------------------
-    // Handle table
-    // --------------------------------------------------------
-
-    const handleTbody =
-      content.querySelector('#sink-handle-items');
-
+    const handleTbody = content.querySelector('#sink-handle-items');
     if (handleTbody && config.handle) {
       const p1Shape = S.selectedHandleShapes && S.selectedHandleShapes[0] 
         ? `<img src="images/conf/hnd/${encodeURIComponent(S.selectedHandleShapes[0])}.webp" style="height:36px; object-fit:contain;" onerror="this.src='images/conf/hnd/${encodeURIComponent(S.selectedHandleShapes[0])}.png'" />` 
@@ -2630,33 +2927,15 @@ async function drRenderPreview() {
       `;
     }
 
-    // --------------------------------------------------------
-    // Total
-    // --------------------------------------------------------
-
-    const totalEl =
-      content.querySelector('#order-total');
-
+    const totalEl = content.querySelector('#order-total');
     if (totalEl) {
-      totalEl.textContent =
-        `${config.unitPrice} ج.م`;
+      totalEl.textContent = `${config.unitPrice} ج.م`;
     }
 
-    // --------------------------------------------------------
-    // Order number
-    // --------------------------------------------------------
-
-    const orderNumEl =
-      content.querySelector('#order-number');
-
+    const orderNumEl = content.querySelector('#order-number');
     if (orderNumEl) {
-      orderNumEl.textContent =
-        `DR-${String(Date.now()).slice(-8)}`;
+      orderNumEl.textContent = `DR-${String(Date.now()).slice(-8)}`;
     }
-
-    // --------------------------------------------------------
-    // Initial fit
-    // --------------------------------------------------------
 
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
@@ -2671,20 +2950,16 @@ async function drRenderPreview() {
 
 window.drRenderPreview = drRenderPreview;
 
-const DR_STORAGE_KEY = 'dr_form_draft';
-
-// قراءة ملف كـ Base64
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
     if (!file) return resolve(null);
-    const reader = new FileReader();
+        const reader = new FileReader();
     reader.onload = () => resolve(reader.result);
     reader.onerror = error => reject(error);
     reader.readAsDataURL(file);
   });
 }
 
-// دالة مساعدة لتحديث واجهة الحاوية وتنسيق المعاينة
 function updateCustomFileUI(inputId, imageBase64, defaultText = 'اضغط لرفع الصورة') {
   const inputEl = document.getElementById(inputId);
   if (!inputEl) return;
@@ -2737,11 +3012,9 @@ function makeSquareImage(src, targetSize = 300) {
       canvas.height = targetSize;
       const ctx = canvas.getContext('2d');
 
-      // تعبئة الخلفية باللون الأبيض
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, targetSize, targetSize);
 
-      // حساب الأبعاد للسنترة مع الحفاظ على النسبة (Aspect Ratio)
       const scale = Math.min(targetSize / img.width, targetSize / img.height);
       const w = img.width * scale;
       const h = img.height * scale;
@@ -2751,12 +3024,11 @@ function makeSquareImage(src, targetSize = 300) {
       ctx.drawImage(img, x, y, w, h);
       resolve(canvas.toDataURL('image/jpeg', 0.9));
     };
-    img.onerror = () => resolve(src); // في حال فشل التحميل يُرجع الرابط الأصلي
+    img.onerror = () => resolve(src);
     img.src = src;
   });
 }
 
-// حفظ المسودة كاملة (بيانات + لوكيشن + صور)
 async function saveDRDraft() {
   const wallFile = document.getElementById('dr-sink-image')?.files?.[0];
   const photoFile = document.getElementById('dr-sink-photo')?.files?.[0];
@@ -2768,12 +3040,10 @@ async function saveDRDraft() {
   const photoBase64 = photoFile ? await fileToBase64(photoFile) : (saved.sinkPhoto || null);
   const stickerBase64 = stickerFile ? await fileToBase64(stickerFile) : (saved.stickerPhoto || null);
 
-  // تحديث واجهة الصناديق فور رفع ملف جديد
   if (wallFile) updateCustomFileUI('dr-sink-image', wallBase64);
   if (photoFile) updateCustomFileUI('dr-sink-photo', photoBase64);
   if (stickerFile) updateCustomFileUI('dr-sink-sticker', stickerBase64);
 
-  // تحديث الكائن في الذاكرة الحية
   window.drSavedImages = {
     wall: wallBase64,
     photo: photoBase64,
@@ -2801,9 +3071,7 @@ async function saveDRDraft() {
   }
 }
 
-// استرجاع المسودة
 function loadDRDraft() {
-  // تهيئة واجهات الصناديق بالحالة الافتراضية أولاً
   updateCustomFileUI('dr-sink-image', null, 'اضغط لاختيار صورة الحائط');
   updateCustomFileUI('dr-sink-photo', null, 'اضغط لاختيار صورة الحوض');
   updateCustomFileUI('dr-sink-sticker', null, 'اضغط لاختيار صورة الستيكر');
@@ -2818,13 +3086,11 @@ function loadDRDraft() {
     if (data.width) document.getElementById('dr-sink-width').value = data.width;
     if (data.code) document.getElementById('dr-sink-code').value = data.code;
 
-    // الاسم والهاتف: الأولوية لـ Firebase، ثم المسودة المحفوظة
     document.getElementById('dr-customer-name').value =
       window.currentUser?.displayName || data.name || '';
     document.getElementById('dr-customer-phone').value =
       window.currentUser?.phoneNumber || data.phone || '';
 
-    // استرجاع بيانات الموقع الجغرافي وإظهار الخريطة
     if (data.locationAddress) {
       window.userLocationAddress = data.locationAddress;
       window.userLat = data.userLat;
@@ -2850,14 +3116,12 @@ function loadDRDraft() {
       }
     }
 
-    // حفظ مسارات الصور في الـ window
     window.drSavedImages = {
       wall: data.wallImage || null,
       photo: data.sinkPhoto || null,
       sticker: data.stickerPhoto || null
     };
 
-    // تحديث واجهات رفع الصور بالمعاينة المحفوظة
     if (data.wallImage) updateCustomFileUI('dr-sink-image', data.wallImage);
     if (data.sinkPhoto) updateCustomFileUI('dr-sink-photo', data.sinkPhoto);
     if (data.stickerPhoto) updateCustomFileUI('dr-sink-sticker', data.stickerPhoto);
@@ -2905,9 +3169,9 @@ function drDownloadPdf() {
     showToast('فشل إنشاء ملف PDF — تأكد من تحميل مكتبة html2pdf');
   }
 }
+
 window.drDownloadPdf = drDownloadPdf;
 
-// Location detection for design request modal
 function drGetLocation() {
   const btn = document.getElementById('dr-btn-locate');
   const res = document.getElementById('dr-loc-result');
@@ -2954,623 +3218,8 @@ function drSendWhatsApp() {
   const waUrl = `https://wa.me/201556840368?text=${encodeURIComponent(message)}`;
   window.open(waUrl, '_blank');
 }
+
 window.drSendWhatsApp = drSendWhatsApp;
-
-// Request location UI entry
-function requestLocation() {
-  const btn = document.getElementById('btn-locate');
-  const res = document.getElementById('loc-result');
-  const mapContainer = document.getElementById('mapContainer');
-  const mapImage = document.getElementById('staticMap');
-
-  if (!navigator.geolocation) {
-    if (res) { res.textContent = 'خدمة تحديد الموقع غير متاحة حالياً'; res.className = 'loc-result error show'; }
-    if (btn) { btn.disabled = false; btn.innerHTML = 'تحديد موقعي الحالي'; }
-    return;
-  }
-
-  getLocation(btn, res, mapContainer, mapImage);
-}
-
-function buildStaticMapUrl(lat, lng, width = 600, height = 350) {
-  if (
-    typeof lat !== 'number' ||
-    typeof lng !== 'number' ||
-    !GEOAPIFY_API_KEY
-  ) {
-    return '';
-  }
-
-  const params = new URLSearchParams({
-    style: 'osm-bright',
-    width: String(width),
-    height: String(height),
-    center: `lonlat:${lng},${lat}`,
-    zoom: '15',
-    marker: `lonlat:${lng},${lat};type:material;color:#9caf88;size:large`,
-    apiKey: GEOAPIFY_API_KEY
-  });
-
-  return `https://maps.geoapify.com/v1/staticmap?${params.toString()}`;
-}
-
-// Main geolocation routine with UI updates & error handling
-function getLocation(btn, res, mapContainer, mapImage) {
-  // normalize parameters (accept element or id)
-  btn = (typeof btn === 'string') ? document.getElementById(btn) : btn;
-  res = (typeof res === 'string') ? document.getElementById(res) : res;
-  mapContainer = (typeof mapContainer === 'string') ? document.getElementById(mapContainer) : mapContainer;
-  mapImage = (typeof mapImage === 'string') ? document.getElementById(mapImage) : mapImage;
-
-  if (!navigator.geolocation) {
-    if (res) { res.textContent = 'خدمة تحديد الموقع غير متاحة حالياً'; res.className = 'loc-result error show'; }
-    if (btn) { btn.disabled = false; btn.innerHTML = 'تحديد موقعي الحالي'; }
-    return;
-  }
-
-  // دالة مساعدة لتمرير البيانات وتحديث الـ Invoice Preview فوراً
-  window.dispatchLocationUpdate = function(data) {
-    window.dispatchEvent(new CustomEvent('app:location-updated', { detail: data }));
-  };
-
-  // early UI: show loading state
-  if (btn) {
-    btn.disabled = true;
-    btn.innerHTML = '<svg class="spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> جارٍ تحديد موقعك...';
-  }
-  if (res) {
-    res.innerHTML = '<span style="display:inline-flex;align-items:center;gap:8px"><svg class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg><span>يتم تحديد موقعك... الرجاء الانتظار</span></span>';
-    res.className = 'loc-result';
-    res.style.display = 'block';
-  }
-
-  setTimeout(() => {
-    if (!navigator.geolocation) {
-      if (res) { res.textContent = 'متصفحك لا يدعم تحديد الموقع'; res.className = 'loc-result error show'; }
-      if (btn) { btn.disabled = false; btn.innerHTML = 'تحديد موقعي الحالي'; }
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      async pos => {
-        try {
-          userLat = pos.coords.latitude;
-          userLng = pos.coords.longitude;
-          window.userLat = userLat;
-          window.userLng = userLng;
-
-          if (mapImage) {
-            const mapUrl = buildStaticMapUrl(userLat, userLng, 600, 300);
-
-            if (mapUrl) {
-              mapImage.src = mapUrl;
-            }
-          }
-
-          if (mapContainer) {
-            mapContainer.hidden = false;
-            mapContainer.style.display = 'block';
-          }
-
-          // إطلاق الحدث المخصص لتحديث بيانات الموقع فوراً في السلة والـ Preview
-          if (typeof window.dispatchLocationUpdate === 'function') {
-            window.dispatchLocationUpdate({ lat: userLat, lng: userLng, shippingCost: installCost });
-          }
-          if (mapContainer) {
-            mapContainer.style.display = 'block';
-            mapContainer.hidden = false;
-          }
-
-          try {
-            installCost = (typeof calcInstall === 'function') ? calcInstall(userLat, userLng) : null;
-          } catch (e) {
-            console.warn('calcInstall error', e);
-            installCost = null;
-          }
-          window.installCost = installCost;
-
-          // optional: check forbidden keywords via reverse geocode (best-effort)
-          let isForbidden = false;
-          try {
-            const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${userLat}&lon=${userLng}&accept-language=ar`;
-            const response = await fetch(url);
-            if (response && response.ok) {
-              const data = await response.json();
-              if (data && data.address) {
-                const addr = JSON.stringify(data.address);
-                const forbiddenKeywords = ['أشمون', 'بشتيل', 'أوسيم', 'أبو زعبل', 'القناطر', 'طنان'];
-                isForbidden = forbiddenKeywords.some(keyword => addr.includes(keyword));
-              }
-            }
-          } catch (e) {
-            console.warn("تعذر التحقق من اسم المنطقة، سنعتمد على المسافة فقط.", e);
-          }
-
-          // handle out-of-range or forbidden
-          if (installCost === null || isForbidden) {
-            if (res) {
-              res.innerHTML = `نعتذر، موقعك خارج نطاق خدمتنا. <button onclick="outOfRangeWA()" style="background:none;border:none;color:#9caf88;cursor:pointer;font-family:'Cairo',sans-serif;font-size:12px;text-decoration:underline;">هل يمكن التنفيذ في منطقتي؟</button>`;
-              res.className = 'loc-result show out-of-range';
-            }
-            if (btn) {
-              btn.disabled = false;
-              btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="9" stroke-dasharray="4 2"/></svg> تحديد موقعي الحالي';
-            }
-            if (typeof upd === 'function') try { upd(); } catch (e) { console.warn(e); }
-            return;
-          }
-
-          // success: show cost and then fetch + display address details
-          if (res) {
-            res.innerHTML = 'تم تحديد موقعك — تكلفة التوصيل: ' + (installCost !== null ? installCost + ' EGP' : '—');
-            res.className = 'loc-result show';
-          }
-
-          if (typeof getAddress === 'function') {
-            try { await getAddress(userLat, userLng, res); } catch (e) { console.warn('getAddress failed', e); }
-          }
-
-          const expBtn = document.getElementById('export-location');
-          if (expBtn) expBtn.disabled = false;
-
-          if (btn) {
-            btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> تم تحديد الموقع';
-            btn.disabled = false;
-          }
-
-          if (typeof completeStep === 'function') {
-            try { completeStep('step-location'); } catch (e) { /* ignore */ }
-          }
-          if (typeof upd === 'function') {
-            try { upd(); } catch (e) { console.warn(e); }
-          }
-
-        } catch (err) {
-          console.error('Error in getLocation success handler', err);
-          if (res) { res.textContent = 'حدث خطأ أثناء معالجة الموقع'; res.className = 'loc-result error show'; }
-          if (btn) { btn.disabled = false; btn.innerHTML = 'إعادة المحاولة'; }
-        }
-      },
-      err => {
-        let msg = 'لم يتم السماح بالوصول للموقع';
-        if (err && err.code === 1) msg = 'يرجى السماح للمتصفح بالوصول لموقعك';
-        if (res) { res.textContent = msg; res.className = 'loc-result error show'; }
-        if (btn) { btn.disabled = false; btn.innerHTML = 'إعادة المحاولة'; }
-      },
-      { timeout: 15000, maximumAge: 60000 }
-    );
-  }, 500);
-}
-
-/*
-================================================================================
-7. Event Listeners & Initialization
-   (تهيئة الأحداث، توحيد مستمعي DOMContentLoaded / load، واستدعاء الدوال الأولية)
-================================================================================
-*/
-
-function setupScrollArrowButtons() {
-  document.querySelectorAll('.scroll-arrow').forEach(function (btn) {
-    // avoid duplicate handlers
-    btn.replaceWith(btn.cloneNode(true));
-  });
-  // re-query (cloned elements)
-  document.querySelectorAll('.scroll-arrow').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      const targetId = btn.dataset.target;
-      const dir = parseInt(btn.dataset.dir || '1', 10);
-      const row = document.getElementById(targetId);
-      if (!row) return;
-      const chunk = row.clientWidth * 0.6;
-      row.scrollBy({ left: dir * chunk * -1, behavior: 'smooth' });
-    });
-  });
-}
-
-function setupCardsRowScrollListeners() {
-  document.querySelectorAll('.cards-row').forEach(function (row) {
-    // avoid adding duplicate listeners
-    row.replaceWith(row.cloneNode(true));
-  });
-  document.querySelectorAll('.cards-row').forEach(function (row) {
-    row.addEventListener('scroll', () => {
-      // update arrows in the custom logic that handles RTL
-      document.querySelectorAll('.scroll-wrap').forEach(function (wrap) {
-        const r = wrap.querySelector('.cards-row');
-        const startBtn = wrap.querySelector('.scroll-arrow.arr-start');
-        const endBtn = wrap.querySelector('.scroll-arrow.arr-end');
-        if (!r) return;
-        const maxScroll = r.scrollWidth - r.clientWidth;
-        if (maxScroll <= 0) {
-          if (startBtn) startBtn.classList.add('hidden');
-          if (endBtn) endBtn.classList.add('hidden');
-          return;
-        }
-        const current = Math.abs(r.scrollLeft);
-        const canScrollRight = current > 10;
-        const canScrollLeft = current < (maxScroll - 10);
-        if (startBtn) startBtn.classList.toggle('hidden', !canScrollRight);
-        if (endBtn) endBtn.classList.toggle('hidden', !canScrollLeft);
-      });
-    });
-  });
-}
-
-function setupSinkTypeCards() {
-  document.querySelectorAll('.sink-type-card').forEach(card => {
-    card.addEventListener('click', function () {
-      document.querySelectorAll('.sink-type-card').forEach(c => c.classList.remove('selected'));
-      this.classList.add('selected');
-      S.sinkType = this.dataset.type;
-
-      hidePlaceholders();
-
-      S.design = null;
-      S.size = null;
-      S.div = null;
-      S.handle = null;
-
-      if (!dataLoaded) {
-        showConfiguratorLoading();
-        loadConfiguratorData();
-      } else {
-        rDes();
-        rSz();
-        rDiv();
-        rHnd();
-        upd();
-      }
-    });
-  });
-
-  // initial arrow update
-  updateArrows('sink-types');
-  const sinkRow = document.getElementById('sink-types');
-  if (sinkRow) sinkRow.addEventListener('scroll', () => updateArrows('sink-types'));
-}
-
-// Sticky mobile price bar (keeps original logic but avoids duplicates)
-function setupStickyPriceBar() {
-  (function () {
-    const MOBILE_BREAK = 900; // px
-    let stickyEl = null;
-    let io = null;
-    let mutation = null;
-
-    function createSticky() {
-      if (stickyEl) return stickyEl;
-
-      const resetIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>';
-      const eyeIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
-
-      stickyEl = document.createElement('div');
-      stickyEl.className = 'price-sticky';
-      stickyEl.innerHTML =
-        '<div class="total">' +
-        '<span class="lbl">إجمالي الوحدة</span>' +
-        '<span class="val" id="sticky-total">— EGP</span>' +
-        '</div>' +
-        '<div class="sticky-actions">' +
-        '<button class="sticky-reset" id="sticky-reset" aria-label="إعادة التعيين" title="إعادة التعيين">' + resetIcon + '</button>' +
-        '<button class="sticky-order" id="sticky-order" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px;">' + eyeIcon + ' <span>تفاصيل السعر</span></button>' +
-        '</div>';
-      document.body.appendChild(stickyEl);
-
-      const orderBtn = document.getElementById('sticky-order');
-      if (orderBtn) {
-        orderBtn.addEventListener('click', function () {
-          const targetSection = document.getElementById('sbar') || document.querySelector('.price-column.sbar') || document.querySelector('.details-section');
-          if (targetSection) {
-            targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }
-        });
-      }
-      const resetBtn = document.getElementById('sticky-reset');
-      if (resetBtn) {
-        resetBtn.addEventListener('click', function () {
-          if (typeof resetAll === 'function') resetAll();
-          else document.querySelector('.btn-reset')?.click();
-        });
-      }
-
-      // إضافة الانيميشن والحالة الابتدائية (مختفي تحت الشاشة)
-      stickyEl.style.transition = 'transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease';
-      stickyEl.style.transform = 'translateY(100%)';
-      stickyEl.style.opacity = '0';
-      stickyEl.style.pointerEvents = 'none';
-      stickyEl.style.display = 'flex';
-
-      return stickyEl;
-    }
-
-    function destroySticky() {
-      if (io) { io.disconnect(); io = null; }
-      if (mutation) { mutation.disconnect(); mutation = null; }
-      if (stickyEl) { stickyEl.remove(); stickyEl = null; }
-      document.body.classList.remove('has-sticky-bar');
-    }
-
-    function updateStickyValue() {
-      const total = typeof calc === 'function' ? calc() : null;
-      const formattedPrice = (total !== null && total > 0) 
-        ? `${total.toLocaleString('en-US')} <small style="font-size: 0.75em; font-weight: normal; margin-left: 2px;">EGP</small>` 
-        : '— EGP';
-      
-      const el1 = document.getElementById('sticky-price-val');
-      const el2 = document.getElementById('sticky-total');
-      
-      const applyAnimation = (el) => {
-        if (!el) return;
-        const lastTotal = el.dataset.lastTotal !== undefined ? parseFloat(el.dataset.lastTotal) : null;
-        el.innerHTML = formattedPrice;
-
-        // تشغيل الـ Pulse فقط لو تغير الرقم الإجمالي فعلياً
-        if (lastTotal !== total) {
-          el.dataset.lastTotal = total;
-          el.classList.remove('price-updated');
-          void el.offsetWidth; // Reflow
-          el.classList.add('price-updated');
-        }
-      };
-
-      applyAnimation(el1);
-      applyAnimation(el2);
-
-      const stickyBtn = document.querySelector('.mobile-checkout-cta-btn');
-      if (stickyBtn) {
-        stickyBtn.textContent = 'طلب التصميم والمعاينة';
-        stickyBtn.onclick = () => openSinkOrderModal();
-      }
-    }
-    window.updateStickyValue = updateStickyValue;
-
-    function showSticky() {
-      if (!stickyEl) createSticky();
-      stickyEl.style.transform = 'translateY(0)';
-      stickyEl.style.opacity = '1';
-      stickyEl.style.pointerEvents = 'auto';
-      document.body.classList.add('has-sticky-bar'); // إضافة الكلاس لرفع التوست فوق الشريط
-      updateStickyValue();
-    }
-
-    function hideSticky() {
-      if (stickyEl) {
-        stickyEl.style.transform = 'translateY(100%)';
-        stickyEl.style.opacity = '0';
-        stickyEl.style.pointerEvents = 'none';
-      }
-      document.body.classList.remove('has-sticky-bar'); // إزالة الكلاس لتنزيل التوست لمكانه الاصلي
-    }
-
-    function isElementPositionedFixedOrSticky(el) {
-      if (!el) return false;
-      const cs = window.getComputedStyle(el);
-      return cs.position === 'fixed' || cs.position === 'sticky';
-    }
-
-    function setupObservers() {
-      const target = document.getElementById('sbar') || document.querySelector('.price-column.sbar');
-      if (!target) {
-        showSticky();
-        return;
-      }
-      if (isElementPositionedFixedOrSticky(target)) {
-        destroySticky();
-        return;
-      }
-      createSticky();
-      if (io) io.disconnect();
-
-      io = new IntersectionObserver(function (entries) {
-        entries.forEach(function (ent) {
-          if (ent.isIntersecting || ent.boundingClientRect.top < 0) {
-            hideSticky();
-          } else {
-            showSticky();
-          }
-        });
-      }, { root: null, threshold: 0 });
-
-      io.observe(target);
-    }
-
-    function enableIfMobile() {
-      if (window.innerWidth > MOBILE_BREAK) {
-        destroySticky();
-        return;
-      }
-      const target = document.getElementById('sbar') || document.querySelector('.price-column.sbar');
-      if (target && isElementPositionedFixedOrSticky(target)) {
-        destroySticky();
-        return;
-      }
-      setupObservers();
-    }
-
-    window.addEventListener('load', () => {
-      enableIfMobile();
-      if (window.innerWidth <= MOBILE_BREAK) {
-        createSticky(); // إنشاء العنصر فورًا حتى لو مخفي، عشان يكون جاهز لأي تحديث لاحق
-      }
-    });
-    window.addEventListener('resize', function () {
-      clearTimeout(window._priceStickyResize);
-      window._priceStickyResize = setTimeout(enableIfMobile, 120);
-    });
-    window.addEventListener('orientationchange', function () {
-      setTimeout(enableIfMobile, 300);
-    });
-
-    window.updateStickyValue = updateStickyValue;
-  })();
-}
-
-// Stepper sticky & visibility management (Accelerated CSS Transform Sync)
-function setupStepperSticky() {
-  (function () {
-    let io = null;
-    function setup() {
-      const stepperEl = document.getElementById('design-stepper');
-      const navbar = document.querySelector('.navbar');
-      const targetSection = document.getElementById('sbar') || document.querySelector('.price-column.sbar') || document.querySelector('.details-section');
-      
-      if (!stepperEl || !targetSection) return;
-      if (io) io.disconnect();
-
-      // حساب ارتفاع الـ Navbar الفعلي تلقائياً وتحديثه
-      if (navbar) {
-        document.documentElement.style.setProperty('--nav-height', `${navbar.offsetHeight}px`);
-      }
-
-      // إدارة إخفاء الـ Stepper تماماً عند الوصول لسكشن التفاصيل
-      io = new IntersectionObserver(function (entries) {
-        entries.forEach(function (ent) {
-          if (ent.isIntersecting || ent.boundingClientRect.top <= 60) {
-            stepperEl.style.opacity = '0';
-            stepperEl.style.visibility = 'hidden';
-            stepperEl.style.pointerEvents = 'none';
-          } else {
-            stepperEl.style.opacity = '1';
-            stepperEl.style.visibility = 'visible';
-            stepperEl.style.pointerEvents = 'auto';
-          }
-        });
-      }, { root: null, threshold: 0 });
-
-      io.observe(targetSection);
-
-      window.addEventListener('scroll', function () {
-        if (window.scrollY > 20) {
-          stepperEl.classList.add('is-sticky');
-        } else {
-          stepperEl.classList.remove('is-sticky');
-        }
-      }, { passive: true });
-    }
-
-    if (document.readyState === 'complete') setup();
-    else window.addEventListener('load', setup);
-    
-    window.addEventListener('resize', setup);
-  })();
-}
-
-// Update stepper progress (With Half-Completed State support)
-function updateStepperProgress() {
-  const stepDesign = document.getElementById('st-design');
-  const stepSinkType = document.getElementById('st-sink-type');
-  const stepSize = document.getElementById('st-size');
-  const stepPartition = document.getElementById('st-partition');
-  const stepHandle = document.getElementById('st-handle');
-  const stepLocation = document.getElementById('st-location');
-
-  // --- 1. فحص حالة التصميم والألوان ---
-  const hasSelectedDesign = Boolean(typeof S !== 'undefined' && S.design && (S.design.id || S.design.name || S.design.type));
-  const hasSelectedColor = Boolean(typeof S !== 'undefined' && Array.isArray(S.selectedColors) && S.selectedColors.length >= 1);
-
-  const isDesignFullyCompleted = hasSelectedDesign && hasSelectedColor;
-  const isDesignHalfCompleted = (hasSelectedDesign && !hasSelectedColor) || (!hasSelectedDesign && hasSelectedColor);
-
-  // --- 2. فحص حالة المقابض ---
-  const noH = Boolean(typeof S !== 'undefined' && S.design && S.design.hc === 0);
-  const isMultiShapeHandle = typeof S !== 'undefined' && S.handle && (S.handle.id === '4c_h&k01' || S.handle.id === '4c_h&k02');
-  
-  const handleShapesCount = (isMultiShapeHandle && Array.isArray(S.selectedHandleShapes)) ? S.selectedHandleShapes.length : 0;
-  
-  const isHandleFullyCompleted = typeof S !== 'undefined' && (
-    noH || 
-    (isMultiShapeHandle ? handleShapesCount >= 2 : Boolean(S.handle))
-  );
-
-  const isHandleHalfCompleted = !isHandleFullyCompleted && isMultiShapeHandle && handleShapesCount > 0;
-
-  // --- 3. باقى الخطوات ---
-  const hasSinkType = Boolean(typeof S !== 'undefined' && S.sinkType);
-  const hasSize = Boolean(typeof S !== 'undefined' && S.size);
-  const hasDiv = Boolean(typeof S !== 'undefined' && S.div);
-
-  const errorMsgElement = document.body.innerText.includes('خارج نطاق خدمتنا');
-  const isOutOfRange = (typeof locationError !== 'undefined' && locationError === true) || errorMsgElement;
-  const hasLocation = typeof installCost !== 'undefined' && installCost !== null && !isOutOfRange;
-
-  // --- 4. تطبيق الكلاسات للـ UI ---
-
-  if (stepSinkType) {
-    if (hasSinkType) stepSinkType.classList.add('completed'); else stepSinkType.classList.remove('completed');
-  }
-
-  // تطبيق حالة Half-Completed لخطوة التصميم
-  if (stepDesign) {
-    stepDesign.classList.remove('completed', 'half-completed');
-    if (isDesignFullyCompleted) {
-      stepDesign.classList.add('completed');
-    } else if (isDesignHalfCompleted) {
-      stepDesign.classList.add('half-completed');
-    }
-  }
-
-  if (stepSize) {
-    if (hasSize) stepSize.classList.add('completed'); else stepSize.classList.remove('completed');
-  }
-
-  if (stepPartition) {
-    if (hasDiv) stepPartition.classList.add('completed'); else stepPartition.classList.remove('completed');
-  }
-
-  // تطبيق حالة Half-Completed لخطوة المقبض
-  if (stepHandle) {
-    stepHandle.classList.remove('completed', 'half-completed');
-    if (isHandleFullyCompleted) {
-      stepHandle.classList.add('completed');
-    } else if (isHandleHalfCompleted) {
-      stepHandle.classList.add('half-completed');
-    }
-  }
-
-  if (stepLocation) {
-    if (hasLocation) {
-      stepLocation.classList.add('completed');
-      stepLocation.classList.remove('out-of-range');
-    } else if (isOutOfRange) {
-      stepLocation.classList.remove('completed');
-      stepLocation.classList.add('out-of-range');
-    } else {
-      stepLocation.classList.remove('completed', 'out-of-range');
-    }
-  }
-
-  // --- 5. تحديث الخطوة النشطة Active Step ---
-  const allSteps = [stepSinkType, stepSize, stepDesign, stepPartition, stepHandle, stepLocation];
-  allSteps.forEach(el => el && el.classList.remove('active'));
-
-  if (!hasSinkType) {
-    if (stepSinkType) stepSinkType.classList.add('active');
-  } else if (!hasSize) {
-    if (stepSize) stepSize.classList.add('active');
-  } else if (!isDesignFullyCompleted) {
-    if (stepDesign) stepDesign.classList.add('active');
-  } else if (!hasDiv) {
-    if (stepPartition) stepPartition.classList.add('active');
-  } else if (!isHandleFullyCompleted) {
-    if (stepHandle) stepHandle.classList.add('active');
-  } else if (!hasLocation) {
-    if (stepLocation) stepLocation.classList.add('active');
-  }
-}
-
-/*
-================================================================================
-Utility: open/close lightbox (kept as-is)
-================================================================================
-*/
-function openLB(s) { document.getElementById('lb-img').src = s; document.getElementById('lb').classList.add('open'); }
-function closeLB() { document.getElementById('lb').classList.remove('open'); }
-
-/*
-================================================================================
-Order / WA actions, Reset, Save
-================================================================================
-*/
 
 function customWA() {
   window.open(
@@ -3588,6 +3237,8 @@ function customWA() {
   );
 }
 
+window.customWA = customWA;
+
 function outOfRangeWA() {
   window.open(
     'https://wa.me/' + WA + '?text=' +
@@ -3604,8 +3255,9 @@ function outOfRangeWA() {
   );
 }
 
+window.outOfRangeWA = outOfRangeWA;
+
 function resetAll() {
-  // 1. إعادة تصفير حالة التطبيق العامة بجميع مصفوفات التحديد
   S.sinkType = null;
   S.design = null;
   S.size = null;
@@ -3618,7 +3270,6 @@ function resetAll() {
   userLng = null; 
   installCost = null;
 
-  // 2. مسح البيانات المحفوظة في الـ LocalStorage بشكل كامل
   try {
     localStorage.removeItem('wodi_configurator_state');
     localStorage.removeItem('wodi-config');
@@ -3626,13 +3277,11 @@ function resetAll() {
   } catch(e) {}
   delete window.wodi_saved_state;
 
-  // 3. إزالة كلاسات الاختيار (active / selected / checked) من جميع كروت وأزرار الألوان في الشاشة
   document.querySelectorAll('.color-card, .color-option, .clr-item, [data-color], [data-color-id]').forEach(el => {
     el.classList.remove('selected', 'active', 'checked');
     if (el.tagName === 'INPUT' && el.type === 'radio') el.checked = false;
   });
 
-  // 3. إعادة تعيين زر تحديد الموقع وحالة التوصيل
   const res = document.getElementById('loc-result');
   if (res) { res.className = 'loc-result'; res.textContent = ''; }
   const btn = document.getElementById('btn-locate');
@@ -3641,47 +3290,40 @@ function resetAll() {
     btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg> تحديد موقعي الحالي';
   }
 
-  // 4. إزالة إشارة الاختيار من كروت نوع الحوض وألوان الوحدة
   document.querySelectorAll('.sink-type-card, .st-card, .sink-card, .color-card, .color-option, .clr-item').forEach(card => card.classList.remove('selected', 'active'));
 
-  // 5. إخفاء سكيلتون التحميل إن وجد
   ['loading-sz', 'loading-dc', 'loading-vc-wall', 'loading-vc-floor', 'loading-hc'].forEach(id => {
     document.getElementById(id)?.classList.remove('show');
   });
 
-  // 6. إظهار الـ Placeholders وإخفاء سكشن الألوان المباشر
   showPlaceholders();
   
-  // إخفاء حاوية الألوان الرئيسية ومسح محتواها الداخلي مؤقتاً
   const clrContainer = document.getElementById('clr') || document.getElementById('clr-wrap') || document.querySelector('.colors-section');
   if (clrContainer) {
     clrContainer.classList.add('hidden');
     clrContainer.style.setProperty('display', 'none', 'important');
   }
 
-  // 7. إخفاء أقسام الاختيار الفعلية وسكشن الألوان كاملاً (سواء كان ID أو Class)
-  ['sz', 'dc', 'vc-wall', 'vc-floor', 'hc', 'vc-wall-wrap', 'floor-wrap', 'clr', 'clr-wrap', 'clr-section', 'color-section', 'sc-section', 'colors-section'].forEach(id => {
+  ['sz', 'dc', 'vc-wall', 'vc-floor', 'hc', 'vc-wall-wrap', 'vc-floor-wrap', 'floor-wrap', 'clr', 'clr-wrap', 'clr-section', 'color-section', 'sc-section', 'colors-section'].forEach(id => {
     const el = document.getElementById(id);
     if (el) {
       el.classList.add('hidden');
       el.style.display = 'none';
+      el.style.removeProperty('display');
     }
   });
 
-  // إخفاء أي سكشن يحتوي على كلاس الألوان في حال عدم وجود ID
   document.querySelectorAll('.colors-section, .color-section, .clr-section, #clr, #clr-wrap').forEach(sec => {
     sec.classList.add('hidden');
     sec.style.display = 'none';
   });
 
-  // 8. تحديث الرندر وإعادة رسم الألوان وإجبار نص اللون على التصفير
   rDes(); 
   rSz(); 
   rDiv(); 
   rHnd(); 
   if (typeof rClr === 'function') rClr();
 
-  // إجبار نص السكشن على التصفير المباشر
   const scEl = document.getElementById('sc');
   const scPriceEl = document.getElementById('sc-price');
   if (scEl) scEl.textContent = '—';
@@ -3689,7 +3331,6 @@ function resetAll() {
 
   upd();
 
-  // 9. التمرير السلس لأعلى عند سكشن اختيار نوع الحوض
   const sinkSection = document.getElementById('sink-type-section') || document.querySelector('.sink-type-card')?.closest('section');
   if (sinkSection) {
     sinkSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -3698,150 +3339,19 @@ function resetAll() {
   }
 }
 
+window.resetAll = resetAll;
+
 /*
 ================================================================================
-Initialization (single unified DOMContentLoaded handler)
- - wire up buttons, card handlers, arrows, scrolls, sticky behavior
- - load LOCATION_SHEET settings
- - load configurator data once if needed
+Order Popup Integration
 ================================================================================
 */
 
-function initConfigurator() {
-  // Restore saved state from localStorage
-  try {
-    const saved = localStorage.getItem('wodi_configurator_state');
-    if (saved) {
-      const state = JSON.parse(saved);
-      // Will be restored after data loads
-      window.wodi_saved_state = state;
-    }
-  } catch (e) { console.warn('Failed to restore state', e); }
-
-  // Wire locate button
-  const locateBtn = document.getElementById('btn-locate');
-  if (locateBtn && typeof requestLocation === 'function') {
-    try { locateBtn.removeEventListener('click', requestLocation); } catch (e) { /* ignore */ }
-    locateBtn.addEventListener('click', requestLocation);
-  }
-
-  // hook up arrows and scroll logic ( clones/replacements happen first )
-  setupScrollArrowButtons();
-  setupCardsRowScrollListeners();
-
-  // ثم ربط كروت نوع الحوض بعد استبدال/تهيئة الـ rows
-  setupSinkTypeCards();
-
-  // connect generic click -> update stepper guard (avoid duplicates)
-  document.removeEventListener('click', genericClickForStepper);
-  document.addEventListener('click', genericClickForStepper);
-
-  // run other UI setups
-  setupStickyPriceBar();
-  setupStepperSticky();
-
-  // run initial update for arrows on relevant lists
-  ['dc', 'vc', 'hc'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener('scroll', () => updateArrows(id));
-    setTimeout(() => updateArrows(id), 150);
-  });
-
-  updateArrows('sink-types');
-
-  // Run the initial data fetch (keeps same behavior as original — will be idempotent)
-  loadConfiguratorData();
-}
-
-// Generic click handler used only to update stepper progress after interactions
-function genericClickForStepper(e) {
-  if (e.target.closest('.card') || e.target.closest('.option') || e.target.closest('button')) {
-    setTimeout(updateStepperProgress, 120);
-  }
-}
-
-// Ensure we only wire init once
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initConfigurator);
-} else {
-  // already loaded
-  setTimeout(initConfigurator, 0);
-}
-
-// Wire location & modal interactions
-document.addEventListener('DOMContentLoaded', () => {
-  const drLocBtn = document.getElementById('dr-btn-locate');
-  if (drLocBtn) {
-    drLocBtn.onclick = drGetLocation;
-  }
-  
-  // Also add zoom controls to preview
-  const addZoomControls = () => {
-    const previewEl = document.getElementById('dr-invoice-preview');
-    if (previewEl && !previewEl.querySelector('.dr-zoom-controls')) {
-      const controls = document.createElement('div');
-      controls.className = 'dr-zoom-controls';
-      controls.innerHTML = `
-        <button class="dr-zoom-btn" onclick="drZoom(1.1)">+</button>
-        <button class="dr-zoom-btn" onclick="drZoom(0.9)">−</button>
-      `;
-      previewEl.appendChild(controls);
-    }
-  };
-  
-  setTimeout(addZoomControls, 500);
-});
-
-function drZoom(factor) {
-  const previewEl = document.getElementById('dr-invoice-preview');
-  if (!previewEl) return;
-  const iframe = previewEl.querySelector('iframe');
-  if (!iframe) return;
-  const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-  if (!iframeDoc) return;
-  const page = iframeDoc.querySelector('.page');
-  if (!page) return;
-  const currentScale = parseFloat(page.dataset.scale || 1);
-  const newScale = currentScale * factor;
-  page.dataset.scale = newScale;
-  page.style.transform = `scale(${newScale})`;
-  page.style.transformOrigin = 'top center';
-}
-
-// expose some internals for debugging (kept as globals in original)
-// Expose internals safely without throwing ReferenceErrors
-if (typeof calcInstall !== 'undefined') window.calcInstall = calcInstall;
-if (typeof calc !== 'undefined') window.calc = calc;
-if (typeof updateStepperProgress !== 'undefined') window.updateStepperProgress = updateStepperProgress;
-if (typeof loadConfiguratorData !== 'undefined') window.loadConfiguratorData = loadConfiguratorData;
-if (typeof loadConfiguratorState !== 'undefined') window.loadConfiguratorState = loadConfiguratorState;
-if (typeof isRestoring !== 'undefined') window.isRestoring = isRestoring;
-if (typeof resetAll !== 'undefined') window.resetAll = resetAll;
-if (typeof openLB !== 'undefined') window.openLB = openLB;
-if (typeof closeLB !== 'undefined') window.closeLB = closeLB;
-if (typeof orderWA !== 'undefined') window.orderWA = orderWA;
-if (typeof customWA !== 'undefined') window.customWA = customWA;
-if (typeof outOfRangeWA !== 'undefined') window.outOfRangeWA = outOfRangeWA;
-
-// تعريف دالة التوست لمنع خطأ showCustomErrorToast is not defined
-if (typeof showCustomErrorToast !== 'function') {
-  window.showCustomErrorToast = function(msg) {
-    console.warn("Toast Warning:", msg);
-  };
-}
-
-/* ===========================
-   Order Popup / Summary Integration
-   - Append this block at the end of configurator.js
-   - Reuses existing getLocation / calc / S state and auth helper window.loginWithGoogle / window.onAuthStateChanged
-   =========================== */
 (function () {
   'use strict';
 
-  const ORDER_POPUP_KEY = 'wodi_user_profile';
   let orderPayloadCache = null;
   let summaryGenerated = false;
-  let previewWindow = null;
 
   function saveLocalProfile(profile) {
     try {
@@ -3862,7 +3372,6 @@ if (typeof showCustomErrorToast !== 'function') {
     } catch (e) { return null; }
   }
 
-  /* Build modal DOM once */
   function ensureOrderPopup() {
     if (document.getElementById('wodi-order-popup')) return document.getElementById('wodi-order-popup');
 
@@ -3920,46 +3429,32 @@ if (typeof showCustomErrorToast !== 'function') {
 
     document.body.appendChild(modal);
 
-    // hook close
     modal.querySelector('#wodi-order-popup-close').addEventListener('click', () => closeOrderPopup());
     modal.querySelector('#wodi-order-cancel').addEventListener('click', () => closeOrderPopup());
 
-    // login / input
     const loginBtn = modal.querySelector('#wodi-login-btn');
     if (loginBtn) loginBtn.addEventListener('click', () => {
       if (typeof window.loginWithGoogle === 'function') window.loginWithGoogle();
       else showToast('نظام تسجيل الدخول غير متاح الآن');
     });
 
-    // locate button -> reuse existing getLocation. It accepts element or id.
     modal.querySelector('#wodi-popup-btn-locate').addEventListener('click', function () {
-      // call getLocation with elements/ids created inside popup
-      try {
-        // make elements visible to getLocation flow
-        const btn = document.getElementById('wodi-popup-btn-locate');
-        const res = document.getElementById('wodi-popup-loc-result');
-        const mapContainer = document.getElementById('wodi-popup-mapContainer');
-        const mapImage = document.getElementById('wodi-popup-staticMap');
-        // call the existing getLocation with these DOM refs (function defined earlier in this file)
-        if (typeof getLocation === 'function') {
-          getLocation(btn, res, mapContainer, mapImage);
-        } else {
-          // fallback to requestLocation (uses ids from page, not popup) - unlikely
-          if (typeof requestLocation === 'function') requestLocation();
-        }
-      } catch (e) {
-        console.error('popup locate error', e);
+      const btn = document.getElementById('wodi-popup-btn-locate');
+      const res = document.getElementById('wodi-popup-loc-result');
+      const mapContainer = document.getElementById('wodi-popup-mapContainer');
+      const mapImage = document.getElementById('wodi-popup-staticMap');
+      if (typeof getLocation === 'function') {
+        getLocation(btn, res, mapContainer, mapImage);
+      } else {
+        if (typeof requestLocation === 'function') requestLocation();
       }
     });
 
-    // generate + send button hooks
     modal.querySelector('#wodi-order-generate').addEventListener('click', handlePopupGenerate);
     modal.querySelector('#wodi-order-sendwa').addEventListener('click', handlePopupSendWA);
 
-    // listen to auth state to update UI
     window.onAuthStateChanged((u) => {
       refreshAuthAreaInPopup();
-      // when user signs in, persist basic profile
       const cur = getAuthUserSafe();
       if (cur) {
         const p = loadLocalProfile();
@@ -3976,11 +3471,9 @@ if (typeof showCustomErrorToast !== 'function') {
 
   function openOrderPopup() {
     const modal = ensureOrderPopup();
-    // populate inputs from local or auth
     refreshAuthAreaInPopup();
     modal.style.display = 'flex';
     modal.setAttribute('aria-hidden', 'false');
-    // reset summary state
     summaryGenerated = false;
     orderPayloadCache = null;
     setPopupSendState(false);
@@ -4004,7 +3497,6 @@ if (typeof showCustomErrorToast !== 'function') {
     const current = getAuthUserSafe();
 
     if (current) {
-      // show signed view (editable)
       signed.style.display = 'block';
       unsigned.style.display = 'none';
       nameInput.value = stored.name || current.displayName || '';
@@ -4014,7 +3506,6 @@ if (typeof showCustomErrorToast !== 'function') {
       unsigned.style.display = 'block';
     }
 
-    // Save changes live
     nameInput && nameInput.addEventListener('input', () => {
       const p = loadLocalProfile(); p.name = nameInput.value; saveLocalProfile(p);
     });
@@ -4034,9 +3525,7 @@ if (typeof showCustomErrorToast !== 'function') {
     }
   }
 
-  /* Build a payload from configurator S state (unit + price) */
   function buildConfiguratorPayload() {
-    // Basic guard: S, calc function exist
     const now = new Date();
     const orderNumber = `WODI-${String(now.getTime()).slice(-8)}`;
     const totalPrice = (typeof calc === 'function') ? calc() : null;
@@ -4047,7 +3536,6 @@ if (typeof showCustomErrorToast !== 'function') {
     const customerName = profile.name || user.displayName || 'غير متوفر';
     const customerPhone = profile.phone || user.phoneNumber || 'غير متوفر';
 
-    // pull unit details from S (sink configuration)
     const unit = {
       sinkType: S.sinkType || null,
       size: S.size ? S.size.size : null,
@@ -4056,7 +3544,6 @@ if (typeof showCustomErrorToast !== 'function') {
       handle: S.handle ? (S.handle.name || S.handle.id) : null,
     };
 
-    // items array includes the configured unit as single item
     const items = [{
       product_id: unit.design || 'config-unit',
       name: unit.design || 'وحدة حوض مخصصة',
@@ -4066,7 +3553,6 @@ if (typeof showCustomErrorToast !== 'function') {
       subtotal: (typeof totalPrice === 'number' && !isNaN(totalPrice)) ? totalPrice : 0
     }];
 
-    // if you want also to include other selected additional products from cart you can extend this
     return {
       number: orderNumber,
       createdAt: now.toISOString(),
@@ -4078,18 +3564,17 @@ if (typeof showCustomErrorToast !== 'function') {
     };
   }
 
-  /* create HTML summary page (opens in new tab) */
   function openSummaryPreviewWindow(payload) {
     try {
       const html = generateOrderHtml(payload);
       const w = window.open('', '_blank');
       if (!w) {
-        showToast('تعذّر فتح نافذة المعاينة (منع النوافذ المنبثقة)'); return;
+        showToast('تعذّر فتح نافذة المعاينة (منع النوافذ المنبثقة)'); 
+        return;
       }
       w.document.open();
       w.document.write(html);
       w.document.close();
-      previewWindow = w;
     } catch (e) {
       console.error('openSummaryPreviewWindow error', e);
       showToast('فشل فتح معاينة الفاتورة');
@@ -4097,7 +3582,6 @@ if (typeof showCustomErrorToast !== 'function') {
   }
 
   function generateOrderHtml(p) {
-    // Simple HTML - uses inline styles to match your product-order-summary look
     const date = new Date(p.createdAt).toLocaleString('ar-EG', { hour12:false });
     const itemsRows = p.items.map(it => `
       <tr>
@@ -4167,10 +3651,8 @@ if (typeof showCustomErrorToast !== 'function') {
       </html>`;
   }
 
-  /* Handlers for Generate & Send WA in popup */
   function handlePopupGenerate() {
     const modal = ensureOrderPopup();
-    // validate minimal config completeness
     if (!S.sinkType || !S.size || !S.design || !S.div) {
       showToast('الطلب غير مكتمل — اكمل اختيارات الحوض أولاً');
       return;
@@ -4181,7 +3663,6 @@ if (typeof showCustomErrorToast !== 'function') {
     summaryGenerated = true;
     setPopupSendState(true);
 
-    // open preview window with generated html
     openSummaryPreviewWindow(payload);
   }
 
@@ -4191,9 +3672,6 @@ if (typeof showCustomErrorToast !== 'function') {
       return;
     }
 
-    // Generate PDF client-side is heavy -> we will open preview window (already done) and instruct user to attach PDF.
-    // Note: attaching a file automatically to wa.me link from browser isn't possible (needs server).
-    // We open wa.me with a message and notify the user to attach the PDF manually.
     const payload = orderPayloadCache;
     const message = [
       `مرحباً، لدي طلب جديد من WODI.`,
@@ -4205,40 +3683,137 @@ if (typeof showCustomErrorToast !== 'function') {
     ].join('\n');
 
     const url = `https://wa.me/${LOC && LOC.WA ? LOC.WA : '201556840368'}?text=${encodeURIComponent(message)}`;
-    // open wa
     const w = window.open(url, '_blank');
     if (!w) showToast('تعذّر فتح WhatsApp. تأكد من إعداد المتصفح للسماح بالفتح في نوافذ جديدة.');
     else showToast('تم فتح WhatsApp — أرفق ملف الفاتورة إذا رغبت قبل الإرسال.');
   }
 
-  /* Utility helpers */
   function escapeHtml(s) {
     if (s == null) return '';
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
-  /* small price format using existing helper in this file */
   function formatPrice(num) {
     if (num == null || isNaN(num)) return '0';
     return Math.round(num).toLocaleString('en-US');
   }
 
-  /* Public hook: open popup (use from configurator & cart) */
   window.openOrderPopup = openOrderPopup;
 
-  /* Auto-create the popup on load so auth state bindings set up early */
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => { ensureOrderPopup(); refreshAuthAreaInPopup(); });
   } else {
     ensureOrderPopup(); refreshAuthAreaInPopup();
   }
 
-  /* =======
-     Notes & limitations (short):
-     - This re-uses getLocation/getAddress by calling getLocation(btn,res,mapContainer,mapImage)
-     - It uses localStorage to store simple profile (replace with Firestore later)
-     - Auto-attaching PDF to WhatsApp is not possible purely client-side via wa.me; server upload + WhatsApp Business API required.
-     - The popup's Generate Summary opens a preview window with the filled HTML which the user can print/save as PDF.
-     ======= */
-
 })();
+
+/*
+================================================================================
+Event Binding & Initialization
+================================================================================
+*/
+
+function initConfigurator() {
+  if (initDone) return;
+  initDone = true;
+
+  // Check for saved state early, before any rendering
+  try {
+    const saved = localStorage.getItem('wodi_configurator_state');
+    if (saved) {
+      // Validate the saved state has content
+      const state = JSON.parse(saved);
+      if (state && Object.values(state).some(v => v)) {
+        stateRestorePending = true;
+      }
+    }
+    // Clear any stale window-level saved state to prevent double restoration
+    delete window.wodi_saved_state;
+  } catch (e) { 
+    console.warn('Failed to read saved state', e); 
+  }
+
+  const locateBtn = document.getElementById('btn-locate');
+  if (locateBtn && typeof requestLocation === 'function') {
+    if (locateBtn.dataset.setupDone) {
+      locateBtn.removeEventListener('click', requestLocation);
+    }
+    locateBtn.addEventListener('click', requestLocation);
+    locateBtn.dataset.setupDone = 'true';
+  }
+
+  setupScrollArrowButtons();
+  setupCardsRowScrollListeners();
+  setupSinkTypeCards();
+
+  document.removeEventListener('click', genericClickForStepper);
+  document.addEventListener('click', genericClickForStepper);
+
+  setupStickyPriceBar();
+  setupStepperSticky();
+
+  ['dc', 'vc', 'hc'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && !el.dataset.scrollListenerSetup) {
+      el.dataset.scrollListenerSetup = 'true';
+      el.addEventListener('scroll', () => updateArrows(id));
+    }
+    setTimeout(() => updateArrows(id), 150);
+  });
+
+  updateArrows('sink-types');
+
+  // Load configurator data, which will trigger applyStateIfReady() when complete
+  loadConfiguratorData();
+  
+  // Only render initial views if NOT restoring saved state
+  if (!stateRestorePending) {
+    rDes(); rSz(); rDiv(); rHnd(); upd();
+  }
+}
+
+function genericClickForStepper(e) {
+  if (e.target.closest('.card') || e.target.closest('.option') || e.target.closest('button')) {
+    setTimeout(updateStepperProgress, 120);
+  }
+}
+
+function onDOMReady() {
+  initConfigurator();
+  
+  // Setup design request modal location button
+  const drLocBtn = document.getElementById('dr-btn-locate');
+  if (drLocBtn) {
+    drLocBtn.onclick = drGetLocation;
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', onDOMReady);
+} else {
+  setTimeout(onDOMReady, 0);
+}
+
+/*
+================================================================================
+Global Exports
+================================================================================
+*/
+
+window.calc = calc;
+window.updateStepperProgress = updateStepperProgress;
+window.loadConfiguratorData = loadConfiguratorData;
+window.openLB = openLB;
+window.closeLB = closeLB;
+window.customWA = customWA;
+window.outOfRangeWA = outOfRangeWA;
+window.resetAll = resetAll;
+window.calcInstall = calcInstall;
+window.updateStickyValue = updateStickyValue;
+
+if (typeof showCustomErrorToast !== 'function') {
+  window.showCustomErrorToast = function(msg) {
+    console.warn("Toast Warning:", msg);
+  };
+}

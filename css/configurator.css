@@ -595,9 +595,6 @@
   max-width: 100%;
   min-width: 0;
 }
-.cards-row::-webkit-scrollbar {
-  display: none;
-}
 .cards-row > div,
 .cards-row > a,
 .cards-row .card {
@@ -657,13 +654,13 @@
 }
 
 /* 3. إنشاء أيقونة الصح على الشمال باقتباس تنسيق الـ handle-priority-badge */
-/* استثناء أزرار عرض الحوض (.size-btn) وكروت المقابض (.handle-card) */
-.selected:not(.size-btn):not(.handle-card)::after {
+/* استثناء أزرار المقاسات وكروت المقابض والأنواع للحفاظ على وضوح التصميم */
+.selected:not(.size-btn):not(.handle-card):not(.sink-type-card)::after {
   content: '✓';
   position: absolute;
   top: 6px;
   left: 6px;
-  width: 20px; /* تصغير قطر الدائرة من 28px إلى 20px */
+  width: 20px;
   height: 20px;
   background-color: var(--main-color, #9caf88);
   color: #ffffff;
@@ -671,55 +668,59 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px; /* تصغير حجم أيقونة الصح نفسها لتناسب الدائرة */
+  font-size: 10px;
   font-weight: bold;
   z-index: 2;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 /* 4. تخفيف إضاءة باقي الكروت لتركيز العين (باستثناء سكشن عرض الحوض) */
-#sz:has(.selected) .size-btn:not(.selected) {
-  opacity: 1; /* إبقاء أزرار المقاسات واضحة تماماً */
-}
-
-.cards-row:has(.selected) .design-card:not(.selected),
-.cards-row:has(.selected) .color-shape-card:not(.selected),
-.cards-row:has(.selected) .div-card:not(.selected) {
-  opacity: 0.65;
+#sz:has(.selected) .size-btn:not(.selected),
+#des:has(.selected) .color-shape-card:not(.selected) {
+  opacity: 1;
 }
 
 
-.design-card.disabled{
-    opacity:.55;
-    cursor:not-allowed;
-}
-.design-card.disabled, .div-card.disabled, .design-card.dis, .div-card.dis {
-  opacity: 0.4;
-  pointer-events: auto;
-  cursor: not-allowed;
-  filter: grayscale(40%);
+/* 1. التعتيم الطبيعي لكروت التقسيم ونوع المقبض الأساسية */
+.cards-row:has(.div-card.selected) .div-card:not(.selected),
+#hc:has(.handle-card.selected) .handle-card:not(.selected) {
+  opacity: 0.8;
 }
 
-/* في حالة إذا كان التصميم لا يدعم المقابض نهائياً (noH) */
-.handle-card.disabled {
-  opacity: 0.4;
-  pointer-events: auto;
-  cursor: not-allowed;
-  filter: grayscale(40%);
+/* 2. التعتيم لكروت أشكال المقبض: يطبق فقط عندما يحتوي الصف على كلاس has-max-shapes */
+#handle-shapes-row.has-max-shapes .handle-shape-card:not(.selected) {
+  opacity: 0.6;
 }
 
-.design-card.loading-lock {
+
+.design-card.disabled,
+.design-card.dis,
+.div-card.disabled,
+.div-card.dis,
+.division-card.disabled,
+.handle-card.disabled,
+.handle-card.dis {
+  opacity: 0.5 !important;
+  pointer-events: auto !important;
+  cursor: not-allowed !important;
+  filter: grayscale(50%) !important;
+  user-select: none;
+}
+
+.design-card.loading-lock,
+.div-card.loading-lock,
+.handle-card.loading-lock {
   opacity: 0.5;
-  cursor: not-allowed;
-  pointer-events: none;
-  filter: grayscale(0.4);
+  pointer-events: none !important;
+  cursor: wait;
+  filter: grayscale(40%);
 }
 
 /* Color Card Custom Dimensions */
 .color-shape-card {
-  width: 160px !important;
-  min-width: 160px !important;
-  flex: 0 0 160px !important;
+  width: 140px;
+  min-width: 140px;
+  flex: 0 0 140px !important;
   position: relative;
   background-color: #ffffff !important;
 }
@@ -771,7 +772,7 @@
   box-shadow: 0 0 0 3px rgba(156,175,136,0.25);
 }
 .division-card.disabled {
-  opacity: 0.4;          /* جعل الكارت مغيماً وباهتاً */
+  opacity: 0.5;          /* جعل الكارت مغيماً وباهتاً */
   pointer-events: none;  /* منع النقر أو التفاعل معه تماماً */
   cursor: not-allowed;   /* تغيير شكل المؤشر */
   filter: grayscale(50%); /* (اختياري) إعطاء مسحة رمادية خفيفة */
@@ -796,7 +797,7 @@
   box-shadow: 0 0 0 3px rgba(156,175,136,0.25);
 }
 .handle-card.dis {
-  opacity: 0.35;
+  opacity: 0.5;
   cursor: not-allowed;
   pointer-events: none;
 }
@@ -806,15 +807,25 @@
   pointer-events: none;
   filter: grayscale(0.4);
 }
-#handle-desc{
-  font-size: var(--font-size-xs);
-  color: var(--color-text-muted);
-  margin-top:4px;
-  margin-bottom:12px;
+/* Checkmark icon for selected handle type cards (excluding handle shape cards) */
+.handle-card.selected:not(.handle-shape-card)::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 22px;
+  height: 22px;
+  background-color: var(--color-primary, #9caf88);
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
+  background-size: 14px;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 50%;
+  z-index: 3;
 }
 
-#handle-desc:empty{
-  display:none;
+.handle-card:not(.handle-shape-card) {
+  position: relative;
 }
 
 /* Handle Shape Card Custom Dimensions */
@@ -904,14 +915,15 @@
   cursor: pointer;
 }
 
-.card-overlay{
-    position:absolute;
-    inset:0;
-    background:rgba(0,0,0,.22);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    pointer-events:none;
+.card-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 4;
+  pointer-events: none;
 }
 
 .card-sizes{
