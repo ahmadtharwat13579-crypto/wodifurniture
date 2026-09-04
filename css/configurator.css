@@ -303,11 +303,10 @@
   min-width: 300px; /* Set a minimum width to ensure the stepper doesn't get too narrow */
   max-width: 400px;
   margin: 4px auto 2px !important;
-  padding: 20px 20px; /* Adjust the padding to ensure consistent padding on both sides */
+  padding: 5px 20px;
   border: none;
   box-sizing: border-box;
   transform-origin: center center;
-  
 }
 
 #dr-stepper ol {
@@ -316,6 +315,7 @@
   margin: 0 auto;
   padding: 0;
   box-sizing: border-box;
+  transform: scale(0.8);
 }
 
 /* إلغاء التثبيت وتثبيت الـ Stepper كـ Block داخل الـ Design Request حصرياً */
@@ -325,8 +325,6 @@
   top: auto !important;
   transform: none !important;
   box-shadow: none !important;
-  background: transparent !important;
-  border: none !important;
 }
 
 /* =========================================
@@ -1029,6 +1027,19 @@
   pointer-events: none;
 }
 
+/* تحديد أبعاد الكروت الوهمية لجميع الأقسام */
+.design-card.skeleton,
+.div-card.skeleton,
+.handle-card.skeleton {
+  display: flex;
+  flex-direction: column;
+  min-height: 220px;
+  width: 100%;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 8px;
+}
+
 .skeleton .skel-img,
 .skeleton .skel-line {
   position: relative;
@@ -1082,6 +1093,14 @@
   100% {
     transform: translateX(100%);
   }
+}
+
+/* التأكد من أن حاوية الصورة تأخذ ارتفاعاً محدداً داخل الـ Skeleton */
+.skeleton .cimg {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  min-height: 140px; 
+  flex-shrink: 0;
 }
 
 .section-loading{
@@ -1543,26 +1562,6 @@
 .price-column { order: 3; width: auto; position: relative; top: auto; }
 
 
-
-/* Location button states & summary box (add to end of style.css) */
-.btn-locate {
-  display: inline-flex;
-  height: 48px;
-  min-height: 48px;
-  max-height: 48px;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 18px;
-  background: var(--color-primary);
-  color: var(--color-bg-white);
-  border: none;
-  border-radius: var(--radius-xs);
-  font-weight: 700;
-  cursor: pointer;
-  transition: background .18s ease, transform .12s ease;
-  min-height: 48px;
-}
-
 .btn-locate:disabled { opacity: 0.8; cursor: not-allowed; transform: none; }
 
 /* loading state: keep green but show spinner */
@@ -1798,11 +1797,13 @@
 }
 
 .dr-header {
+  background-color: #f4f6f3;
   display: flex;
   justify-content: center;
   align-items: center;
   position: relative;
-  padding: 30px 20px 10px;
+  padding: 5px 20px 20px;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .dr-close-btn {
@@ -1826,7 +1827,7 @@
 }
 
 .dr-title {
-  font-size: 20px;
+  font-size: var(--font-size-xl);
   font-weight: 700;
   color: var(--color-text-main);
   margin: 0;
@@ -1835,12 +1836,12 @@
 }
 
 .dr-step-content {
-  padding: 24px 20px;
+  padding: 12px 22px;
   flex: 1;
 }
 
 .dr-step-heading {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 700;
   margin-bottom: 16px;
   color: var(--color-text-main);
@@ -1853,7 +1854,7 @@
 }
 
 .dr-label {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
   margin-bottom: 6px;
   color: var(--color-text-main);
@@ -1864,10 +1865,10 @@
 }
 
 .dr-input {
-  padding: 10px 12px;
+  padding: 8px 12px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xs);
-  font-size: 14px;
+  font-size: 12px;
   font-family: var(--font-family-main);
   background: var(--color-bg-white);
   color: var(--color-text-main);
@@ -2098,7 +2099,7 @@
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  padding: 16px 20px;
+  padding: 12px 20px;
   border-top: 1px solid var(--color-border);
   flex-direction: row-reverse;
 }
@@ -2106,17 +2107,17 @@
 .dr-btn-primary,
 .dr-btn-secondary,
 .dr-btn-whatsapp {
-  padding: 10px 20px;
+  padding: 8px 20px;
   border-radius: var(--radius-xs);
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   border: none;
   transition: all 0.3s;
   display: inline-flex;
-  height: 48px;
-  min-height: 48px;
-  max-height: 48px;
+  height: 38px;
+  min-height: 38px;
+  max-height: 38px;
   align-items: center;
   gap: 6px;
   font-family: var(--font-family-main);
@@ -2260,12 +2261,12 @@
   justify-content: center;
   gap: 8px;
   width: 100%;
-  padding: 11px;
+  padding: 8px;
   background: var(--color-primary);
   color: var(--color-bg-white);
   border: none;
   border-radius: var(--radius-xs);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   font-family: var(--font-family-main);

@@ -7,7 +7,7 @@ Configuration & Constants
 */
 const WA = '201556840368';
 const GH = 'https://raw.githubusercontent.com/ahmadtharwat13579-crypto/wodifurniture/main/images/conf/';
-const SHEET = 'https://script.google.com/macros/s/AKfycbz3xuCuZ6sU9QVo2nTRaItWFLplEhG7bKuzeZSQpk4DseShYrzycpRhyO2u2kuwPVkY/exec?pwd=double-protection-password';
+const SHEET = 'https://script.google.com/macros/s/AKfycbz425oYXgtG6F_PoNrRbIaIZyqjifO1FEbbaOvoYt_66mguE-Cogvlu3PNb777jjtIj/exec?pwd=double-protection-password';
 const GEOAPIFY_API_KEY = '5d919ff1fd3f4004a73ceb1fb508e805';
 const cur = 'ج.م.';
 const DR_STORAGE_KEY = 'dr_form_draft';
@@ -186,6 +186,7 @@ function loadConfiguratorData() {
 
       const rows = data && data.configurator;
       const colorRows = data && data.colors;
+      console.log('colorRows:', colorRows);
       const settings = data && data.locationSettings;
 
       if (settings && settings.workshop_lat) {
@@ -246,7 +247,7 @@ function build(rows, colorRows = []) {
       if (!r) return;
       const cId = String(r.clr_id || r.clrId || r.c || r.id || r[0] || '').trim();
       const dName = String(r.display_name || r.displayName || r.name || r.title || r[1] || r[2] || '').trim();
-      const fName = String(r.clr_family || r.clr_familty || r.family || '').trim().toLowerCase();
+            const fName = String(r.clr_family || r.family || '').trim().toLowerCase();
       
       if (cId || dName) {
         colors.push({
@@ -255,7 +256,8 @@ function build(rows, colorRows = []) {
           id: cId,
           display_name: dName,
           name: dName,
-          price: parseFloat(r.added_value || r.extra_price || r.price || 0) || 0
+          'added-value': parseFloat(r['added-value'] || r.added_value || r.extra_price || r.price || 0) || 0,
+          price: parseFloat(r['added-value'] || r.added_value || r.extra_price || r.price || 0) || 0
         });
       }
     });
@@ -784,9 +786,7 @@ function rDes() {
       gloss: []
     };
 
-    const colorItems = availableColors.length > 0 
-      ? availableColors 
-      : (defaultAvailableIds[group.family] || []).map(id => ({ id: id }));
+    const colorItems = (defaultAvailableIds[group.family] || []).map(id => ({ id: id }));
 
     colorItems.forEach(cItem => {
       const colorId = cItem.id;
@@ -807,7 +807,7 @@ function rDes() {
         const cleanColorId = String(colorId).replace(/\.(png|webp|jpg|jpeg)$/i, '');
         const encoded = encodeURIComponent(cleanColorId);
         
-        img.src = `images/conf/clr/${encoded}.webp`;
+        img.src = GH + `clr/${encoded}.webp`;
         
         img.onerror = function () {
           if (colorCard) colorCard.remove();
@@ -1448,8 +1448,6 @@ function upd() {
     });
   }
 
-  setTimeout(() => { if (typeof updateStickyValue === 'function') updateStickyValue(); }, 0);
-  
   clearTimeout(updateTimeout);
   updateTimeout = setTimeout(() => {
     saveConfiguratorState();
@@ -1468,11 +1466,13 @@ function upd() {
           ? `${t.toLocaleString('en-US')} ${egpTag}`
           : `— ${egpTag}`;
 
-      const currentNumericPrice = canShowPrice ? t : null;
+      const currentNumericPrice = canShowPrice && t !== null ? t : null;
       const lastPrice = totalEl.dataset.lastTotal !== undefined ? JSON.parse(totalEl.dataset.lastTotal) : undefined;
 
-      if (lastPrice !== currentNumericPrice) {
-        totalEl.dataset.lastTotal = JSON.stringify(currentNumericPrice);
+      totalEl.dataset.lastTotal = JSON.stringify(currentNumericPrice);
+
+      // تطبيق الـ pulse فقط إذا كان هناك سعر رقمي حقيقي وتغيرت قيمته
+      if (currentNumericPrice !== null && lastPrice !== currentNumericPrice) {
         pulsePrice(totalEl);
       }
     }
@@ -1554,35 +1554,11 @@ function upd() {
 
     const scPriceEl = document.getElementById('sc-price');
     if (scPriceEl) {
-      const rawColorVal = (S.selectedColors && S.selectedColors.length > 0 && S.selectedColors[0]) ? String(S.selectedColors[0]) : '';
-      let extraPrice = 0;
-
-      if (rawColorVal && typeof D !== 'undefined' && D.unitColors) {
-        const cleanVal = rawColorVal.split('/').pop().replace(/\.[^/.]+$/, "").toLowerCase();
-
-        for (const group of D.unitColors) {
-          const matchedItem = group.items?.find(item => {
-            if (!item) return false;
-            const itemId = String(item.id || '').toLowerCase();
-            const itemImg = String(item.img || '').toLowerCase();
-            return itemId === rawColorVal.toLowerCase() || 
-                   itemImg === rawColorVal.toLowerCase() ||
-                   itemId.includes(cleanVal) || 
-                   itemImg.includes(cleanVal);
-          });
-
-          if (matchedItem) {
-            extraPrice = matchedItem.extraPrice !== undefined ? matchedItem.extraPrice : (group.extraPrice || 0);
-            break;
-          }
-        }
-      }
-
-      if (rawColorVal) {
-        scPriceEl.innerHTML = `+${extraPrice.toLocaleString('en-US')} ${egpTag}`;
-      } else {
-        scPriceEl.textContent = '—';
-      }
+      const matchedColorObj = (typeof S !== 'undefined' && S.selectedColors && S.selectedColors.length > 0) ? S.selectedColors[0] : null;
+      const colorId = typeof matchedColorObj === 'string' ? matchedColorObj : null;
+      const matchedDColor = colorId && D.colors ? D.colors.find(c => colorId.startsWith(`clr_${c.clr_id}_`)) : null;
+      const colorPrice = matchedDColor ? (matchedDColor['added-value'] ?? matchedDColor.price ?? 0) : 0;
+      scPriceEl.innerHTML = !colorId ? '' : colorPrice > 0 ? `+${colorPrice.toLocaleString('en-US')} ${egpTag}` : `+0 ${egpTag}`;
     }
 
     const ssEl = document.getElementById('ss');
@@ -1606,7 +1582,7 @@ function upd() {
     if (shPrice) shPrice.innerHTML = S.handle ? (handlePrice > 0 ? `+${handlePrice.toLocaleString('en-US')} ${egpTag}` : `+0 ${egpTag}`) : (noH ? '—' : '—');
 
     updateStickyValue();
-  }, 300);
+  }, 100);
 }
 
 // hideConfigLoaderOverlay() removed - restoration overlay no longer used
@@ -1877,15 +1853,13 @@ function setupStickyPriceBar() {
     
     const applyAnimation = (el) => {
       if (!el) return;
-      const lastTotal = el.dataset.lastTotal !== undefined ? parseFloat(el.dataset.lastTotal) : null;
-      el.innerHTML = formattedPrice;
-
-      if (lastTotal !== total) {
-        el.dataset.lastTotal = total;
-        el.classList.remove('price-updated');
-        void el.offsetWidth;
-        el.classList.add('price-updated');
+      const lastVal = el.dataset.lastVal;
+      if (lastVal !== undefined && lastVal !== formattedPrice) {
+        pulsePrice(el, formattedPrice);
+      } else {
+        el.innerHTML = formattedPrice;
       }
+      el.dataset.lastVal = formattedPrice;
     };
 
     applyAnimation(el1);
