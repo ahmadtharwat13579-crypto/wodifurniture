@@ -275,11 +275,11 @@ fetch('nav.html')
       </div>
 
       <div class="placeholder-title">
-        اختر نوع الحوض أولاً
+        اختر عرض الحوض أولاً
       </div>
 
       <div class="placeholder-text">
-        سيتم عرض التصميمات المناسبة بعد اختيار نوع الحوض.
+        سيتم عرض التصميمات المناسبة بعد اختيار عرض الحوض.
       </div>
 
     </div>
@@ -343,11 +343,11 @@ fetch('nav.html')
       </div>
 
       <div class="placeholder-title">
-        اختر نوع الحوض أولاً
+        اختر عرض الحوض أولاً
       </div>
 
       <div class="placeholder-text">
-        سيتم عرض التقسيمات الداخلية المتوافقة مع نوع الحوض.
+        سيتم عرض التقسيمات الداخلية المتوافقة مع عرض الحوض.
       </div>
 
     </div>
@@ -430,11 +430,11 @@ fetch('nav.html')
       </div>
 
       <div class="placeholder-title">
-        اختر نوع الحوض أولاً
+        اختر عرض الحوض أولاً
       </div>
 
       <div class="placeholder-text">
-        سيتم عرض أنواع المقابض المناسبة بعد اختيار نوع الحوض.
+        سيتم عرض أنواع المقابض المناسبة بعد اختيار عرض الحوض.
       </div>
 
     </div>
@@ -804,7 +804,7 @@ fetch('nav.html')
 
         <h4 class="dr-location-title"> العنوان <span class="required">*</span></h4>
 
-        <button
+<button
           type="button"
           id="dr-btn-locate"
           class="btn-locate"
@@ -825,7 +825,20 @@ fetch('nav.html')
           تحديد موقعي الحالي
         </button>
 
-        <a href="javascript:void(0)" id="dr-toggle-manual-address" class="dr-manual-link" onclick="document.getElementById('dr-manual-address-group').style.display='block'">أرغب في تحديد موقعي يدوياً</a>
+        <!-- وضع مربع النتيجة فوق الرابط لكي يظهر فوقه مباشرة عند بدء التحميل -->
+        <div
+          id="dr-loc-result"
+          class="loc-result"
+          style="display: none; margin-top: 8px;"
+        ></div>
+
+        <a 
+          href="javascript:void(0)" 
+          id="dr-toggle-manual-address" 
+          class="dr-manual-link" 
+          style="display: block; margin-top: 8px;"
+          onclick="document.getElementById('dr-manual-address-group').style.display='block'"
+        >أرغب في تحديد موقعي يدوياً</a>
 
         <div
           id="dr-loc-result"
@@ -881,7 +894,7 @@ fetch('nav.html')
 
     </div>
 
-    <!-- STEP 2: SINK SPECS -->
+<!-- STEP 2: SINK SPECS -->
     <div class="dr-step-content" data-step="2" style="display: none;">
       <h3 class="dr-step-heading">مواصفات الحوض</h3>
       <div class="dr-form-group">
@@ -889,7 +902,7 @@ fetch('nav.html')
         <input type="text" id="dr-sink-type" class="dr-input" readonly style="background-color: #f0f0f0; cursor: not-allowed;" />
       </div>
       <div class="dr-form-group">
-        <label for="dr-sink-brand" class="dr-label">علامة الحوض <span class="required">*</span></label>
+        <label for="dr-sink-brand" class="dr-label">ماركة الحوض <span class="required">*</span></label>
         <div class="dr-select-wrapper">
           <select id="dr-sink-brand" class="dr-input dr-select">
             <option value="" disabled selected hidden>اختر ماركة الحوض...</option>
@@ -901,7 +914,7 @@ fetch('nav.html')
               <option value="Cleopatra">سيراميكا كليوباترا (Cleopatra)</option>
               <option value="Lecico">ليسيكو (Lecico)</option>
               <option value="Roca">روكا (Roca)</option>
-              <option value="Roca">ساني بيور (Sanipure)</option>
+              <option value="Sanipure">ساني بيور (Sanipure)</option>
             </optgroup>
 
             <optgroup label="ماركات أخرى ومستوردة">
@@ -931,28 +944,29 @@ fetch('nav.html')
         />
       </div>
       <div class="dr-form-group">
-        <label for="dr-sink-image" class="dr-label">صورة واضحة للحيطة <span class="required">*</span></label>
+        <label for="dr-sink-code" class="dr-label">كود موديل الحوض</label>
+        <input type="text" id="dr-sink-code" class="dr-input" placeholder="الكود المكتوب على الحوض أو الكرتونة" />
+      </div>
+      <div class="dr-form-group">
+        <label for="dr-sink-image" class="dr-label">صورة الحائط المطلوب <span class="required">*</span></label>
         <input type="file" id="dr-sink-image" class="dr-input" accept="image/*" />
-        <small class="dr-hint">صورة واضحة للحيطة اللي هيركب عليها الحوض</small>
+        <small class="dr-hint">ارفع <strong>صورة واسعة وواضحة</strong> للجدار المطلوب من <strong>مسافة بعيدة قليلًا</strong>.</small>
       </div>
       <div class="dr-form-group">
         <label for="dr-sink-photo" class="dr-label">صورة الحوض</label>
         <input type="file" id="dr-sink-photo" class="dr-input" accept="image/*" />
       </div>
       <div class="dr-form-group">
-        <label for="dr-sink-code" class="dr-label">كود الحوض</label>
-        <input type="text" id="dr-sink-code" class="dr-input" placeholder="رقم أو كود موديل الحوض" />
-      </div>
-      <div class="dr-form-group">
-        <label for="dr-sink-sticker" class="dr-label">صورة الملصق</label>
+        <label for="dr-sink-sticker" class="dr-label">صورة ملصق الحوض</label>
         <input type="file" id="dr-sink-sticker" class="dr-input" accept="image/*" />
-        <small class="dr-hint">صورة الملصق الذي يحتوي على البيانات والكود</small>
+        <small class="dr-hint">صورة الملصق المطبوع على الكرتونة أو أسفل/ظهر الحوض</small>
       </div>
     </div>
 
     <!-- STEP 3: REVIEW & SUBMIT -->
     <div class="dr-step-content" data-step="3" style="display: none;">
       <h3 class="dr-step-heading">مراجعة وإرسال</h3>
+      <p style="font-size: 12px; color: var(--color-text-muted, #666); margin-bottom: 14px; margin-right: 6px;">راجع بيانات طلبك جيداً قبل الإرسال — بعد الضغط على تأكيد الطلب سيتم تحميل ملف الطلب تلقائياً وفتح محادثة واتساب لإتمام الحجز.</p>
       <div id="dr-invoice-preview" class="dr-invoice-frame"></div>
     </div>
 
@@ -972,60 +986,6 @@ fetch('nav.html')
     </div>
   </div>
 </div>
-
-<!-- Modal المعاينة الموحد (نفس هيكل cart.html) -->
-  <div id="order-preview-modal" class="popup-overlay" aria-hidden="true" style="display: none;">
-    <div class="popup-content" role="document">
-      <div class="popup-header">
-        <h2 class="popup-title">طلب التصميم والمعاينة</h2>
-        <button id="order-popup-close" class="popup-close-btn" type="button" aria-label="إغلاق">&times;</button>
-      </div>
-      <div class="popup-body">
-        <div class="popup-grid">
-          <div class="popup-form-col">
-            <h3 class="popup-section-title">بيانات العميل</h3>
-            <div class="popup-field-group">
-              <label for="modal-customer-name" class="popup-label">الاسم <span class="required">*</span></label>
-              <input type="text" id="modal-customer-name" class="popup-input" placeholder="اسمك الكامل" />
-            </div>
-            <div class="popup-field-group">
-              <label for="modal-customer-phone" class="popup-label">رقم التليفون <span class="required">*</span></label>
-              <input type="tel" id="modal-customer-phone" class="popup-input" dir="rtl" placeholder="01xxxxxxxxx" />
-            </div>
-            <div class="popup-field-group">
-              <label for="modal-customer-address" class="popup-label">العنوان / المنطقة <span class="required">*</span></label>
-              <input type="text" id="modal-customer-address" class="popup-input" placeholder="المحافظة - المنطقة - الشارع" />
-            </div>
-            <div class="popup-location-box">
-              <button type="button" id="modal-btn-locate" class="btn-locate-popup">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="9" stroke-dasharray="4 2"/></svg>
-                تحديد موقع المعاينة الحالية
-              </button>
-              <div id="modal-loc-result" class="popup-loc-result" style="display:none;"></div>
-              <div id="modal-mapContainer" class="popup-map-container" hidden>
-                <iframe id="modal-staticMap" width="100%" height="180" loading="lazy" title="خريطة الموقع" style="border:0"></iframe>
-              </div>
-            </div>
-          </div>
-          <div class="popup-preview-col">
-            <h3 class="popup-section-title">معاينة ملخص الطلب</h3>
-            <div id="order-invoice-preview" class="popup-invoice-frame"></div>
-          </div>
-        </div>
-      </div>
-      <div class="popup-footer">
-        <div id="popup-toast" class="popup-toast-msg"></div>
-        <div class="popup-actions">
-          <button id="btn-cancel-popup" class="btn-popup-secondary" type="button">إلغاء</button>
-          <button id="btn-generate-popup-pdf" class="btn-popup-primary" type="button">استخراج الملخص</button>
-          <button id="btn-send-popup-whatsapp" class="btn-popup-whatsapp" type="button" disabled>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
-            إرسال عبر WhatsApp
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
 
 <div id="config-loader-overlay" class="config-loader-overlay" style="display:none;">
   <div class="config-loader-card">

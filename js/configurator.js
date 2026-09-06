@@ -227,8 +227,10 @@ function loadConfiguratorData() {
     const cached = sessionStorage.getItem('wodi_configurator_cache');
     if (cached) {
       try {
-        const rows = JSON.parse(cached);
-        D = build(rows);
+        const parsed = JSON.parse(cached);
+        const rows = Array.isArray(parsed) ? parsed : parsed.rows;
+        const colorRows = parsed.colorRows || [];
+        D = build(rows, colorRows);
         dataLoaded = true;
         
         // If state restoration is pending, apply it now
@@ -243,7 +245,7 @@ function loadConfiguratorData() {
     console.warn('sessionStorage read failed', e);
   }
 
-  showConfiguratorLoading();
+  if (!dataLoaded) showConfiguratorLoading();
 
   const MAX_RETRIES = 3;
   const TIMEOUT_MS = 10000;
@@ -483,9 +485,11 @@ function applyStateIfReady() {
     }
 
     stateRestorePending = false;
+    setTimeout(() => hideConfigLoaderOverlay(), 600);
   } catch (e) {
     console.warn('Failed to apply saved state:', e);
     stateRestorePending = false;
+    setTimeout(() => hideConfigLoaderOverlay(), 600);
   }
 }
 
@@ -805,7 +809,7 @@ function rDes() {
   
   const sectionTitle = document.createElement('span');
   sectionTitle.className = 'step-title';
-  sectionTitle.textContent = 'لون الوحدة';
+  sectionTitle.textContent = 'اختر لون الوحدة';
   
   sectionTitleHeader.appendChild(sectionTitle);
   colorContainer.appendChild(sectionTitleHeader);
@@ -934,7 +938,7 @@ function rDes() {
 
       colorCard.onclick = () => {
         if (!S.size) {
-          showToast('يرجى اختيار عرض الحوض أولاً.');
+          showToast('يرجى اختيار عرض الحوض أولاً لتتمكن من اختيار لون الوحدة.');
           const sizeSection = document.getElementById('size-group-title') || document.getElementById('sz');
           if (sizeSection) {
             sizeSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1680,7 +1684,14 @@ function upd() {
   }, 100);
 }
 
-// hideConfigLoaderOverlay() removed - restoration overlay no longer used
+function hideConfigLoaderOverlay() {
+  const overlay = document.getElementById('config-loader-overlay');
+  if (!overlay) return;
+  overlay.style.transition = 'opacity 0.3s ease, visibility 0.3s ease';
+  overlay.style.opacity = '0';
+  overlay.style.visibility = 'hidden';
+  setTimeout(() => overlay.remove(), 300);
+}
 
 /*
 ================================================================================
@@ -1775,7 +1786,28 @@ function updateStepperProgress() {
     }
   }
 
-  allSteps.forEach(el => el && el.classList.remove('active'));
+  allSteps.forEach(el => {
+    if (!el) return;
+    el.classList.remove('active');
+    if (!el.dataset.scrollListenerSetup) {
+      el.dataset.scrollListenerSetup = 'true';
+      el.style.cursor = 'pointer';
+      el.addEventListener('click', () => {
+        const step = el.dataset.step;
+        const targetMap = {
+          'sink-type': 'sink-types',
+          'size': 'sz',
+          'design': 'dc',
+          'partition': 'vc-wall',
+          'handle': 'hc',
+          'location': 'btn-locate'
+        };
+        const targetId = targetMap[step];
+        const target = targetId ? document.getElementById(targetId) : null;
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+    }
+  });
 
   if (!hasSinkType) {
     if (stepSinkType) stepSinkType.classList.add('active');
@@ -2440,7 +2472,10 @@ function openDesignRequestModal() {
     }
   });
 
-  drShowStep(1);
+  const savedDraft = JSON.parse(localStorage.getItem(DR_STORAGE_KEY) || '{}');
+  const savedStep = savedDraft.currentStep || 1;
+  drShowStep(savedStep);
+  if (savedStep === 3) setTimeout(drRenderPreview, 100);
 }
 
 window.openDesignRequestModal = openDesignRequestModal;
@@ -2456,6 +2491,10 @@ function closeDesignRequestModal() {
 window.closeDesignRequestModal = closeDesignRequestModal;
 
 function drShowStep(stepNum) {
+  window.drCurrentStep = stepNum;
+  const savedDraft = JSON.parse(localStorage.getItem(DR_STORAGE_KEY) || '{}');
+  savedDraft.currentStep = stepNum;
+  try { localStorage.setItem(DR_STORAGE_KEY, JSON.stringify(savedDraft)); } catch(e) {}
   document.querySelectorAll('.dr-label').forEach(el => {
     el.style.color = 'var(--color-text-main)';
   });
@@ -2537,20 +2576,22 @@ function drValidateStep(stepNum) {
     const districtSelect = document.getElementById('dr-select-district')?.value.trim();
     const hasAutoLocation = !!window.userLat && !!window.userLng;
 
-    if (!name) {
-      showToast('يرجى ملء الاسم');
-      return false;
-    }
-    if (!phone) {
-      showToast('يرجى ملء رقم الهاتف');
-      return false;
-    }
-
-    // يعتبر الموقع مكتملاً في حالة وجود أحداثيات أو عنوان يدوي أو اختيار المحافظة والحي
     const hasDropdownLocation = !!govSelect && !!districtSelect;
-    
-    if (!hasAutoLocation && !manualAddress && !hasDropdownLocation) {
-      showToast('يرجى تحديد الموقع');
+    const hasLocation = hasAutoLocation || !!manualAddress || hasDropdownLocation;
+
+    const missingFields = [];
+    if (!name) missingFields.push('الاسم');
+    if (!phone) missingFields.push('رقم الهاتف');
+    if (!hasLocation) missingFields.push('العنوان');
+
+    if (missingFields.length > 0) {
+      if (missingFields.length === 3) {
+        showToast('يرجى ملء جميع البيانات المطلوبة');
+      } else if (missingFields.length === 2) {
+        showToast(`يرجى إدخال ${missingFields[0]} و${missingFields[1]}`);
+      } else {
+        showToast(`يرجى إدخال ${missingFields[0]}`);
+      }
       return false;
     }
     return true;
@@ -2558,18 +2599,28 @@ function drValidateStep(stepNum) {
     const brand = document.getElementById('dr-sink-brand').value.trim();
     const width = document.getElementById('dr-sink-width').value.trim();
     const hasImage = document.getElementById('dr-sink-image').files.length > 0 || !!window.drSavedImages?.wall;
-    if (!brand) {
-      showToast('يرجى ملء علامة الحوض');
+
+    const missingFields = [];
+
+    if (!brand) missingFields.push('ماركة الحوض');
+    if (!width) missingFields.push('عرض الحوض');
+    if (!hasImage) missingFields.push('صورة الحائط');
+
+    if (missingFields.length > 0) {
+      let message = 'يرجى ';
+      if (missingFields.length === 1) {
+        message += `استكمال خانة ${missingFields[0]}`;
+      } else if (missingFields.length === 2) {
+        message += `استكمال خانتي ${missingFields[0]} و ${missingFields[1]}`;
+      } else {
+        const last = missingFields.pop();
+        message += `استكمال الخانات التالية: ${missingFields.join('، ')} و ${last}`;
+      }
+      
+      showToast(message);
       return false;
     }
-    if (!width) {
-      showToast('يرجى ملء عرض الحوض');
-      return false;
-    }
-    if (!hasImage) {
-      showToast('يرجى اختيار صورة واضحة للحيطة');
-      return false;
-    }
+
     return true;
   }
   return true;
@@ -2648,7 +2699,9 @@ async function drRenderPreview() {
   previewEl.innerHTML = '';
 
   const frame = previewEl;
+  let previewZoom = 1;
 
+  // Zoom controls
   const zoomControls = document.createElement('div');
   zoomControls.className = 'dr-zoom-controls';
 
@@ -2660,8 +2713,8 @@ async function drRenderPreview() {
 
   const zoomResetBtn = document.createElement('button');
   zoomResetBtn.type = 'button';
-  zoomResetBtn.textContent = '100%';
   zoomResetBtn.className = 'dr-zoom-btn';
+  zoomResetBtn.textContent = '100%';
   zoomResetBtn.title = 'الحجم الأصلي';
 
   const zoomInBtn = document.createElement('button');
@@ -2673,15 +2726,12 @@ async function drRenderPreview() {
   zoomControls.appendChild(zoomOutBtn);
   zoomControls.appendChild(zoomResetBtn);
   zoomControls.appendChild(zoomInBtn);
-
   frame.appendChild(zoomControls);
 
+  // Load template
   let response;
-
   try {
-    response = await fetch('product-order-summary.html', {
-      cache: 'no-store'
-    });
+    response = await fetch('product-order-summary.html', { cache: 'no-store' });
   } catch (error) {
     console.error('Failed to load product-order-summary.html:', error);
     return;
@@ -2693,26 +2743,15 @@ async function drRenderPreview() {
   }
 
   const html = await response.text();
-
   const parser = new DOMParser();
   const parsedDoc = parser.parseFromString(html, 'text/html');
 
-  const summaryStyles = parsedDoc.querySelectorAll('link[rel="stylesheet"]');
-
-  summaryStyles.forEach(link => {
+  // Load styles
+  parsedDoc.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
     const href = link.getAttribute('href');
-
     if (!href) return;
-
-    const absoluteHref = new URL(
-      href,
-      new URL('product-order-summary.html', window.location.href)
-    ).href;
-
-    const alreadyLoaded = [
-      ...document.querySelectorAll('link[rel="stylesheet"]')
-    ].some(existing => existing.href === absoluteHref);
-
+    const absoluteHref = new URL(href, new URL('product-order-summary.html', window.location.href)).href;
+    const alreadyLoaded = [...document.querySelectorAll('link[rel="stylesheet"]')].some(el => el.href === absoluteHref);
     if (!alreadyLoaded) {
       const styleLink = document.createElement('link');
       styleLink.rel = 'stylesheet';
@@ -2721,70 +2760,70 @@ async function drRenderPreview() {
     }
   });
 
+  // Content
   const content = document.createElement('div');
   content.className = 'dr-preview-document';
-
   content.innerHTML = parsedDoc.body.innerHTML;
-
-  content.style.width = '100%';
-  content.style.minWidth = '0';
-  content.style.maxWidth = '100%';
-  content.style.display = 'flex';
-  content.style.flexDirection = 'column';
-  content.style.alignItems = 'center';
-  content.style.boxSizing = 'border-box';
-
+  Object.assign(content.style, {
+    width: '100%',
+    minWidth: '0',
+    maxWidth: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    boxSizing: 'border-box'
+  });
   frame.appendChild(content);
 
   const pages = content.querySelectorAll('.page');
+  if (pages.length) pages[pages.length - 1].style.marginBottom = '0';
 
-  if (pages.length) {
-    pages[pages.length - 1].style.marginBottom = '0';
-  }
+  // Zoom function — single source of truth
+  function applyZoom(zoom) {
+    previewZoom = Math.min(2, Math.max(0.5, +zoom.toFixed(2)));
+    const allPages = content.querySelectorAll('.page');
+    const frameWidth = frame.clientWidth - 20;
+    const pageWidth = allPages[0]?.offsetWidth || 1;
+    const fitScale = Math.min(1, frameWidth / pageWidth);
+    const finalScale = fitScale * previewZoom;
 
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      fitPreviewToWidth();
-    });
-  });
-
-  let previewZoom = 1;
-
-  content.style.width = '100%';
-  content.style.display = 'flex';
-  content.style.flexDirection = 'column';
-  content.style.alignItems = 'center';
-  content.style.boxSizing = 'border-box';
-
-  function applyPreviewZoom() {
-    const pages = content.querySelectorAll('.page');
-
-    if (!pages.length) return;
-
-    pages.forEach(page => {
+    allPages.forEach(page => {
       page.style.transformOrigin = 'top center';
-      page.style.transform = `scale(${previewZoom})`;
-      page.style.marginLeft = '0';
-      page.style.marginRight = '0';
+      page.style.transform = `scale(${finalScale})`;
+      page.style.marginBottom = `${(finalScale - 1) * page.offsetHeight}px`;
     });
 
     zoomResetBtn.textContent = `${Math.round(previewZoom * 100)}%`;
   }
 
-  zoomInBtn.addEventListener('click', () => {
-    previewZoom = Math.min(2, +(previewZoom + 0.1).toFixed(2));
-    applyPreviewZoom();
-  });
+  // Initial fit
+  requestAnimationFrame(() => requestAnimationFrame(() => applyZoom(1)));
 
-  zoomOutBtn.addEventListener('click', () => {
-    previewZoom = Math.max(0.5, +(previewZoom - 0.1).toFixed(2));
-    applyPreviewZoom();
-  });
+  // Zoom events
+  zoomInBtn.addEventListener('click', () => applyZoom(previewZoom + 0.1));
+  zoomOutBtn.addEventListener('click', () => applyZoom(previewZoom - 0.1));
+  zoomResetBtn.addEventListener('click', () => applyZoom(1));
 
-  zoomResetBtn.addEventListener('click', () => {
-    previewZoom = 1;
-    applyPreviewZoom();
-  });
+  // Pinch-to-zoom (mobile)
+  let lastPinchDist = null;
+  frame.addEventListener('touchmove', (e) => {
+    if (e.touches.length !== 2) return;
+    e.preventDefault();
+    const dx = e.touches[0].clientX - e.touches[1].clientX;
+    const dy = e.touches[0].clientY - e.touches[1].clientY;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (lastPinchDist !== null) {
+      const delta = (dist - lastPinchDist) / 200;
+      applyZoom(previewZoom + delta);
+    }
+    lastPinchDist = dist;
+  }, { passive: false });
+
+  frame.addEventListener('touchend', () => { lastPinchDist = null; });
+
+  // Resize
+  const resizeObserver = new ResizeObserver(() => applyZoom(previewZoom));
+  resizeObserver.observe(frame);
 
   try {
     const brand = document.getElementById('dr-sink-brand')?.value || 'غير متوفر';
@@ -3029,7 +3068,9 @@ async function drRenderPreview() {
 
     const orderNumEl = content.querySelector('#order-number');
     if (orderNumEl) {
-      orderNumEl.textContent = `DR-${String(Date.now()).slice(-8)}`;
+      const orderNum = `DR-${String(Date.now()).slice(-8)}`;
+      window.drCurrentOrderNum = orderNum;
+      orderNumEl.textContent = orderNum;
     }
 
     requestAnimationFrame(() => {
@@ -3159,6 +3200,7 @@ async function saveDRDraft() {
     stickerPhoto: stickerBase64
   };
 
+  data.currentStep = window.drCurrentStep || 1;
   try {
     localStorage.setItem(DR_STORAGE_KEY, JSON.stringify(data));
   } catch (e) {
@@ -3167,9 +3209,9 @@ async function saveDRDraft() {
 }
 
 function loadDRDraft() {
-  updateCustomFileUI('dr-sink-image', null, 'اضغط لاختيار صورة الحائط');
-  updateCustomFileUI('dr-sink-photo', null, 'اضغط لاختيار صورة الحوض');
-  updateCustomFileUI('dr-sink-sticker', null, 'اضغط لاختيار صورة الستيكر');
+  updateCustomFileUI('dr-sink-image', null, 'اضغط لرفع صورة الحائط');
+  updateCustomFileUI('dr-sink-photo', null, 'اضغط لرفع صورة الحوض');
+  updateCustomFileUI('dr-sink-sticker', null, 'اضغط لرفع صورة الملصق');
 
   const saved = localStorage.getItem(DR_STORAGE_KEY);
   if (!saved) return;
@@ -3235,27 +3277,21 @@ function loadDRDraft() {
 
 function drDownloadPdf() {
   const previewEl = document.getElementById('dr-invoice-preview');
-  if (!previewEl || !previewEl.querySelector('iframe')) {
+  const content = previewEl.querySelector('.dr-preview-document');
+  if (!content) {
     showToast('يرجى مراجعة المعاينة أولاً');
     return;
   }
 
-  const iframe = previewEl.querySelector('iframe');
-  const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-  if (!iframeDoc) {
-    showToast('فشل تحميل المحتوى');
-    return;
-  }
+  const orderNum = window.drCurrentOrderNum || `DR-${String(Date.now()).slice(-8)}`;
 
-  const orderNum = `DR-${String(Date.now()).slice(-8)}`;
-  
   try {
     if (typeof html2pdf === 'undefined') {
       showToast('مكتبة PDF غير متاحة');
       return;
     }
 
-    const element = iframeDoc.querySelector('.page') || iframeDoc.body;
+    const element = content.querySelector('.page') || content;
     const opt = {
       margin: 10,
       filename: `WODI-Design-Request-${orderNum}.pdf`,
@@ -3294,12 +3330,20 @@ function drSendWhatsApp() {
   const code = document.getElementById('dr-sink-code').value || 'غير متوفر';
   const name = document.getElementById('dr-customer-name').value || 'غير متوفر';
 
+  const location = window.drLocationText || 'غير متوفر';
+  const orderNum = document.getElementById('dr-order-number')?.textContent || config.requestId || '—';
+
   const message = `السلام عليكم،
 
-أرغب في طلب معاينة وتصميم لوحدة حوض بالمواصفات التالية:
+أرغب في طلب معاينة وتصميم لوحدة حوض.
+*رقم الطلب:* ${orderNum}
+
+*بيانات العميل:*
+الاسم: ${name}
+العنوان: ${location}
 
 *مواصفات الحوض:*
-علامة: ${brand}
+العلامة: ${brand}
 العرض: ${width} سم
 الكود: ${code}
 
@@ -3311,10 +3355,7 @@ function drSendWhatsApp() {
 المقبض: ${config.handle ? config.handle.name : 'بدون'}
 السعر المتوقع: ${config.unitPrice} ج.م
 
-الاسم: ${name}
-
 يرجى التواصل معي لتأكيد التفاصيل والمتابعة.
-
 شكراً لكم.`;
 
   const waUrl = `https://wa.me/201556840368?text=${encodeURIComponent(message)}`;
@@ -3459,8 +3500,10 @@ function initConfigurator() {
     if (saved) {
       // Validate the saved state has content
       const state = JSON.parse(saved);
-      if (state && Object.values(state).some(v => v)) {
+      if (state && state.sinkType) {
         stateRestorePending = true;
+        const overlay = document.getElementById('config-loader-overlay');
+        if (overlay) overlay.style.display = 'flex';
       }
     }
     // Clear any stale window-level saved state to prevent double restoration
