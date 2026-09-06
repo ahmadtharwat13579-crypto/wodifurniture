@@ -302,7 +302,7 @@
   width: 100%;
   min-width: 300px; /* Set a minimum width to ensure the stepper doesn't get too narrow */
   max-width: 400px;
-  margin: 4px auto 2px !important;
+  margin: 15px auto 2px !important;
   padding: 5px 20px;
   border: none;
   box-sizing: border-box;
@@ -502,7 +502,7 @@
   margin-bottom:10px;
 
   border-bottom: 1px solid #e5e7eb;
-  padding-bottom: 40px;
+  padding-bottom: 25px;
 }
 
 .grid-item:has(#handle-group-title) {
@@ -600,7 +600,7 @@
   max-width: 280px;
   background: #f8fafc;
   border: 1px solid #cbd5e1;
-  border-radius: var(--radius-xs);
+  border-radius: var(--radius-md);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -626,20 +626,17 @@
 /* Scroll arrows & cards container */
 .design-card {
   flex: 0 0 170px;
-  border: 2px solid rgba(51,48,40,0.12);
-  border-radius: var(--radius-xs);
+  border: 1px solid rgba(51,48,40,0.12);
+  border-radius: var(--radius-md);
   overflow: hidden;
   position:relative;
   cursor: pointer;
   background: var(--color-bg-white);
-  transition: border-color 0.15s;
 }
 
 /* 1. التنسيق الأساسي للكروت وحركة الانتقال */
-.design-card,
 .color-shape-card,
 .div-card {
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
   position: relative;
 }
 
@@ -721,6 +718,7 @@
   flex: 0 0 140px !important;
   position: relative;
   background-color: #ffffff !important;
+  border-radius: var(--radius-xs);
 }
 
 /* Color Priority Badge Overlay (Top Left Green Circle) */
@@ -748,8 +746,8 @@
   width: 100% !important;
   height: 100% !important;
   object-fit: contain !important;
-  padding: 2px;
   box-sizing: border-box;
+  border-radius: var(--radius-md);
 }
 
 .color-shape-card .cimg {
@@ -1037,7 +1035,7 @@
   width: 100%;
   background: #fff;
   border: 1px solid #eee;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 }
 
 .skeleton .skel-img,
@@ -1316,6 +1314,7 @@
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
+  justify-content: flex-start; /* محاذاة الزراير لليمين */
 }
 /* 1. ضبط الحاوية الأب لتجبر كل الأزرار تكون في صف واحد متناسق */
 #sz {
@@ -1330,19 +1329,20 @@
 
 /* 2. توحيد عرض الأزرار وضغط المساحات الجانبية */
 .size-btn {
-  flex: 1 0 auto; /* تجعل الأزرار تتوزع بالتساوي */
-  min-width: 72px; /* عرض أدنى موحد يضمن استيعاب 105 - 90 دون تمدد الزرار */
-  padding: 6px 4px; /* تقليل الـ padding الأفقي لمنع انتفاخ الزرار */
+  flex: 1 1 110px; 
+  max-width: 120px;
+  min-width: 72px;
+  padding: 6px 4px;
   text-align: center;
-  border: 2px solid rgba(51,48,40,0.15);
-  border-radius: var(--radius-xs);
-  font-size: 12px; /* حجم خط متناسق وصغير بما يكفي لوضعهم في صف واحد */
-  white-space: nowrap; /* يمنع انقسام النص على سطرين */
+  border: 1px solid rgba(51,48,40,0.15);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  white-space: nowrap;
   cursor: pointer;
   background: var(--color-bg-white);
   color: var(--color-text-main);
   font-family: var(--font-family-main);
-  transition: all 0.15s;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
 }
 
 .size-btn.selected {
@@ -1560,13 +1560,6 @@
 }  
 .sidebar { order: 2; width: auto; }
 .price-column { order: 3; width: auto; position: relative; top: auto; }
-
-
-.btn-locate:disabled { opacity: 0.8; cursor: not-allowed; transform: none; }
-
-/* loading state: keep green but show spinner */
-.btn-locate.loading { background: #8fae7a; pointer-events: none; }
-.btn-locate.success { background: #5f7a53; }
 
 /* spinner (uses inline svg with class "spin") */
 .spin { animation: spin 1s linear infinite; display: inline-block; }
@@ -1797,53 +1790,65 @@
 }
 
 .dr-header {
-  background-color: #f4f6f3;
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
-  position: relative;
-  padding: 5px 20px 20px;
-  border-bottom: 1px solid var(--color-border);
+  padding: 20px 24px 10px;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: none;
+  border-top-left-radius: var(--radius-md);
+  border-top-right-radius: var(--radius-md);
 }
 
 .dr-close-btn {
-  position: absolute;
-  right: 20px;
-  background: none;
+  position: absolute !important;
+  right: 20px !important; /* نقل الزر للناحية اليمنى */
+  left: auto !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  background: transparent;
   border: none;
   font-size: 24px;
+  color: #9ca3af;
   cursor: pointer;
-  color: #999;
-  padding: 0;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  line-height: 1;
+  padding: 4px;
+  transition: color 0.2s;
 }
 
 .dr-close-btn:hover {
-  color: var(--color-text-main);
+  color: #111827;
 }
 
 .dr-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   font-size: var(--font-size-xl);
   font-weight: 700;
   color: var(--color-text-main);
   margin: 0;
   text-align: center;
-  padding-top: 8px;
+}
+
+.dr-title-icon {
+  color: #91a37f;
+  flex-shrink: 0;
 }
 
 .dr-step-content {
-  padding: 12px 22px;
+  padding: 22px 22px;
   flex: 1;
 }
 
 .dr-step-heading {
   font-size: 14px;
   font-weight: 700;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   color: var(--color-text-main);
 }
 
@@ -1858,6 +1863,7 @@
   font-weight: 600;
   margin-bottom: 6px;
   color: var(--color-text-main);
+  padding-right: 4px;
 }
 
 .required {
@@ -1865,25 +1871,99 @@
 }
 
 .dr-input {
-  padding: 8px 12px;
+  padding: 8px 16px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xs);
   font-size: 12px;
   font-family: var(--font-family-main);
-  background: var(--color-bg-white);
+  background: #fcfcfc;
   color: var(--color-text-main);
 }
 
 .dr-input:focus {
   outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(156, 175, 136, 0.1);
+  border-color: rgba(145, 163, 127, 0.6); 
+  box-shadow: 0 0 0 2px rgba(145, 163, 127, 0.08);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .dr-input[readonly] {
   background-color: #f0f0f0;
   cursor: not-allowed;
   color: var(--color-text-muted);
+}
+
+.dr-input::placeholder {
+  color: var(--color-text-muted, #9ca3af); /* لون النص الابتدائي */
+  opacity: 0.6; /* لضمان ظهور اللون بدقة في متصفحات مثل Safari و Firefox */
+  font-size: 12px;
+}
+
+.dr-input-phone {
+  direction: ltr; /* لضمان ترتيب الأرقام والمسافات بشكل صحيح برمجياً */
+  text-align: right; /* محاذاة النص لليمين ليتناسق مع الواجهة العربية */
+}
+
+/* ضبط لون الـ placeholder ليكون هادئاً وبنفس المحاذاة */
+.dr-input-phone::placeholder {
+  text-align: right;
+  direction: ltr;
+  opacity: 0.6;
+}
+
+#dr-manual-address-group {
+  width: 100%;
+}
+
+#dr-manual-address {
+  width: 100%;
+  box-sizing: border-box; /* لضمان عدم خروج الحقل عن الحاوية بسبب الـ padding */
+}
+
+/* تنسيق الـ placeholder المخصص لـ select */
+select.dr-input:has(option[value=""]:checked) {
+  color: var(--color-text-muted, #9ca3af);
+  opacity: 0.6;
+  font-size: 12px;
+}
+
+/* إعادة اللون والشفافية للوضع الطبيعي عند اختيار أي قيمة حقيقية */
+select.dr-input option {
+  color: var(--color-text-main, #222222);
+  opacity: 1;
+  font-size: 14px;
+}
+
+select.dr-input {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg fill='%23666666' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: left 10px center;
+  padding-left: 35px;
+  cursor: pointer;
+}
+
+/* Design Request Modal - Manual Address Link */
+.dr-manual-link {
+  display: block;
+  text-align: right;
+  margin-top: 8px;
+  margin-bottom: 14px;
+  margin-right: 6px;
+  font-size: 11px;
+  color: var(--color-text-muted, #666);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;       /* إبعاد الخط قليلاً عن الأحرف */
+  text-decoration-skip-ink: none;  /* منع تقطيع الخط مع الأحرف */
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dr-manual-link:hover {
+  color: var(--color-text-main, #222);
 }
 
 /* حاوية الـ Select للتحكم في موضع السهم */
@@ -1940,6 +2020,17 @@
   color: #1f2937;
   background-color: #ffffff;
   padding: 8px 10px;
+}
+
+#dr-select-district:disabled {
+  pointer-events: none;
+}
+
+/* اجعل الـ wrapper جاهزاً لاستقبال الضغطات ويكون مؤشر الماوس واضحاً */
+#dr-district-wrapper {
+  cursor: pointer;
+  display: block;
+  width: 100%;
 }
 
 /* إخفاء الـ input الأصلي وجعل الحاوية قابلة للضغط */
@@ -2013,10 +2104,11 @@
 }
 
 .dr-location-title {
-  font-size: 13px;
-  font-weight: 700;
-  margin-bottom: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 8px;
   color: var(--color-text-main);
+  padding-right: 4px;
 }
 
 .order-invoice-preview-box {
@@ -2217,24 +2309,26 @@
   font-weight: 300;
 }
 
-/* Location */
+/* Location Section */
 .loc-section {
   padding: 0;
   margin-bottom: 22px;
 }
+
 .loc-header {
   display: flex;
   align-items: center;
   gap: 6px;
   margin-bottom: 10px;
 }
+
 .loc-hint {
   width: 22px;
   height: 22px;
   border-radius: var(--radius-full);
-  background: rgba(51,48,40,0.15);
-  border: 1.5px solid rgba(51,48,40,0.3);
-  color: rgba(255,255,255,0.9);
+  background: rgba(51, 48, 40, 0.15);
+  border: 1.5px solid rgba(51, 48, 40, 0.3);
+  color: rgba(255, 255, 255, 0.9);
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
@@ -2245,16 +2339,20 @@
   font-family: var(--font-family-main);
   transition: background 0.2s;
 }
+
 .loc-hint:hover {
-  background: rgba(51,48,40,0.25);
+  background: rgba(51, 48, 40, 0.25);
 }
+
 .loc-desc {
   font-size: 12px;
-  color: rgba(51,48,40,0.6);
+  color: rgba(51, 48, 40, 0.6);
   margin-top: 5px;
   margin-bottom: 12px;
   line-height: 1.6;
 }
+
+/* Locate Button */
 .btn-locate {
   display: flex;
   align-items: center;
@@ -2270,43 +2368,80 @@
   font-weight: 600;
   cursor: pointer;
   font-family: var(--font-family-main);
-  transition: background 0.2s;
+  transition: background 0.2s, opacity 0.2s;
 }
+
 .btn-locate:hover {
   background: var(--color-primary-hover);
 }
+
 .btn-locate:disabled {
   opacity: 0.7;
   cursor: not-allowed;
 }
+
+/* Button States */
+.btn-locate.loading {
+  background: #8fae7a;
+  pointer-events: none;
+}
+
+.btn-locate.success {
+  background: #5f7a53;
+}
+
+/* Shared Spinner Component */
+.spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Location Result Box */
 .loc-result {
   display: none;
   margin-top: 10px;
   padding: 8px 12px;
-  background: rgba(156,175,136,0.15);
-  border: 1px solid rgba(156,175,136,0.3);
+  background: rgba(156, 175, 136, 0.15);
+  border: 1px solid rgba(156, 175, 136, 0.3);
   border-radius: var(--radius-xs);
   font-size: 12px;
   color: var(--color-primary);
   text-align: center;
   line-height: 1.5;
 }
+
 .loc-result.show {
   display: block;
 }
+
 .loc-result.error {
-  background: rgba(255,100,100,0.1);
-  border-color: rgba(255,100,100,0.3);
+  background: rgba(255, 100, 100, 0.1);
+  border-color: rgba(255, 100, 100, 0.3);
   color: #ff9999;
 }
+
+/* Map Wrapper */
 .map-wrap {
   display: none;
   margin-top: 12px;
   border-radius: var(--radius-xs);
   overflow: hidden;
-  border: 1px solid rgba(51,48,40,0.12);
+  border: 1px solid rgba(51, 48, 40, 0.12);
 }
+
 .map-wrap.show {
   display: block;
 }
-

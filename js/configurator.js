@@ -84,6 +84,93 @@ function showToast(msg, duration = 3500) {
   }, duration);
 }
 
+document.addEventListener('DOMContentLoaded', function () {
+  const phoneInput = document.getElementById('dr-customer-phone');
+  
+  if (phoneInput) {
+    new Cleave(phoneInput, {
+      blocks: [3, 4, 4],
+      delimiter: ' ',
+      numericOnly: true
+    });
+  }
+});
+
+// مثال داخل دالة إرسال النموذج
+function getPhoneValue() {
+  const rawValue = document.getElementById('dr-customer-phone').value;
+  const cleanPhone = rawValue.replace(/\s+/g, ''); // تحويل "010 1234 5678" إلى "01012345678"
+  return cleanPhone;
+}
+
+// 1. قائمة أحياء القاهرة والجيزة
+const EGYPT_DISTRICTS = {
+  "Cairo": [
+    "التجمع الخامس", "التجمع الأول", "التجمع الثالث", "القاهرة الجديدة", 
+    "مدينتي", "الشروق", "العاصمة الإدارية", "مدينة نصر", "مصر الجديدة", 
+    "المعادي", "المقطم", "الزهراء", "الزمالك", "جاردن سيتي", "وسط البلد", 
+    "الرحاب", "العباسية", "عين شمس", "الزيتون", "حدائق القبة", 
+    "حلوان", "المعصرة", "المعادي الجديدة", "الهضبة الوسطى"
+  ],
+  "Giza": [
+    "الشيخ زايد", "6 أكتوبر - الأحياء", "6 أكتوبر - التوسعات الشمالية", 
+    "حدائق الأهرام", "الهرم", "فيصل", "المهندسين", "الدقي", "العجوزة", 
+    "حدائق أكتوبر", "أكتوبر الجديد", "الجيزة", "المنيب", "البحر الأعظم", 
+    "الوراق", "إمبابة", "الحوامدية"
+  ]
+};
+
+// 2. دالة تحديث قائمة الأحياء عند تغيير المحافظة
+function drOnGovChange() {
+  const govSelect = document.getElementById('dr-select-gov');
+  const districtSelect = document.getElementById('dr-select-district');
+  
+  if (!govSelect || !districtSelect) return;
+
+  const selectedGov = govSelect.value;
+
+  // إذا قام العميل بترك خيار المحافظة فاضي ("اختر المحافظة...")
+  if (!selectedGov) {
+    districtSelect.innerHTML = '<option value="" selected>اختر المحافظة أولاً...</option>';
+    districtSelect.disabled = true;
+    return;
+  }
+
+  // تفريق القائمة وتفعيل حقل الأحياء
+  districtSelect.disabled = false;
+  districtSelect.innerHTML = '<option value="" selected>اختر المنطقة...</option>';
+
+  if (EGYPT_DISTRICTS[selectedGov]) {
+    EGYPT_DISTRICTS[selectedGov].forEach(function(district) {
+      const option = document.createElement('option');
+      option.value = district;
+      option.textContent = district;
+      districtSelect.appendChild(option);
+    });
+  }
+}
+
+// 3. الاستماع للضغط على قائمة الأحياء لو كانت معطلة لإظهار التوست
+document.addEventListener('DOMContentLoaded', function() {
+  const districtWrapper = document.getElementById('dr-district-wrapper');
+  const govSelect = document.getElementById('dr-select-gov');
+  const districtSelect = document.getElementById('dr-select-district');
+
+  if (districtWrapper) {
+    districtWrapper.addEventListener('click', function(e) {
+      if (!govSelect || !govSelect.value || (districtSelect && districtSelect.disabled)) {
+        if (typeof showToast === 'function') {
+          showToast('يرجى اختيار المحافظة أولاً');
+        } else if (typeof drShowToast === 'function') {
+          drShowToast('يرجى اختيار المحافظة أولاً');
+        } else {
+          alert('يرجى اختيار المحافظة أولاً');
+        }
+      }
+    }, true); // true هنا تضمن التقاط الضغطة في مرحلة الـ Capture
+  }
+});
+
 function parseCSV(t) {
   const ls = t.trim().split('\n');
   const hs = ls[0].split(',').map(h => h.trim().replace(/^\uFEFF/, '').replace(/^"|"$/g, ''));
@@ -197,7 +284,11 @@ function loadConfiguratorData() {
         D = build(rows, colorRows);
         dataLoaded = true;
         hideConfiguratorLoading();
-        try { sessionStorage.setItem('wodi_configurator_cache', JSON.stringify(rows)); } catch (e) { console.warn('sessionStorage set failed', e); }
+        try { 
+          sessionStorage.setItem('wodi_configurator_cache', JSON.stringify({ rows, colorRows, settings })); 
+        } catch (e) { 
+          console.warn('sessionStorage set failed', e); 
+        }
         
         // Apply pending state restoration only after data is loaded
         applyStateIfReady();
@@ -707,10 +798,22 @@ function rDes() {
   divider.style.marginBottom = '16px';
   colorContainer.appendChild(divider);
 
+  // إضافة عنوان قسم ألوان الوحدة بنفس كلاس وتنسيق العناوين الرئيسية
+  const sectionTitleHeader = document.createElement('div');
+  sectionTitleHeader.className = 'step-header';
+  sectionTitleHeader.style.marginBottom = '12px';
+  
+  const sectionTitle = document.createElement('span');
+  sectionTitle.className = 'step-title';
+  sectionTitle.textContent = 'لون الوحدة';
+  
+  sectionTitleHeader.appendChild(sectionTitle);
+  colorContainer.appendChild(sectionTitleHeader);
+
   if (!S.selectedColors) S.selectedColors = [];
 
   const colorGroups = [
-    { family: 'solid', prefix: 'clr_sld_', defaultTitle: 'لون سادة (مط)', defaultPrice: 0 },
+    { family: 'solid', prefix: 'clr_sld_', defaultTitle: 'سادة (مط)', defaultPrice: 0 },
     { family: 'wood', prefix: 'clr_wd_', defaultTitle: 'خشابي', defaultPrice: 800 },
     { family: 'gloss', prefix: 'clr_gls_', defaultTitle: 'لامع', defaultPrice: 1100 }
   ];
@@ -725,9 +828,8 @@ function rDes() {
     groupWrapper.id = `group-wrapper-${group.family}`;
 
     const subTitle = document.createElement('h4');
-    subTitle.className = 'subtitle';
+    subTitle.className = 'sub-title';
     subTitle.textContent = titleText;
-    subTitle.style.marginBottom = '4px';
     groupWrapper.appendChild(subTitle);
 
     if (extraPrice > 0) {
@@ -1081,13 +1183,6 @@ function showSizeSkeleton(count = 4) {
 
 function showConfiguratorLoading() {
   if (!S.sinkType) return;
-
-  if (!S.size) {
-    document.getElementById("loading-sz")?.classList.add("show");
-    document.getElementById("sz")?.classList.remove("hidden");
-    showSizeSkeleton();
-    return;
-  }
 
   document.getElementById("loading-sz")?.classList.add("show");
   document.getElementById("loading-dc")?.classList.add("show");
@@ -2169,6 +2264,12 @@ function getLocation(btn, res, mapContainer, mapImage) {
             return;
           }
 
+          // إخفاء حقل العنوان اليدوي ورابط التحديد اليدوي عند نجاح تحديد الموقع تلقائياً
+          const manualGroup = document.getElementById('dr-manual-address-group');
+          if (manualGroup) manualGroup.style.display = 'none';
+          const manualLink = document.getElementById('dr-toggle-manual-address');
+          if (manualLink) manualLink.style.display = 'none';
+
           if (res) {
             res.innerHTML = 'تم تحديد موقعك — تكلفة التوصيل: ' + (installCost !== null ? installCost + ' EGP' : '—');
             res.className = 'loc-result show';
@@ -2195,15 +2296,21 @@ function getLocation(btn, res, mapContainer, mapImage) {
 
         } catch (err) {
           console.error('Error in getLocation success handler', err);
-          if (res) { res.textContent = 'حدث خطأ أثناء معالجة الموقع'; res.className = 'loc-result error show'; }
+          if (res) { res.textContent = 'حدث خطأ أثناء معالجة الموقع. يرجى أدخال العنوان يدوياً.'; res.className = 'loc-result error show'; }
           if (btn) { btn.disabled = false; btn.innerHTML = 'إعادة المحاولة'; }
+          const manualGroup = document.getElementById('dr-manual-address-group');
+          if (manualGroup) manualGroup.style.display = 'block';
         }
       },
       err => {
-        let msg = 'لم يتم السماح بالوصول للموقع';
-        if (err && err.code === 1) msg = 'يرجى السماح للمتصفح بالوصول لموقعك';
+        let msg = 'تعذر تحديد الموقع تلقائياً. يرجى كتابة العنوان يدوياً بالأسفل.';
+        if (err && err.code === 1) msg = 'تم رفض الإذن. يرجى كتابة العنوان يدوياً بالأسفل.';
         if (res) { res.textContent = msg; res.className = 'loc-result error show'; }
         if (btn) { btn.disabled = false; btn.innerHTML = 'إعادة المحاولة'; }
+        
+        // إظهار حقل إدخال العنوان اليدوي تلقائياً عند الفشل
+        const manualGroup = document.getElementById('dr-manual-address-group');
+        if (manualGroup) manualGroup.style.display = 'block';
       },
       { timeout: 15000, maximumAge: 60000 }
     );
@@ -2312,7 +2419,8 @@ function openDesignRequestModal() {
     'dr-sink-width',
     'dr-sink-code',
     'dr-customer-name',
-    'dr-customer-phone'
+    'dr-customer-phone',
+    'dr-manual-address'
   ];
 
   inputIds.forEach(id => {
@@ -2422,14 +2530,27 @@ window.drShowStep = drShowStep;
 
 function drValidateStep(stepNum) {
   if (stepNum === 1) {
-    const name = document.getElementById('dr-customer-name').value.trim();
-    const phone = document.getElementById('dr-customer-phone').value.trim();
+    const name = document.getElementById('dr-customer-name')?.value.trim();
+    const phone = document.getElementById('dr-customer-phone')?.value.trim();
+    const manualAddress = document.getElementById('dr-manual-address')?.value.trim();
+    const govSelect = document.getElementById('dr-select-gov')?.value.trim();
+    const districtSelect = document.getElementById('dr-select-district')?.value.trim();
+    const hasAutoLocation = !!window.userLat && !!window.userLng;
+
     if (!name) {
       showToast('يرجى ملء الاسم');
       return false;
     }
     if (!phone) {
       showToast('يرجى ملء رقم الهاتف');
+      return false;
+    }
+
+    // يعتبر الموقع مكتملاً في حالة وجود أحداثيات أو عنوان يدوي أو اختيار المحافظة والحي
+    const hasDropdownLocation = !!govSelect && !!districtSelect;
+    
+    if (!hasAutoLocation && !manualAddress && !hasDropdownLocation) {
+      showToast('يرجى تحديد الموقع');
       return false;
     }
     return true;
@@ -3071,10 +3192,17 @@ function loadDRDraft() {
       window.userLng = data.userLng;
       
       const locResult = document.getElementById('dr-loc-result');
-      if (locResult) {
-        locResult.textContent = `${data.locationAddress.governorate || ''} - ${data.locationAddress.district || ''}`;
-        locResult.style.display = 'block';
-      }
+       if (locResult) {
+         locResult.textContent = `${data.locationAddress.governorate || ''} - ${data.locationAddress.district || ''}`;
+         locResult.classList.add('show');
+         locResult.style.display = 'block';
+       }
+
+       const locateBtn = document.getElementById('dr-btn-locate') || document.getElementById('btn-locate');
+       if (locateBtn) {
+         locateBtn.classList.add('success');
+         locateBtn.innerHTML = 'تم تحديد الموقع بنجاح';
+       }
 
       const mapContainer = document.getElementById('dr-mapContainer');
       if (mapContainer && typeof data.userLat === 'number' && typeof data.userLng === 'number') {
@@ -3314,373 +3442,6 @@ function resetAll() {
 }
 
 window.resetAll = resetAll;
-
-/*
-================================================================================
-Order Popup Integration
-================================================================================
-*/
-
-(function () {
-  'use strict';
-
-  let orderPayloadCache = null;
-  let summaryGenerated = false;
-
-  function saveLocalProfile(profile) {
-    try {
-      localStorage.setItem(ORDER_POPUP_KEY, JSON.stringify(profile || {}));
-    } catch (e) { console.warn('saveLocalProfile failed', e); }
-  }
-
-  function loadLocalProfile() {
-    try {
-      const raw = localStorage.getItem(ORDER_POPUP_KEY);
-      return raw ? JSON.parse(raw) : {};
-    } catch (e) { return {}; }
-  }
-
-  function getAuthUserSafe() {
-    try {
-      return (typeof window.currentUser !== 'undefined') ? window.currentUser : null;
-    } catch (e) { return null; }
-  }
-
-  function ensureOrderPopup() {
-    if (document.getElementById('wodi-order-popup')) return document.getElementById('wodi-order-popup');
-
-    const modal = document.createElement('div');
-    modal.id = 'wodi-order-popup';
-    modal.className = 'wodi-modal';
-    modal.style.display = 'none';
-    modal.style.zIndex = '12000';
-    modal.innerHTML = `
-      <div class="wodi-modal-box" role="dialog" aria-modal="true" style="max-width:820px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 18px;border-bottom:1px solid rgba(0,0,0,0.06);">
-          <div style="font-weight:800;font-size:18px;">ملخص الطلب</div>
-          <button id="wodi-order-popup-close" aria-label="close" style="background:none;border:none;font-size:22px;cursor:pointer;">×</button>
-        </div>
-
-        <div class="wodi-modal-body" style="padding:16px; background:#fff; text-align:right;">
-          <div id="wodi-auth-area" style="margin-bottom:12px;">
-            <div id="wodi-auth-signed" style="display:none;">
-              <label style="display:block;font-weight:700;margin-bottom:6px;">العميل</label>
-              <input id="wodi-customer-name" type="text" placeholder="اسمك" style="width:100%;padding:10px;margin-bottom:8px;border:1px solid #e7e3da;border-radius:4px;">
-              <input id="wodi-customer-phone" type="tel" placeholder="رقم التليفون" style="width:100%;padding:10px;margin-bottom:8px;border:1px solid #e7e3da;border-radius:4px;">
-            </div>
-            <div id="wodi-auth-unsigned" style="display:none; margin-bottom:8px;">
-              <div style="margin-bottom:8px;color:#666;">سجل دخولك بحساب جوجل لحفظ البيانات وتسريع العملية</div>
-              <button id="wodi-login-btn" class="btn-locate" style="display:inline-flex;align-items:center;gap:8px;">سجل الدخول بجوجل</button>
-            </div>
-          </div>
-
-          <div style="margin-bottom:14px;">
-            <div style="font-weight:700;margin-bottom:8px;">العنوان & التوصيل</div>
-            <div id="wodi-loc-wrap" style="text-align:right;">
-              <div id="wodi-popup-loc-result" class="loc-result" style="display:none;margin-bottom:8px;"></div>
-              <div id="wodi-popup-mapContainer" class="map-container" hidden style="margin-bottom:8px;">
-                <iframe id="wodi-popup-staticMap" width="100%" height="160" loading="lazy" style="border:1px solid #ccc;border-radius:2px;"></iframe>
-              </div>
-              <button id="wodi-popup-btn-locate" class="btn-locate" style="display:inline-flex;align-items:center;gap:8px;">تحديد موقعي الحالي</button>
-              <div style="margin-top:6px;color:#666;font-size:12px;">نستخدم موقعك لتقدير تكلفة التوصيل والتحقق من تغطية منطقتك</div>
-            </div>
-          </div>
-
-          <div style="margin-top:6px;">
-            <div style="font-weight:700;margin-bottom:8px;">ملاحظات إضافية</div>
-            <textarea id="wodi-order-notes" rows="3" style="width:100%;padding:10px;border:1px solid #e7e3da;border-radius:4px;" placeholder="ملاحظات حول الطلب (اختياري)"></textarea>
-          </div>
-        </div>
-
-        <div style="display:flex;gap:10px;justify-content:flex-end;padding:12px;border-top:1px solid rgba(0,0,0,0.06);">
-          <button id="wodi-order-cancel" class="wodi-btn alt">إلغاء</button>
-          <button id="wodi-order-generate" class="wodi-btn">استخراج الملخص</button>
-          <button id="wodi-order-sendwa" class="wodi-btn" disabled style="background:#fff;border:1px solid var(--color-primary);color:var(--color-primary);">إرسال عبر WhatsApp</button>
-        </div>
-
-      </div>
-    `;
-
-    document.body.appendChild(modal);
-
-    modal.querySelector('#wodi-order-popup-close').addEventListener('click', () => closeOrderPopup());
-    modal.querySelector('#wodi-order-cancel').addEventListener('click', () => closeOrderPopup());
-
-    const loginBtn = modal.querySelector('#wodi-login-btn');
-    if (loginBtn) loginBtn.addEventListener('click', () => {
-      if (typeof window.loginWithGoogle === 'function') window.loginWithGoogle();
-      else showToast('نظام تسجيل الدخول غير متاح الآن');
-    });
-
-    modal.querySelector('#wodi-popup-btn-locate').addEventListener('click', function () {
-      const btn = document.getElementById('wodi-popup-btn-locate');
-      const res = document.getElementById('wodi-popup-loc-result');
-      const mapContainer = document.getElementById('wodi-popup-mapContainer');
-      const mapImage = document.getElementById('wodi-popup-staticMap');
-      if (typeof getLocation === 'function') {
-        getLocation(btn, res, mapContainer, mapImage);
-      } else {
-        if (typeof requestLocation === 'function') requestLocation();
-      }
-    });
-
-    modal.querySelector('#wodi-order-generate').addEventListener('click', handlePopupGenerate);
-    modal.querySelector('#wodi-order-sendwa').addEventListener('click', handlePopupSendWA);
-
-    window.onAuthStateChanged((u) => {
-      refreshAuthAreaInPopup();
-      const cur = getAuthUserSafe();
-      if (cur) {
-        const p = loadLocalProfile();
-        p.uid = cur.uid || p.uid;
-        p.name = cur.displayName || p.name || '';
-        p.phone = p.phone || cur.phoneNumber || p.phone || '';
-        saveLocalProfile(p);
-        refreshAuthAreaInPopup();
-      }
-    });
-
-    return modal;
-  }
-
-  function openOrderPopup() {
-    const modal = ensureOrderPopup();
-    refreshAuthAreaInPopup();
-    modal.style.display = 'flex';
-    modal.setAttribute('aria-hidden', 'false');
-    summaryGenerated = false;
-    orderPayloadCache = null;
-    setPopupSendState(false);
-  }
-
-  function closeOrderPopup() {
-    const modal = document.getElementById('wodi-order-popup');
-    if (!modal) return;
-    modal.style.display = 'none';
-    modal.setAttribute('aria-hidden', 'true');
-  }
-
-  function refreshAuthAreaInPopup() {
-    const modal = ensureOrderPopup();
-    const signed = modal.querySelector('#wodi-auth-signed');
-    const unsigned = modal.querySelector('#wodi-auth-unsigned');
-    const nameInput = modal.querySelector('#wodi-customer-name');
-    const phoneInput = modal.querySelector('#wodi-customer-phone');
-
-    const stored = loadLocalProfile() || {};
-    const current = getAuthUserSafe();
-
-    if (current) {
-      signed.style.display = 'block';
-      unsigned.style.display = 'none';
-      nameInput.value = stored.name || current.displayName || '';
-      phoneInput.value = stored.phone || current.phoneNumber || '';
-    } else {
-      signed.style.display = 'none';
-      unsigned.style.display = 'block';
-    }
-
-    nameInput && nameInput.addEventListener('input', () => {
-      const p = loadLocalProfile(); p.name = nameInput.value; saveLocalProfile(p);
-    });
-    phoneInput && phoneInput.addEventListener('input', () => {
-      const p = loadLocalProfile(); p.phone = phoneInput.value; saveLocalProfile(p);
-    });
-  }
-
-  function setPopupSendState(enabled) {
-    const modal = ensureOrderPopup();
-    const sendBtn = modal.querySelector('#wodi-order-sendwa');
-    const genBtn = modal.querySelector('#wodi-order-generate');
-    if (sendBtn) sendBtn.disabled = !enabled;
-    if (genBtn) {
-      genBtn.textContent = enabled ? 'رؤية الملخص' : 'استخراج الملخص';
-      genBtn.classList.toggle('wodi-generated', enabled);
-    }
-  }
-
-  function buildConfiguratorPayload() {
-    const now = new Date();
-    const orderNumber = `WODI-${String(now.getTime()).slice(-8)}`;
-    const totalPrice = (typeof calc === 'function') ? calc() : null;
-    const notes = document.getElementById('wodi-order-notes')?.value || '';
-    const profile = loadLocalProfile();
-    const user = getAuthUserSafe() || {};
-
-    const customerName = profile.name || user.displayName || 'غير متوفر';
-    const customerPhone = profile.phone || user.phoneNumber || 'غير متوفر';
-
-    const unit = {
-      sinkType: S.sinkType || null,
-      size: S.size ? S.size.size : null,
-      design: S.design ? (S.design.name || S.design.id) : null,
-      division: S.div ? (S.div.name || S.div.id) : null,
-      handle: S.handle ? (S.handle.name || S.handle.id) : null,
-    };
-
-    const items = [{
-      product_id: unit.design || 'config-unit',
-      name: unit.design || 'وحدة حوض مخصصة',
-      specs: `${unit.size || ''}`,
-      qty: 1,
-      unitPrice: (typeof totalPrice === 'number' && !isNaN(totalPrice)) ? totalPrice : 0,
-      subtotal: (typeof totalPrice === 'number' && !isNaN(totalPrice)) ? totalPrice : 0
-    }];
-
-    return {
-      number: orderNumber,
-      createdAt: now.toISOString(),
-      customerName,
-      customerPhone,
-      items,
-      grandTotal: items.reduce((s,i)=>s + (Number(i.subtotal)||0), 0),
-      notes
-    };
-  }
-
-  function openSummaryPreviewWindow(payload) {
-    try {
-      const html = generateOrderHtml(payload);
-      const w = window.open('', '_blank');
-      if (!w) {
-        showToast('تعذّر فتح نافذة المعاينة (منع النوافذ المنبثقة)'); 
-        return;
-      }
-      w.document.open();
-      w.document.write(html);
-      w.document.close();
-    } catch (e) {
-      console.error('openSummaryPreviewWindow error', e);
-      showToast('فشل فتح معاينة الفاتورة');
-    }
-  }
-
-  function generateOrderHtml(p) {
-    const date = new Date(p.createdAt).toLocaleString('ar-EG', { hour12:false });
-    const itemsRows = p.items.map(it => `
-      <tr>
-        <td style="padding:8px;border:1px solid #000;text-align:right;">${escapeHtml(it.name)}</td>
-        <td style="padding:8px;border:1px solid #000;text-align:center;">${escapeHtml(it.specs)}</td>
-        <td style="padding:8px;border:1px solid #000;text-align:center;">${it.qty}</td>
-        <td style="padding:8px;border:1px solid #000;text-align:center;">${formatPrice(it.unitPrice)}</td>
-        <td style="padding:8px;border:1px solid #000;text-align:center;">${formatPrice(it.subtotal)}</td>
-      </tr>`).join('');
-
-    return `<!doctype html>
-      <html lang="ar" dir="rtl">
-      <head>
-        <meta charset="utf-8">
-        <title>ملخص الطلب ${escapeHtml(p.number)}</title>
-        <meta name="viewport" content="width=device-width,initial-scale=1">
-        <style>
-          body { font-family: Arial, Helvetica, "Cairo", sans-serif; direction: rtl; padding:20px; color:#111 }
-          .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px }
-          .title { font-size:20px; font-weight:800 }
-          table { width:100%; border-collapse:collapse; margin-top:12px; }
-          th, td { border:1px solid #000; padding:8px; }
-          thead th { background:#f4f4f4; font-weight:700; }
-          .totals { text-align:right; margin-top:12px; font-weight:700 }
-          .notes { margin-top:8px;color:#666 }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <div>
-            <div class="title">ملخص الطلب</div>
-            <div>رقم الطلب: ${escapeHtml(p.number)}</div>
-            <div>التاريخ: ${escapeHtml(date)}</div>
-          </div>
-          <div style="text-align:left;">
-            <div>WODI Furniture</div>
-            <div>Whatsapp: +20 15 5684 0368</div>
-          </div>
-        </div>
-
-        <div style="margin-top:6px;">
-          <div style="font-weight:700;margin-bottom:6px;">بيانات العميل</div>
-          <div>الاسم: ${escapeHtml(p.customerName)}</div>
-          <div>الهاتف: ${escapeHtml(p.customerPhone)}</div>
-        </div>
-
-        <table>
-          <thead>
-            <tr>
-              <th>المنتج</th>
-              <th>المواصفات</th>
-              <th>الكمية</th>
-              <th>سعر الوحدة (EGP)</th>
-              <th>الإجمالي (EGP)</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${itemsRows}
-          </tbody>
-        </table>
-
-        <div class="totals">الإجمالي الكلي: ${formatPrice(p.grandTotal)} EGP</div>
-
-        <div class="notes">ملاحظة: ${escapeHtml(p.notes || 'هذه فاتورة مبدئية. التواصل والدفع عبر WhatsApp.')}</div>
-
-      </body>
-      </html>`;
-  }
-
-  function handlePopupGenerate() {
-    const modal = ensureOrderPopup();
-    if (!S.sinkType || !S.size || !S.design || !S.div) {
-      showToast('الطلب غير مكتمل — اكمل اختيارات الحوض أولاً');
-      return;
-    }
-
-    const payload = buildConfiguratorPayload();
-    orderPayloadCache = payload;
-    summaryGenerated = true;
-    setPopupSendState(true);
-
-    openSummaryPreviewWindow(payload);
-  }
-
-  async function handlePopupSendWA() {
-    if (!summaryGenerated || !orderPayloadCache) {
-      showToast('لا يمكنك الإرسال قبل استخراج الملخص');
-      return;
-    }
-
-    const payload = orderPayloadCache;
-    const message = [
-      `مرحباً، لدي طلب جديد من WODI.`,
-      `رقم الطلب: ${payload.number}`,
-      `الاسم: ${payload.customerName}`,
-      `الهاتف: ${payload.customerPhone}`,
-      `الإجمالي: ${formatPrice(payload.grandTotal)} EGP`,
-      `الملف المولد: الرجاء إرفاق الفاتورة التي تم إنشاؤها (قم بتنزيلها من صفحة المعاينة).`
-    ].join('\n');
-
-    const url = `https://wa.me/${LOC && LOC.WA ? LOC.WA : '201556840368'}?text=${encodeURIComponent(message)}`;
-    const w = window.open(url, '_blank');
-    if (!w) showToast('تعذّر فتح WhatsApp. تأكد من إعداد المتصفح للسماح بالفتح في نوافذ جديدة.');
-    else showToast('تم فتح WhatsApp — أرفق ملف الفاتورة إذا رغبت قبل الإرسال.');
-  }
-
-  function escapeHtml(s) {
-    if (s == null) return '';
-    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-
-  function formatPrice(num) {
-    if (num == null || isNaN(num)) return '0';
-    return Math.round(num).toLocaleString('en-US');
-  }
-
-  window.openOrderPopup = openOrderPopup;
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => { ensureOrderPopup(); refreshAuthAreaInPopup(); });
-  } else {
-    ensureOrderPopup(); refreshAuthAreaInPopup();
-  }
-
-})();
 
 /*
 ================================================================================

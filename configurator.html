@@ -239,11 +239,6 @@ fetch('nav.html')
 
     </div>
 
-    <div class="section-loading" id="loading-sz">
-      <div class="spinner"></div>
-      <span>جاري تحميل بيانات المقاسات...</span>
-    </div>
-
     <div
       class="sizes-row hidden"
       id="sz"
@@ -302,11 +297,6 @@ fetch('nav.html')
         </svg>
 
       </button>
-
-      <div class="section-loading" id="loading-dc">
-        <div class="spinner"></div>
-        <span>جاري تحميل بيانات التصميمات...</span>
-      </div>
 
       <div
         class="cards-row"
@@ -375,11 +365,6 @@ fetch('nav.html')
         </svg>
       </button>
 
-      <div class="section-loading" id="loading-vc-wall">
-        <div class="spinner"></div>
-        <span>جاري تحميل بيانات التقسيمات...</span>
-      </div>
-
       <div class="cards-row" id="vc-wall" role="list" aria-label="Wall-hung division cards"></div>
 
       <button
@@ -406,11 +391,6 @@ fetch('nav.html')
           <path d="M9 18l6-6-6-6"/>
         </svg>
       </button>
-
-      <div class="section-loading" id="loading-vc-floor">
-        <div class="spinner"></div>
-        <span>جاري تحميل بيانات التقسيمات...</span>
-      </div>
 
       <div class="cards-row" id="vc-floor" role="list" aria-label="Floor-standing division cards"></div>
 
@@ -474,11 +454,6 @@ fetch('nav.html')
         </svg>
 
       </button>
-
-      <div class="section-loading" id="loading-hc">
-        <div class="spinner"></div>
-        <span>جاري تحميل بيانات المقابض...</span>
-      </div>
 
       <div
         class="cards-row"
@@ -755,10 +730,17 @@ fetch('nav.html')
   <div class="design-request-box" role="dialog" aria-modal="true">
     
     <!-- HEADER -->
-    <div class="dr-header">
-      <button class="dr-close-btn" onclick="closeDesignRequestModal()" aria-label="إغلاق" style="position: absolute; right: 20px; top: 16px;">&times;</button>
-      <h2 class="dr-title">طلب المعاينة والتصميم</h2>
-    </div>
+  <div class="dr-header">
+    <button class="dr-close-btn" onclick="closeDesignRequestModal()" aria-label="إغلاق">&times;</button>
+    <h2 class="dr-title">
+<svg class="dr-title-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+  <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+  <path d="m9 14 2 2 4-4"></path>
+</svg>
+      <span>طلب المعاينة والتصميم</span>
+    </h2>
+  </div>
 
     <!-- STEPPER -->
     <nav class="compact-stepper" id="dr-stepper">
@@ -812,14 +794,15 @@ fetch('nav.html')
         <input
           type="tel"
           id="dr-customer-phone"
-          class="dr-input"
-          style="text-align: right; direction: rtl;"
+          class="dr-input dr-input-phone"
+          placeholder="01X XXXX XXXX"
+          maxlength="13"
         />
       </div>
 
       <div class="dr-location-section">
 
-        <h4 class="dr-location-title">تحديد موقع المعاينة</h4>
+        <h4 class="dr-location-title"> العنوان <span class="required">*</span></h4>
 
         <button
           type="button"
@@ -842,28 +825,59 @@ fetch('nav.html')
           تحديد موقعي الحالي
         </button>
 
+        <a href="javascript:void(0)" id="dr-toggle-manual-address" class="dr-manual-link" onclick="document.getElementById('dr-manual-address-group').style.display='block'">أرغب في تحديد موقعي يدوياً</a>
+
         <div
           id="dr-loc-result"
           class="loc-result"
           style="display: none;"
         ></div>
 
-        <div
-          id="dr-mapContainer"
-          class="map-container"
-          hidden
-          style="margin-top: 12px;"
-        >
-          <img
-            id="dr-staticMap"
-            class="dr-static-map"
-            alt="خريطة الموقع"
-            loading="lazy"
-            title="خريطة الموقع"
-          >
-        </div>
+<div
+    id="dr-mapContainer"
+    class="map-container"
+    hidden
+    style="margin-top: 12px;"
+  >
+    <img
+      id="dr-staticMap"
+      class="dr-static-map"
+      alt="خريطة الموقع"
+      loading="lazy"
+      title="خريطة الموقع"
+    >
+  </div>
 
+    <!-- Manual Address Fallback Field (Dropdowns) -->
+    <div id="dr-manual-address-group" style="display: none; margin-top: 12px;">
+      
+      <div class="dr-form-group">
+        <label for="dr-select-gov" class="dr-label">
+          المحافظة <span class="required">*</span>
+        </label>
+        <select id="dr-select-gov" class="dr-input" onchange="drOnGovChange()">
+          <option value="" selected>اختر المحافظة...</option>
+          <option value="Cairo">القاهرة</option>
+          <option value="Giza">الجيزة</option>
+        </select>
       </div>
+
+      <div class="dr-form-group" style="margin-top: 10px;">
+        <label for="dr-select-district" class="dr-label">
+          الحي / المنطقة <span class="required">*</span>
+        </label>
+
+        <!-- يغلف الـ select للحفاظ على التقاط الضغطة وإظهار التوست عندما يكون القائمة معطلة -->
+        <div id="dr-district-wrapper" style="position: relative; display: block; width: 100%;">
+          <select id="dr-select-district" class="dr-input" style="width: 100%;" disabled>
+            <option value="" selected>اختر المحافظة أولاً...</option>
+          </select>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
 
     </div>
 
@@ -1033,6 +1047,7 @@ fetch('nav.html')
   </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cleave.js/1.6.0/cleave.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script type="module" src="js/cart.js"></script>
 <script src="js/configurator.js"></script>
