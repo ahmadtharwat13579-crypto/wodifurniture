@@ -3579,6 +3579,56 @@ async function submitOrderToSheet() {
     handleName: config?.handle?.name || 'بدون',
     unitPrice: config?.unitPrice || '',
 
+    // Historical Snapshot
+    designId: config?.design?.id || '',
+    designPrice: config?.size?.price || '',
+
+    divisionId: config?.division?.id || '',
+    divisionPrice: (
+      config?.division &&
+      config?.size
+        ? dvp(config.division, sgr(config.size.size))
+        : ''
+    ),
+
+    handleId: config?.handle?.id || '',
+    handlePrice: (
+      config?.handle &&
+      config?.design
+        ? config.handle.price * config.design.hc
+        : 0
+    ),
+
+    colorId: S?.selectedColors?.[0] || '',
+    colorPrice: (() => {
+      const selectedId = S?.selectedColors?.[0] || '';
+
+      if (!selectedId) return 0;
+
+      let familyKey = 'solid';
+
+      if (selectedId.startsWith('clr_wd_')) {
+        familyKey = 'wood';
+      } else if (selectedId.startsWith('clr_gls_')) {
+        familyKey = 'gloss';
+      }
+
+      const colorObj = (D.colors || [])
+        .find(c => c.family === familyKey);
+
+      if (colorObj) {
+        return colorObj.price || 0;
+      }
+
+      if (familyKey === 'wood') return 800;
+      if (familyKey === 'gloss') return 1100;
+
+      return 0;
+    })(),
+
+    installationFee: 200,
+    installationCost: installCost ?? '',
+
     selectedColor: S?.selectedColors?.[0] || '',
     handleShape1: S?.selectedHandleShapes?.[0] || '',
     handleShape2: S?.selectedHandleShapes?.[1] || '',
@@ -3705,7 +3755,6 @@ function drShowConfirmation(orderNum) {
     </div>
   `;
 }
-
 async function drViewSummary(orderNum) {
 
   if (!orderNum) return;
@@ -3718,6 +3767,10 @@ async function drViewSummary(orderNum) {
   }
 
   try {
+
+    // =========================================================
+    // تحميل بيانات الطلب من Sheet
+    // =========================================================
 
     const response = await fetch(
       `/api/get-config?action=getOrder&orderNum=${encodeURIComponent(orderNum)}&email=${encodeURIComponent(currentUser.email)}`
@@ -3732,7 +3785,10 @@ async function drViewSummary(orderNum) {
 
     const order = data.order;
 
+    // =========================================================
     // تحميل قالب الملخص
+    // =========================================================
+
     const templateResponse =
       await fetch('product-order-summary.html', {
         cache: 'no-store'
@@ -3745,6 +3801,7 @@ async function drViewSummary(orderNum) {
     const html = await templateResponse.text();
 
     const parser = new DOMParser();
+
     const parsedDoc =
       parser.parseFromString(html, 'text/html');
 
@@ -3760,46 +3817,95 @@ async function drViewSummary(orderNum) {
     content.innerHTML =
       parsedDoc.body.innerHTML;
 
-    // -------------------------------------------------------
-    // البيانات الأساسية
-    // -------------------------------------------------------
+
+    // =========================================================
+    // Helpers
+    // =========================================================
 
     const setText = (selector, value) => {
 
       const el = content.querySelector(selector);
 
-      if (el) {
-        el.textContent =
-          value !== undefined &&
-          value !== null &&
-          value !== ''
-            ? value
-            : 'غير متوفر';
-      }
+      if (!el) return;
+
+      el.textContent =
+        value !== undefined &&
+        value !== null &&
+        value !== ''
+          ? value
+          : 'غير متوفر';
     };
 
-    setText('#order-number', order['رقم الطلب']);
 
-    setText('#customer-name', order['الاسم']);
-    setText('#customer-phone', order['التليفون']);
+    const formatPrice = value => {
 
-    setText('#sink-brand', order['ماركة الحوض']);
+      const n = parseFloat(value);
+
+      if (!Number.isFinite(n)) {
+        return '—';
+      }
+
+      return `${n.toLocaleString('en-US')} ج.م`;
+    };
+
+
+    const imageUrl = (path) => {
+
+      if (!path) return '';
+
+      return new URL(
+        path,
+        baseUrl
+      ).href;
+    };
+
+
+    // =========================================================
+    // البيانات الأساسية
+    // =========================================================
+
+    setText(
+      '#order-number',
+      order['رقم الطلب']
+    );
+
+    setText(
+      '#customer-name',
+      order['الاسم']
+    );
+
+    setText(
+      '#customer-phone',
+      order['التليفون']
+    );
+
+    setText(
+      '#sink-brand',
+      order['ماركة الحوض']
+    );
+
 
     const widthEl =
       content.querySelector('#sink-width');
 
     if (widthEl) {
+
       widthEl.textContent =
         order['عرض الحوض']
           ? `${order['عرض الحوض']} سم`
           : 'غير متوفر';
     }
 
-    setText('#sink-code', order['كود الحوض']);
 
-    // -------------------------------------------------------
+    setText(
+      '#sink-code',
+      order['كود الحوض']
+    );
+
+
+    // =========================================================
     // نوع الحوض
-    // -------------------------------------------------------
+    // =========================================================
 
     const sinkTypeNames = {
 
@@ -3810,6 +3916,7 @@ async function drViewSummary(orderNum) {
       'drop-in': 'حوض ساقط',
 
       'bowl': 'حوض فوق الكاونتر'
+
     };
 
     setText(
@@ -3818,9 +3925,10 @@ async function drViewSummary(orderNum) {
       order['نوع الحوض']
     );
 
-    // -------------------------------------------------------
+
+    // =========================================================
     // الموقع
-    // -------------------------------------------------------
+    // =========================================================
 
     setText(
       '#shipping-governorate',
@@ -3832,14 +3940,14 @@ async function drViewSummary(orderNum) {
       order['الحي']
     );
 
+
     const lngEl =
       content.querySelector('#shipping-lng');
 
     if (lngEl) {
 
-      const lng = parseFloat(
-        order['خط الطول']
-      );
+      const lng =
+        parseFloat(order['خط الطول']);
 
       lngEl.textContent =
         Number.isFinite(lng)
@@ -3847,14 +3955,14 @@ async function drViewSummary(orderNum) {
           : 'غير متوفر';
     }
 
+
     const latEl =
       content.querySelector('#shipping-lat');
 
     if (latEl) {
 
-      const lat = parseFloat(
-        order['دائرة العرض']
-      );
+      const lat =
+        parseFloat(order['دائرة العرض']);
 
       latEl.textContent =
         Number.isFinite(lat)
@@ -3862,9 +3970,10 @@ async function drViewSummary(orderNum) {
           : 'غير متوفر';
     }
 
-    // -------------------------------------------------------
-    // صور العميل
-    // -------------------------------------------------------
+
+    // =========================================================
+    // صور العميل من Google Drive
+    // =========================================================
 
     const setImage = (selector, url) => {
 
@@ -3873,16 +3982,44 @@ async function drViewSummary(orderNum) {
 
       if (!el) return;
 
-      if (url) {
-
-        el.src = url;
-        el.hidden = false;
-
-      } else {
+      if (!url) {
 
         el.hidden = true;
+
+        return;
       }
+
+      let imageUrlValue = url;
+
+      const driveMatch =
+        String(url).match(
+          /drive\.google\.com\/(?:uc\?(?:[^#]*&)?id=|file\/d\/)([^&/]+)/i
+        );
+
+      if (
+        driveMatch &&
+        driveMatch[1]
+      ) {
+
+        imageUrlValue =
+          `https://drive.google.com/thumbnail?id=${encodeURIComponent(driveMatch[1])}&sz=w1200`;
+      }
+
+      el.src = imageUrlValue;
+
+      el.hidden = false;
+
+      el.onerror = () => {
+
+        console.warn(
+          'Failed to load order image:',
+          imageUrlValue
+        );
+
+        el.hidden = true;
+      };
     };
+
 
     setImage(
       '#sink-wall-image',
@@ -3899,35 +4036,229 @@ async function drViewSummary(orderNum) {
       order['رابط صورة الملصق']
     );
 
-    // -------------------------------------------------------
+
+    // =========================================================
+    // Snapshot
+    // =========================================================
+
+    const snapshot = {
+
+      designId:
+        order['Snapshot - Design ID'] ||
+        '',
+
+      designPrice:
+        order['Snapshot - Design Price'] ||
+        '',
+
+      divisionId:
+        order['Snapshot - Division ID'] ||
+        '',
+
+      divisionPrice:
+        order['Snapshot - Division Price'] ||
+        '',
+
+      handleId:
+        order['Snapshot - Handle ID'] ||
+        '',
+
+      handlePrice:
+        order['Snapshot - Handle Price'] ||
+        '',
+
+      colorId:
+        order['Snapshot - Color ID'] ||
+        order['اللون'] ||
+        '',
+
+      colorPrice:
+        order['Snapshot - Color Price'] ||
+        '',
+
+      installationFee:
+        order['Snapshot - Installation Fee'] ||
+        '',
+
+      installationCost:
+        order['Snapshot - Installation Cost'] ||
+        ''
+
+    };
+
+
+    // =========================================================
     // صورة التصميم
-    // -------------------------------------------------------
+    // =========================================================
 
     const designImg =
       content.querySelector('#design-img');
 
-    if (
-      designImg &&
-      order['نوع الحوض'] &&
-      order['التصميم']
-    ) {
+    if (designImg) {
 
-      // هنا نستخدم ID التصميم الموجود في بيانات الطلب
-      // لو كان التصميم محفوظًا بالاسم فقط فلن نقدر نستخرج ID منه.
-      // سيتم التعامل معه لاحقًا إذا كان قالبك يحتاج الصورة.
+      if (snapshot.designId) {
+
+        let designImageId =
+          snapshot.designId;
+
+        // التصميم نفسه يحتاج نوع الحوض
+        const typeCodeMap = {
+          'drop-in': 'di',
+          'bowl': 'bw'
+        };
+
+        if (
+          typeCodeMap[order['نوع الحوض']]
+        ) {
+
+          designImageId =
+            designImageId.replace(
+              /_wh_/,
+              `_${typeCodeMap[order['نوع الحوض']]}_`
+            );
+        }
+
+        const encoded =
+          encodeURIComponent(designImageId);
+
+        const webp =
+          `${GH}${encoded}.webp`;
+
+        const png =
+          `${GH}${encoded}.png`;
+
+        designImg.src = webp;
+
+        designImg.hidden = false;
+
+        designImg.onerror = function () {
+
+          if (
+            this.src.endsWith('.webp')
+          ) {
+
+            this.src = png;
+
+          } else {
+
+            this.hidden = true;
+          }
+        };
+
+      } else {
+
+        designImg.hidden = true;
+      }
     }
 
-    // -------------------------------------------------------
+
+    // =========================================================
+    // صورة التقسيمة
+    // =========================================================
+
+    const divisionImg =
+      content.querySelector('#division-img');
+
+    if (divisionImg) {
+
+      if (snapshot.divisionId) {
+
+        const encoded =
+          encodeURIComponent(
+            snapshot.divisionId
+          );
+
+        const webp =
+          `${GH}${encoded}.webp`;
+
+        const png =
+          `${GH}${encoded}.png`;
+
+        divisionImg.src = webp;
+
+        divisionImg.hidden = false;
+
+        divisionImg.onerror = function () {
+
+          if (
+            this.src.endsWith('.webp')
+          ) {
+
+            this.src = png;
+
+          } else {
+
+            this.hidden = true;
+          }
+        };
+
+      } else {
+
+        divisionImg.hidden = true;
+      }
+    }
+
+
+    // =========================================================
+    // صورة نوع المقبض
+    // =========================================================
+
+    const handleImg =
+      content.querySelector('#handle-img');
+
+    if (handleImg) {
+
+      if (snapshot.handleId) {
+
+        const encoded =
+          encodeURIComponent(
+            snapshot.handleId
+          );
+
+        const webp =
+          `${GH}${encoded}.webp`;
+
+        const png =
+          `${GH}${encoded}.png`;
+
+        handleImg.src = webp;
+
+        handleImg.hidden = false;
+
+        handleImg.onerror = function () {
+
+          if (
+            this.src.endsWith('.webp')
+          ) {
+
+            this.src = png;
+
+          } else {
+
+            this.hidden = true;
+          }
+        };
+
+      } else {
+
+        handleImg.hidden = true;
+      }
+    }
+
+
+    // =========================================================
     // جدول التصميم
-    // -------------------------------------------------------
+    // =========================================================
 
     const designTbody =
-      content.querySelector('#sink-design-items');
+      content.querySelector(
+        '#sink-design-items'
+      );
 
     if (designTbody) {
 
       const colorId =
-        order['اللون'] || '';
+        snapshot.colorId;
 
       const colorImgHtml =
         colorId
@@ -3935,12 +4266,25 @@ async function drViewSummary(orderNum) {
             <img
               src="images/conf/clr/${encodeURIComponent(colorId)}.webp"
               style="height:36px; object-fit:contain;"
-              onerror="this.src='images/conf/clr/${encodeURIComponent(colorId)}.png'"
+              onerror="this.onerror=null; this.src='images/conf/clr/${encodeURIComponent(colorId)}.png'"
             />
           `
           : '—';
 
+
+      const designCode =
+        snapshot.designId ||
+        '—';
+
+
+      const designPrice =
+        snapshot.designPrice !== ''
+          ? formatPrice(snapshot.designPrice)
+          : '—';
+
+
       designTbody.innerHTML = `
+
         <tr class="item-row">
 
           <td class="col-section">
@@ -3952,7 +4296,7 @@ async function drViewSummary(orderNum) {
           </td>
 
           <td class="col-code">
-            —
+            ${designCode}
           </td>
 
           <td class="col-color">
@@ -3960,23 +4304,41 @@ async function drViewSummary(orderNum) {
           </td>
 
           <td class="col-price">
-            —
+            ${designPrice}
           </td>
 
         </tr>
+
       `;
     }
 
-    // -------------------------------------------------------
+
+    // =========================================================
     // جدول التقسيمة
-    // -------------------------------------------------------
+    // =========================================================
 
     const divisionTbody =
-      content.querySelector('#sink-division-items');
+      content.querySelector(
+        '#sink-division-items'
+      );
 
     if (divisionTbody) {
 
+      const divisionCode =
+        snapshot.divisionId ||
+        '—';
+
+
+      const divisionPrice =
+        snapshot.divisionPrice !== ''
+          ? formatPrice(
+              snapshot.divisionPrice
+            )
+          : '—';
+
+
       divisionTbody.innerHTML = `
+
         <tr class="item-row">
 
           <td class="col-section">
@@ -3988,23 +4350,27 @@ async function drViewSummary(orderNum) {
           </td>
 
           <td class="col-code">
-            —
+            ${divisionCode}
           </td>
 
           <td class="col-price">
-            —
+            ${divisionPrice}
           </td>
 
         </tr>
+
       `;
     }
 
-    // -------------------------------------------------------
+
+    // =========================================================
     // جدول المقابض
-    // -------------------------------------------------------
+    // =========================================================
 
     const handleTbody =
-      content.querySelector('#sink-handle-items');
+      content.querySelector(
+        '#sink-handle-items'
+      );
 
     if (handleTbody) {
 
@@ -4014,27 +4380,46 @@ async function drViewSummary(orderNum) {
       const shape2 =
         order['شكل المقبض 2'] || '';
 
-      const shape1Html = shape1
-        ? `
-          <img
-            src="images/conf/hnd/${encodeURIComponent(shape1)}.webp"
-            style="height:36px; object-fit:contain;"
-            onerror="this.src='images/conf/hnd/${encodeURIComponent(shape1)}.png'"
-          />
-        `
-        : '—';
 
-      const shape2Html = shape2
-        ? `
-          <img
-            src="images/conf/hnd/${encodeURIComponent(shape2)}.webp"
-            style="height:36px; object-fit:contain;"
-            onerror="this.src='images/conf/hnd/${encodeURIComponent(shape2)}.png'"
-          />
-        `
-        : '—';
+      const shape1Html =
+        shape1
+          ? `
+            <img
+              src="images/conf/hnd/${encodeURIComponent(shape1)}.webp"
+              style="height:36px; object-fit:contain;"
+              onerror="this.onerror=null; this.src='images/conf/hnd/${encodeURIComponent(shape1)}.png'"
+            />
+          `
+          : '—';
+
+
+      const shape2Html =
+        shape2
+          ? `
+            <img
+              src="images/conf/hnd/${encodeURIComponent(shape2)}.webp"
+              style="height:36px; object-fit:contain;"
+              onerror="this.onerror=null; this.src='images/conf/hnd/${encodeURIComponent(shape2)}.png'"
+            />
+          `
+          : '—';
+
+
+      const handleCode =
+        snapshot.handleId ||
+        '—';
+
+
+      const handlePrice =
+        snapshot.handlePrice !== ''
+          ? formatPrice(
+              snapshot.handlePrice
+            )
+          : '—';
+
 
       handleTbody.innerHTML = `
+
         <tr class="item-row">
 
           <td class="col-section">
@@ -4046,7 +4431,7 @@ async function drViewSummary(orderNum) {
           </td>
 
           <td class="col-code">
-            —
+            ${handleCode}
           </td>
 
           <td class="col-handle-priority">
@@ -4058,40 +4443,56 @@ async function drViewSummary(orderNum) {
           </td>
 
           <td class="col-price">
-            —
+            ${handlePrice}
           </td>
 
         </tr>
+
       `;
     }
 
-    // -------------------------------------------------------
-    // السعر
-    // -------------------------------------------------------
+
+    // =========================================================
+    // السعر النهائي التاريخي
+    // =========================================================
 
     const totalEl =
-      content.querySelector('#order-total');
+      content.querySelector(
+        '#order-total'
+      );
 
     if (totalEl) {
 
+      const savedTotal =
+        order['السعر'];
+
       totalEl.textContent =
-        order['السعر']
-          ? `${order['السعر']} ج.م`
+        savedTotal !== undefined &&
+        savedTotal !== null &&
+        savedTotal !== ''
+          ? formatPrice(savedTotal)
           : 'غير متوفر';
     }
 
-    // -------------------------------------------------------
+
+    // =========================================================
     // الخريطة
-    // -------------------------------------------------------
+    // =========================================================
 
     const shippingMapEl =
-      content.querySelector('#shipping-map-image');
+      content.querySelector(
+        '#shipping-map-image'
+      );
 
     const lat =
-      parseFloat(order['دائرة العرض']);
+      parseFloat(
+        order['دائرة العرض']
+      );
 
     const lng =
-      parseFloat(order['خط الطول']);
+      parseFloat(
+        order['خط الطول']
+      );
 
     if (
       shippingMapEl &&
@@ -4101,21 +4502,32 @@ async function drViewSummary(orderNum) {
     ) {
 
       const mapUrl =
-        buildStaticMapUrl(lat, lng, 700, 350);
+        buildStaticMapUrl(
+          lat,
+          lng,
+          700,
+          350
+        );
 
       if (mapUrl) {
 
-        shippingMapEl.src = mapUrl;
-        shippingMapEl.hidden = false;
+        shippingMapEl.src =
+          mapUrl;
+
+        shippingMapEl.hidden =
+          false;
       }
     }
 
-    // -------------------------------------------------------
-    // تحميل CSS
-    // -------------------------------------------------------
+
+    // =========================================================
+    // تحميل CSS الخاص بالقالب
+    // =========================================================
 
     parsedDoc
-      .querySelectorAll('link[rel="stylesheet"]')
+      .querySelectorAll(
+        'link[rel="stylesheet"]'
+      )
       .forEach(link => {
 
         const href =
@@ -4132,17 +4544,23 @@ async function drViewSummary(orderNum) {
             )
           ).href;
 
+
         const alreadyLoaded =
-          [...document.querySelectorAll(
-            'link[rel="stylesheet"]'
-          )].some(
+          [
+            ...document.querySelectorAll(
+              'link[rel="stylesheet"]'
+            )
+          ].some(
             el => el.href === absoluteHref
           );
+
 
         if (!alreadyLoaded) {
 
           const styleLink =
-            document.createElement('link');
+            document.createElement(
+              'link'
+            );
 
           styleLink.rel =
             'stylesheet';
@@ -4150,16 +4568,22 @@ async function drViewSummary(orderNum) {
           styleLink.href =
             absoluteHref;
 
-          document.head.appendChild(styleLink);
+          document.head.appendChild(
+            styleLink
+          );
         }
+
       });
 
-    // -------------------------------------------------------
-    // فتح الصفحة
-    // -------------------------------------------------------
+
+    // =========================================================
+    // فتح صفحة الملخص
+    // =========================================================
 
     const htmlContent = `
+
 <!DOCTYPE html>
+
 <html lang="ar" dir="rtl">
 
 <head>
@@ -4206,23 +4630,40 @@ async function drViewSummary(orderNum) {
       .print-btn {
         display: none;
       }
+
     }
 
     .print-btn {
+
       position: fixed;
+
       bottom: 24px;
+
       left: 50%;
+
       transform: translateX(-50%);
+
       background: #91a37f;
+
       color: #fff;
+
       border: none;
+
       padding: 12px 32px;
+
       font-size: 16px;
+
       font-family: 'Cairo', sans-serif;
+
       border-radius: 8px;
+
       cursor: pointer;
+
       z-index: 9999;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+
+      box-shadow:
+        0 4px 12px rgba(0,0,0,0.2);
+
     }
 
   </style>
@@ -4243,26 +4684,34 @@ async function drViewSummary(orderNum) {
 </body>
 
 </html>
+
 `;
+
 
     const blob =
       new Blob(
         [htmlContent],
-        { type: 'text/html' }
+        {
+          type: 'text/html'
+        }
       );
+
 
     const blobUrl =
       URL.createObjectURL(blob);
+
 
     window.open(
       blobUrl,
       '_blank'
     );
 
+
     setTimeout(
       () => URL.revokeObjectURL(blobUrl),
       30000
     );
+
 
   } catch (error) {
 
