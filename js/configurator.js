@@ -179,6 +179,20 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
+function formatOrderDate(dateString) {
+  if (!dateString) return '';
+
+  const date = new Date(dateString);
+
+  if (isNaN(date.getTime())) return dateString;
+
+  return date.toLocaleDateString('ar-EG', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  });
+}
+
 window.drOrdersLoaded = false;
 
 async function drOpenOrdersDrawer() {
@@ -307,39 +321,108 @@ async function drLoadUserOrders(options = {}) {
     bodyContainer.innerHTML = data.orders.map(order => `
       <div class="dr-order-card">
         <div class="dr-order-card-header">
+          <span class="dr-order-date">${formatOrderDate(order.date)}</span>
           <span class="dr-order-id">${order.orderNum}</span>
-          <span class="dr-order-date">${order.date}</span>
         </div>
-        <div class="dr-order-detail-row">
-          <span class="dr-order-detail-label">التصميم:</span>
-          <span>${order.designName || 'تصميم وحدة'}</span>
-        </div>
-        <div class="dr-order-detail-row">
-          <span class="dr-order-detail-label">السعر المتوقع:</span>
-          <span>${order.unitPrice} ج.م</span>
-        </div>
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 8px;">
-        <span class="dr-order-status-badge ${getStatusClass(order.status)}">${order.status}</span>
+        <div class="dr-order-details">
+          <div class="dr-order-detail">
+            <span class="dr-order-detail-label">التصميم</span>
+            <span class="dr-order-detail-value">${order.designName || 'تصميم وحدة'}</span>
+          </div>
 
-        <div style="display:flex; gap:6px; align-items:center;">
+          <div class="dr-order-detail">
+            <span class="dr-order-detail-label">إجمالي الطلب</span>
+            <span class="dr-order-detail-value">${Number(order.unitPrice).toLocaleString('en-US')} ج.م</span>
+          </div>
+        </div>
+
+        ${order.status === 'ملغي' ? `
+          <div class="dr-order-cancelled-status">
+            <div class="dr-order-cancelled-icon">×</div>
+            <span>تم إلغاء الطلب</span>
+          </div>
+        ` : `
+          <div class="dr-order-status-stepper">
+
+            ${(() => {
+              const steps = [
+                {
+                  status: 'بانتظار المراجعة',
+                  title: 'بانتظار المراجعة',
+                  description: 'تم استلام طلبك وجارٍ مراجعته'
+                },
+                {
+                  status: 'تم تأكيد الطلب',
+                  title: 'تم تأكيد الطلب',
+                  description: 'تم تأكيد طلبك وبدء التجهيز'
+                },
+                {
+                  status: 'قيد التنفيذ',
+                  title: 'قيد التنفيذ',
+                  description: 'يتم تجهيز طلبك حاليًا'
+                },
+                {
+                  status: 'جاهز للتسليم',
+                  title: 'جاهز للتسليم',
+                  description: 'طلبك جاهز للتسليم والتنسيق معك'
+                },
+                {
+                  status: 'تم التسليم',
+                  title: 'تم التسليم',
+                  description: 'تم تسليم طلبك بنجاح'
+                }
+              ];
+              const currentIndex = steps.findIndex(
+                step => step.status === order.status
+              );
+
+              return steps.map((step, index) => {
+                const isCompleted = currentIndex > index;
+                const isActive = currentIndex === index;
+                return `
+                  <div class="dr-status-step ${isCompleted ? 'completed' : ''} ${isActive ? 'active' : ''}">
+
+                    <div class="dr-status-step-marker">
+                      ${isCompleted ? '✓' : ''}
+                    </div>
+                    <div class="dr-status-step-content">
+                      <div class="dr-status-step-title">
+                        ${step.title}
+                      </div>
+
+                      ${isActive ? `
+                        <div class="dr-status-step-description">
+                          ${step.description}
+                        </div>
+                      ` : ''}
+                    </div>
+                  </div>
+                `;
+              }).join('');
+            })()}
+          </div>
+        `}
+
+        <div class="dr-order-card-actions">
           <button
             type="button"
             onclick="drViewSummary('${order.orderNum}')"
-            style="background:none; border:1px solid #9caf88; color:#9caf88; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:11px; font-family:var(--font-family-main);"
+            class="dr-order-summary-btn"
           >
             عرض الملخص
           </button>
 
-          ${order.status === 'بانتظار المراجعة' ? `
-            <button
-              type="button"
-              onclick="drCancelOrder('${order.orderNum}')"
-              style="background:none; border:1px solid #ef4444; color:#ef4444; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:11px; font-family:var(--font-family-main);"
-            >
-              إلغاء الطلب
-            </button>
-          ` : ''}
+        <button
+          type="button"
+          onclick="${order.status === 'بانتظار المراجعة'
+            ? `drCancelOrder('${order.orderNum}')`
+            : `showToast('لا يمكن إلغاء الطلب الآن. تواصل معنا عبر واتساب.')`}"
+          class="dr-order-cancel-btn ${order.status !== 'بانتظار المراجعة' ? 'unavailable' : ''}"
+        >
+          إلغاء الطلب
+        </button>
         </div>
+
         </div>
       </div>
     `).join('');
@@ -417,14 +500,24 @@ window.drCancelOrder = drCancelOrder;
 // تحديد الكلاس الملون بناءً على الحالة من الشيت
 function getStatusClass(status) {
   switch (status) {
-    case 'تم قبول الطلب': return 'status-accepted';
-    case 'تم دفع المقدم': return 'status-accepted';
-    case 'مرحلة التصميم': return 'status-design';
-    case 'مرحلة التجميع': return 'status-assembly';
-    case 'جاري النقل والتسليم': return 'status-transit';
-    case 'تم التسليم': return 'status-completed';
-    case 'ملغي': return 'status-cancelled';
-    default: return 'status-review';
+    case 'تم تأكيد الطلب':
+      return 'status-accepted';
+
+    case 'قيد التنفيذ':
+      return 'status-assembly';
+
+    case 'جاهز للتسليم':
+      return 'status-transit';
+
+    case 'تم التسليم':
+      return 'status-completed';
+
+    case 'ملغي':
+      return 'status-cancelled';
+
+    case 'بانتظار المراجعة':
+    default:
+      return 'status-review';
   }
 }
 
@@ -3811,28 +3904,28 @@ async function drSendWhatsApp() {
 
   const message = `السلام عليكم،
 
-أرغب في طلب معاينة وتصميم لوحدة حوض.
-*رقم الطلب:* ${orderNum}
+    أرغب في طلب معاينة وتصميم لوحدة حوض.
+    *رقم الطلب:* ${orderNum}
 
-*بيانات العميل:*
-الاسم: ${name}
-العنوان: ${location}
+    *بيانات العميل:*
+    الاسم: ${name}
+    العنوان: ${location}
 
-*مواصفات الحوض:*
-العلامة: ${brand}
-العرض: ${width} سم
-الكود: ${code}
+    *مواصفات الحوض:*
+    العلامة: ${brand}
+    العرض: ${width} سم
+    الكود: ${code}
 
-*مواصفات الوحدة المطلوبة:*
-النوع: ${config.sinkType}
-التصميم: ${config.design.name}
-المقاس: ${config.size.size}
-التقسيمة: ${config.division.name}
-المقبض: ${config.handle ? config.handle.name : 'بدون'}
-السعر المتوقع: ${config.unitPrice} ج.م
+    *مواصفات الوحدة المطلوبة:*
+    النوع: ${config.sinkType}
+    التصميم: ${config.design.name}
+    المقاس: ${config.size.size}
+    التقسيمة: ${config.division.name}
+    المقبض: ${config.handle ? config.handle.name : 'بدون'}
+    إجمالي الطلب: ${config.unitPrice} ج.م
 
-يرجى التواصل معي لتأكيد التفاصيل والمتابعة.
-شكراً لكم.`;
+    يرجى التواصل معي لتأكيد التفاصيل والمتابعة.
+    شكراً لكم.`;
 
   const waUrl = `https://wa.me/201556840368?text=${encodeURIComponent(message)}`;
   window.open(waUrl, '_blank');

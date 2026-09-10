@@ -2300,7 +2300,6 @@ select.dr-input {
    Side Drawer Component for User Orders
 ========================================= */
 
-
 .dr-orders-drawer {
   position: fixed;
   top: 50%;
@@ -2308,7 +2307,7 @@ select.dr-input {
   left: 0;
   width: 100%;
   max-width: 360px;
-  height: 55vh;
+  height: 65vh;
   background-color: var(--color-bg-light);
   z-index: var(--z-modal);
   box-shadow: var(--shadow-modal);
@@ -2375,14 +2374,10 @@ select.dr-input {
 .dr-order-card {
   background-color: var(--color-bg-white);
   border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   padding: var(--space-4);
   margin-bottom: var(--space-4);
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
-}
-
-.dr-order-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
 }
 
 .dr-order-card-header {
@@ -2402,66 +2397,250 @@ select.dr-input {
 
 .dr-order-date {
   font-size: var(--font-size-xs);
+  font-weight: 600;
   color: var(--color-text-muted);
 }
 
-.dr-order-detail-row {
+.dr-order-details {
   display: flex;
-  justify-content: space-between;
-  font-size: var(--font-size-md);
-  margin-bottom: var(--space-2);
-  color: var(--color-text-main);
+  gap: 32px;
+  padding-right: 12px;
+  padding-left: 12px;
+  margin-bottom: var(--space-3);
+}
+
+.dr-order-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .dr-order-detail-label {
   color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
 }
 
-/* Order Status Badge & Stepper */
-.dr-order-status-badge {
-  display: inline-block;
-  padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-pill);
-  font-size: var(--font-size-xs);
+.dr-order-detail-value {
+  color: var(--color-text-main);
+  font-size: var(--font-size-md);
+  font-weight: 400;
+}
+
+/* =========================================
+   Order Status Stepper
+========================================= */
+
+.dr-order-status-stepper {
+  margin: 25px 0 25px;
+  padding-right: 2px;
+  direction: rtl;
+}
+
+.dr-status-step {
+  display: flex;
+  align-items: flex-start;
+  position: relative;
+  min-height: auto;
+  padding: 10px 0;
+  box-sizing: border-box;
+}
+
+.dr-status-step:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  top: 24px;
+  bottom: -10px;
+  right: 11px;
+  width: 2px;
+  background: #e5e7eb;
+  z-index: 0;
+}
+
+
+.dr-status-step.completed:not(:last-child)::before {
+  background: var(--color-primary);
+}
+
+.dr-status-step:first-child {
+  padding-top: 0;
+}
+
+.dr-status-step:last-child {
+  padding-bottom: 0;
+}
+
+/* الدائرة */
+.dr-status-step-marker {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+
+  border-radius: 50%;
+  background: var(--color-bg-white);
+  border: 2px solid #e5e7eb;
+  color: #9ca3af;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1;
+
+  position: relative;
+  z-index: 2;
+
+  box-sizing: border-box;
+  transition: all 0.3s ease;
+}
+
+/* المراحل المكتملة */
+.dr-status-step.completed .dr-status-step-marker {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-bg-white);
+}
+
+/* المرحلة الحالية */
+.dr-status-step.active .dr-status-step-marker {
+  width: 24px;
+  height: 24px;
+
+  background: var(--color-bg-white);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+
+  transform: scale(1.08);
+  box-shadow: 0 0 0 4px rgba(156, 175, 136, 0.22);
+}
+
+/* محتوى المرحلة */
+.dr-status-step-content {
+  padding-right: 11px;
+  padding-top: 0;
+  min-width: 0;
+}
+
+.dr-status-step-title {
+  color: #9ca3af;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  line-height: 24px;
+}
+
+.dr-status-step.completed .dr-status-step-title {
+  color: var(--color-text-main);
   font-weight: 600;
-  text-align: center;
-  margin-top: var(--space-2);
 }
 
-.status-review {
-  background-color: #fff8e1;
-  color: #b78103;
+.dr-status-step.active .dr-status-step-title {
+  color: var(--color-text-main);
+  font-weight: 700;
 }
 
-.status-accepted {
-  background-color: #e8f5e9;
-  color: #2e7d32;
+/* وصف المرحلة الحالية فقط */
+.dr-status-step-description {
+  margin-top: 1px;
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.45;
+  padding-bottom: 5px;
 }
 
-.status-design {
-  background-color: #e3f2fd;
-  color: #1565c0;
+/* =========================================
+   Cancelled Order Status
+========================================= */
+
+.dr-order-cancelled-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 18px 0;
+  color: #ef4444;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
 }
 
-.status-assembly {
-  background-color: #f3e5f5;
-  color: #7b1fa2;
+.dr-order-cancelled-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #ef4444;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
 }
 
-.status-transit {
-  background-color: #e0f2f1;
-  color: #00695c;
+/* =========================================
+   Order Card Actions
+========================================= */
+
+.dr-order-card-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
 }
 
-.status-completed {
-  background-color: #e8f5e9;
-  color: var(--color-primary-hover);
+.dr-order-summary-btn,
+.dr-order-cancel-btn {
+  background: transparent;
+  padding: 6px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: var(--font-family-main);
+  line-height: 1.4;
+  transition: all 180ms ease;
 }
 
-.status-cancelled {
-  background-color: #ffebee;
-  color: var(--color-error);
+.dr-order-summary-btn {
+  border: 1px solid var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-bg-white);
 }
+
+.dr-order-summary-btn:hover {
+  opacity: 0.9;
+}
+
+.dr-order-cancel-btn {
+  border: 1px solid #ef4444;
+  background: #ef4444;
+  color: var(--color-bg-white);
+}
+
+.dr-order-cancel-btn:hover {
+  background: rgba(239, 68, 68, 0.06);
+  border-color: #ef4444;
+}
+
+.dr-order-cancel-btn.unavailable {
+  border-color: #d1d5db;
+  color: var(--color-bg-white);
+  background: #f3f4f6;
+  cursor: pointer;
+  opacity: 0.75;
+}
+
+.dr-order-cancel-btn.unavailable:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+  color: var(--color-bg-white);
+}
+
+/* =========================================
+   Order Card Placeholder
+========================================= */
 
 /* تنسيق صندوق الحالة الفارغة / التحميل / الأخطاء */
 .dr-orders-empty {
@@ -2510,6 +2689,19 @@ select.dr-input {
   font-size: 14px;
   line-height: 1.7;
   color: #777777;
+}
+
+.dr-order-cancel-btn.unavailable {
+  border-color: #d1d5db;
+  color: #9ca3af;
+  cursor: pointer;
+  opacity: 0.75;
+}
+
+.dr-order-cancel-btn.unavailable:hover {
+  background: transparent;
+  border-color: #d1d5db;
+  color: #9ca3af;
 }
 
 .dr-orders-loading {
