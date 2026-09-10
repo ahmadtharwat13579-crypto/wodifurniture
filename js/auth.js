@@ -122,6 +122,76 @@ function updateNavbarAccount(user) {
 onAuthStateChanged(auth, (user) => {
     updateSideNavAccount(user);
     updateNavbarAccount(user);
+
+    // لا يوجد مستخدم: امسح حالة الطلبات وأوقف التحديث التلقائي
+    if (!user) {
+        window.drOrdersLoaded = false;
+
+        if (typeof window.drStopOrdersPolling === 'function') {
+            window.drStopOrdersPolling();
+        }
+
+        const bodyContainer = document.getElementById('drOrdersContainer');
+
+        if (bodyContainer) {
+            bodyContainer.replaceChildren();
+        }
+
+        return;
+    }
+
+    // تحميل الطلبات مسبقاً في الخلفية بعد تسجيل الدخول
+    const preloadOrders = () => {
+
+        // لو المستخدم اتغير أو سجل خروج، أوقف التحميل
+        if (!auth.currentUser || auth.currentUser.uid !== user.uid) {
+            return;
+        }
+
+        // انتظر حتى يتم تحميل configurator.js
+        if (typeof window.drLoadUserOrders !== 'function') {
+            setTimeout(preloadOrders, 100);
+            return;
+        }
+
+        // لو الطلبات اتحملت بالفعل، لا تعيد الطلب
+        if (window.drOrdersLoaded) {
+            return;
+        }
+
+        window.drLoadUserOrders()
+            .then(() => {
+
+                // تأكد أن نفس المستخدم ما زال مسجلاً
+                if (auth.currentUser?.uid === user.uid) {
+                    window.drOrdersLoaded = true;
+                }
+
+            })
+            .catch((error) => {
+                console.error('Error preloading user orders:', error);
+            });
+    };
+
+    preloadOrders();
+
+    // بدء تحديث الطلبات تلقائياً كل 30 ثانية
+    const startPolling = () => {
+
+        if (auth.currentUser?.uid !== user.uid) {
+            return;
+        }
+
+        if (typeof window.drStartOrdersPolling === 'function') {
+            window.drStartOrdersPolling();
+            return;
+        }
+
+        // انتظر حتى يتم تحميل configurator.js
+        setTimeout(startPolling, 100);
+    };
+
+    startPolling();
 });
 
 // Expose auth state listener globally for other pages (like wishlist)
@@ -147,7 +217,6 @@ window.initLogoutSystem = function () {
     const confirmLogout = document.getElementById('confirmLogout');
     const closeLogoutModal = document.getElementById('closeLogoutModal');
 
-    // تأكيد فتح المودال من أي زر خروج
     window.openLogoutModal = function () {
         if (logoutModal) {
             const sideNav = document.getElementById('sideNav');
@@ -221,4 +290,3 @@ setTimeout(() => {
         window.initLogoutSystem();
     }
 }, 1000);
-

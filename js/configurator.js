@@ -179,52 +179,113 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-// فتح الـ Side Drawer
+window.drOrdersLoaded = false;
+
 async function drOpenOrdersDrawer() {
   const drawer = document.getElementById('drOrdersDrawer');
   const backdrop = document.getElementById('drDrawerOverlay');
   const bodyContainer = document.getElementById('drOrdersContainer');
 
   if (drawer && backdrop) {
-    drawer.classList.add('open');
-    backdrop.classList.add('open');
+
+    const sidebarTab = document.querySelector('.dr-sidebar-tab');
+
+    if (sidebarTab) {
+      sidebarTab.classList.add('drawer-opening');
+    }
+
+    setTimeout(() => {
+
+      drawer.classList.add('open');
+      backdrop.classList.add('open');
+
+      if (sidebarTab) {
+        sidebarTab.classList.remove('drawer-opening');
+        sidebarTab.classList.add('drawer-hidden');
+      }
+
+    }, 180);
+
   }
 
   if (!window.currentUser) {
     if (bodyContainer) {
-      bodyContainer.innerHTML = `
-        <div class="dr-orders-empty" style="text-align: center; padding: 20px;">
-          <p style="margin-bottom: 12px;">يرجى تسجيل الدخول لمتابعة طلباتك.</p>
-          <button type="button" onclick="window.loginWithGoogle()" style="background-color: #9caf88; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
-            تسجيل الدخول باستخدام Google
-          </button>
-        </div>
-      `;
+      const loginTemplate =
+    document.getElementById('dr-orders-login-template');
+
+  if (loginTemplate) {
+    bodyContainer.replaceChildren(
+      loginTemplate.content.cloneNode(true)
+    );
+  }
     }
     return;
-  }
+    }
 
-  await drLoadUserOrders();
+  if (!window.drOrdersLoaded) {
+    await drLoadUserOrders();
+    window.drOrdersLoaded = true;
+  }
 }
 
 // إغلاق الـ Side Drawer
 function drCloseOrdersDrawer() {
-  document.getElementById('drOrdersDrawer')?.classList.remove('open');
-  document.getElementById('drDrawerOverlay')?.classList.remove('open');
+
+  const drawer = document.getElementById('drOrdersDrawer');
+  const backdrop = document.getElementById('drDrawerOverlay');
+  const sidebarTab = document.querySelector('.dr-sidebar-tab');
+
+  if (drawer) {
+    drawer.classList.remove('open');
+  }
+
+  if (backdrop) {
+    backdrop.classList.remove('open');
+  }
+
+  setTimeout(() => {
+
+    if (sidebarTab) {
+      sidebarTab.classList.remove('drawer-hidden');
+      sidebarTab.classList.add('drawer-closing');
+
+      requestAnimationFrame(() => {
+        sidebarTab.classList.remove('drawer-closing');
+      });
+    }
+
+  }, 230);
+
   document.body.style.overflow = '';
+
 }
 
 // جلب الطلبات الخاصة بالعميل من Google Apps Script
-async function drLoadUserOrders() {
+async function drLoadUserOrders(options = {}) {
+  const silent = options.silent === true;
   const bodyContainer = document.getElementById('drOrdersContainer');
   if (!bodyContainer) return;
 
-  bodyContainer.innerHTML = '<div class="dr-orders-empty">جاري تحميل طلباتك...</div>';
+  if (!silent) {
+      const loadingTemplate =
+          document.getElementById('dr-orders-loading-template');
+
+      if (loadingTemplate) {
+          bodyContainer.replaceChildren(
+              loadingTemplate.content.cloneNode(true)
+          );
+      }
+  }
 
   try {
     const userEmail = window.currentUser ? window.currentUser.email : '';
     if (!userEmail) {
-      bodyContainer.innerHTML = '<div class="dr-orders-empty">تعذر تحديد البريد الإلكتروني.</div>';
+      bodyContainer.innerHTML = `
+        <div class="dr-orders-empty">
+          <div class="placeholder-title">تعذر تحديد البريد</div>
+          <div class="placeholder-text">يرجى إعادة تسجيل الدخول لمتابعة طلباتك</div>
+        </div>
+      `;
       return;
     }
 
@@ -232,7 +293,14 @@ async function drLoadUserOrders() {
     const data = await response.json();
 
     if (!data.orders || data.orders.length === 0) {
-      bodyContainer.innerHTML = '<div class="dr-orders-empty">لا توجد طلبات سابقة مسجلة بهذا الحساب.</div>';
+      const emptyTemplate =
+    document.getElementById('dr-orders-empty-template');
+
+    if (emptyTemplate) {
+      bodyContainer.replaceChildren(
+        emptyTemplate.content.cloneNode(true)
+      );
+    }
       return;
     }
 
@@ -282,10 +350,44 @@ async function drLoadUserOrders() {
   }
 }
 
+let drOrdersPollingInterval = null;
+
+function drStartOrdersPolling() {
+    if (drOrdersPollingInterval) {
+        return;
+    }
+
+    drOrdersPollingInterval = setInterval(async () => {
+
+        if (!window.currentUser) {
+            drStopOrdersPolling();
+            return;
+        }
+
+        try {
+            await drLoadUserOrders({ silent: true });
+            window.drOrdersLoaded = true;
+        } catch (error) {
+            console.error('Error refreshing user orders:', error);
+        }
+
+    }, 30000);
+}
+
+function drStopOrdersPolling() {
+    if (drOrdersPollingInterval) {
+        clearInterval(drOrdersPollingInterval);
+        drOrdersPollingInterval = null;
+    }
+}
+
+window.drStartOrdersPolling = drStartOrdersPolling;
+window.drStopOrdersPolling = drStopOrdersPolling;
+
 async function drCancelOrder(orderNum) {
   if (!confirm('هل أنت متأكد من إلغاء الطلب؟')) return;
-
   try {
+
     const resp = await fetch('/api/submit-order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -295,10 +397,13 @@ async function drCancelOrder(orderNum) {
         email: window.currentUser?.email || ''
       })
     });
+
     const data = await resp.json();
+
     if (data.success) {
       showToast('تم إلغاء الطلب بنجاح');
       await drLoadUserOrders();
+      window.drOrdersLoaded = true;
     } else {
       showToast('تعذر إلغاء الطلب');
     }
@@ -3971,485 +4076,457 @@ async function drViewSummary(orderNum) {
     }
 
 
-    // =========================================================
-    // صور العميل من Google Drive
-    // =========================================================
+ // =========================================================
+// صور العميل من Google Drive
+// =========================================================
 
-    const setImage = (selector, url) => {
+const setImage = (selector, url) => {
 
-      const el =
-        content.querySelector(selector);
+  const el = content.querySelector(selector);
 
-      if (!el) return;
+  if (!el) return;
 
-      if (!url) {
+  if (!url) {
+    el.hidden = true;
+    return;
+  }
 
-        el.hidden = true;
+  let imageUrlValue = String(url).trim();
 
-        return;
-      }
+  // تحويل Google Drive URL إلى Thumbnail مباشر
+  const driveMatch = imageUrlValue.match(
+    /drive\.google\.com\/(?:uc\?(?:[^#]*&)?id=|file\/d\/)([^&/]+)/i
+  );
 
-      let imageUrlValue = url;
+  if (driveMatch && driveMatch[1]) {
+    imageUrlValue =
+      `https://drive.google.com/thumbnail?id=${encodeURIComponent(driveMatch[1])}&sz=w1200`;
+  }
 
-      const driveMatch =
-        String(url).match(
-          /drive\.google\.com\/(?:uc\?(?:[^#]*&)?id=|file\/d\/)([^&/]+)/i
-        );
+  el.src = imageUrlValue;
+  el.hidden = false;
 
-      if (
-        driveMatch &&
-        driveMatch[1]
-      ) {
+  el.onerror = () => {
 
-        imageUrlValue =
-          `https://drive.google.com/thumbnail?id=${encodeURIComponent(driveMatch[1])}&sz=w1200`;
-      }
+    console.warn(
+      'Failed to load order image:',
+      imageUrlValue
+    );
 
-      el.src = imageUrlValue;
+    el.hidden = true;
+  };
+};
 
-      el.hidden = false;
 
-      el.onerror = () => {
+setImage(
+  '#sink-wall-image',
+  order['رابط صورة الحائط']
+);
 
-        console.warn(
-          'Failed to load order image:',
-          imageUrlValue
-        );
+setImage(
+  '#sink-image',
+  order['رابط صورة الحوض']
+);
 
-        el.hidden = true;
-      };
+setImage(
+  '#sink-label-image',
+  order['رابط صورة الملصق']
+);
+
+
+// =========================================================
+// Historical Snapshot
+// =========================================================
+
+const snapshot = {
+
+  designId:
+    order['Design ID'] ||
+    '',
+
+  designPrice:
+    order['Design Price'] ??
+    '',
+
+  divisionId:
+    order['Division ID'] ||
+    '',
+
+  divisionPrice:
+    order['Division Price'] ??
+    '',
+
+  handleId:
+    order['Handle ID'] ||
+    '',
+
+  handlePrice:
+    order['Handle Price'] ??
+    '',
+
+  colorId:
+    order['Color ID'] ||
+    order['اللون'] ||
+    '',
+
+  colorPrice:
+    order['Color Price'] ??
+    '',
+
+  installationFee:
+    order['Installation Fee'] ??
+    '',
+
+  installationCost:
+    order['Installation Cost'] ??
+    ''
+};
+
+
+// =========================================================
+// صورة التصميم
+// =========================================================
+
+const designImg =
+  content.querySelector('#design-img');
+
+if (designImg) {
+
+  if (snapshot.designId) {
+
+    let designImageId =
+      snapshot.designId;
+
+    // التصميم يحتاج نوع الحوض
+    const typeCodeMap = {
+      'drop-in': 'di',
+      'bowl': 'bw'
     };
 
+    const typeCode =
+      typeCodeMap[order['نوع الحوض']];
 
-    setImage(
-      '#sink-wall-image',
-      order['رابط صورة الحائط']
-    );
+    if (typeCode) {
 
-    setImage(
-      '#sink-image',
-      order['رابط صورة الحوض']
-    );
+      designImageId =
+        designImageId.replace(
+          /_wh_/,
+          `_${typeCode}_`
+        );
+    }
 
-    setImage(
-      '#sink-label-image',
-      order['رابط صورة الملصق']
-    );
+    const encoded =
+      encodeURIComponent(designImageId);
 
+    const webp =
+      `${GH}${encoded}.webp`;
 
-    // =========================================================
-    // Snapshot
-    // =========================================================
+    const png =
+      `${GH}${encoded}.png`;
 
-    const snapshot = {
+    designImg.src = webp;
+    designImg.hidden = false;
 
-      designId:
-        order['Snapshot - Design ID'] ||
-        '',
+    designImg.onerror = function () {
 
-      designPrice:
-        order['Snapshot - Design Price'] ||
-        '',
+      if (this.src.endsWith('.webp')) {
 
-      divisionId:
-        order['Snapshot - Division ID'] ||
-        '',
+        this.src = png;
 
-      divisionPrice:
-        order['Snapshot - Division Price'] ||
-        '',
+      } else {
 
-      handleId:
-        order['Snapshot - Handle ID'] ||
-        '',
-
-      handlePrice:
-        order['Snapshot - Handle Price'] ||
-        '',
-
-      colorId:
-        order['Snapshot - Color ID'] ||
-        order['اللون'] ||
-        '',
-
-      colorPrice:
-        order['Snapshot - Color Price'] ||
-        '',
-
-      installationFee:
-        order['Snapshot - Installation Fee'] ||
-        '',
-
-      installationCost:
-        order['Snapshot - Installation Cost'] ||
-        ''
-
+        this.hidden = true;
+      }
     };
 
+  } else {
 
-    // =========================================================
-    // صورة التصميم
-    // =========================================================
+    designImg.hidden = true;
+  }
+}
 
-    const designImg =
-      content.querySelector('#design-img');
 
-    if (designImg) {
+// =========================================================
+// صورة التقسيمة
+// =========================================================
 
-      if (snapshot.designId) {
+const divisionImg =
+  content.querySelector('#division-img');
 
-        let designImageId =
-          snapshot.designId;
+if (divisionImg) {
 
-        // التصميم نفسه يحتاج نوع الحوض
-        const typeCodeMap = {
-          'drop-in': 'di',
-          'bowl': 'bw'
-        };
+  if (snapshot.divisionId) {
 
-        if (
-          typeCodeMap[order['نوع الحوض']]
-        ) {
+    const encoded =
+      encodeURIComponent(
+        snapshot.divisionId
+      );
 
-          designImageId =
-            designImageId.replace(
-              /_wh_/,
-              `_${typeCodeMap[order['نوع الحوض']]}_`
-            );
-        }
+    const webp =
+      `${GH}${encoded}.webp`;
 
-        const encoded =
-          encodeURIComponent(designImageId);
+    const png =
+      `${GH}${encoded}.png`;
 
-        const webp =
-          `${GH}${encoded}.webp`;
+    divisionImg.src = webp;
+    divisionImg.hidden = false;
 
-        const png =
-          `${GH}${encoded}.png`;
+    divisionImg.onerror = function () {
 
-        designImg.src = webp;
+      if (this.src.endsWith('.webp')) {
 
-        designImg.hidden = false;
-
-        designImg.onerror = function () {
-
-          if (
-            this.src.endsWith('.webp')
-          ) {
-
-            this.src = png;
-
-          } else {
-
-            this.hidden = true;
-          }
-        };
+        this.src = png;
 
       } else {
 
-        designImg.hidden = true;
+        this.hidden = true;
       }
-    }
+    };
+
+  } else {
+
+    divisionImg.hidden = true;
+  }
+}
 
 
-    // =========================================================
-    // صورة التقسيمة
-    // =========================================================
+// =========================================================
+// صورة نوع المقبض
+// =========================================================
 
-    const divisionImg =
-      content.querySelector('#division-img');
+const handleImg =
+  content.querySelector('#handle-img');
 
-    if (divisionImg) {
+if (handleImg) {
 
-      if (snapshot.divisionId) {
+  if (snapshot.handleId) {
 
-        const encoded =
-          encodeURIComponent(
-            snapshot.divisionId
-          );
+    const encoded =
+      encodeURIComponent(
+        snapshot.handleId
+      );
 
-        const webp =
-          `${GH}${encoded}.webp`;
+    const webp =
+      `${GH}${encoded}.webp`;
 
-        const png =
-          `${GH}${encoded}.png`;
+    const png =
+      `${GH}${encoded}.png`;
 
-        divisionImg.src = webp;
+    handleImg.src = webp;
+    handleImg.hidden = false;
 
-        divisionImg.hidden = false;
+    handleImg.onerror = function () {
 
-        divisionImg.onerror = function () {
+      if (this.src.endsWith('.webp')) {
 
-          if (
-            this.src.endsWith('.webp')
-          ) {
-
-            this.src = png;
-
-          } else {
-
-            this.hidden = true;
-          }
-        };
+        this.src = png;
 
       } else {
 
-        divisionImg.hidden = true;
+        this.hidden = true;
       }
-    }
+    };
 
+  } else {
 
-    // =========================================================
-    // صورة نوع المقبض
-    // =========================================================
+    handleImg.hidden = true;
+  }
+}
 
-    const handleImg =
-      content.querySelector('#handle-img');
 
-    if (handleImg) {
+// =========================================================
+// جدول التصميم
+// =========================================================
 
-      if (snapshot.handleId) {
+const designTbody =
+  content.querySelector(
+    '#sink-design-items'
+  );
 
-        const encoded =
-          encodeURIComponent(
-            snapshot.handleId
-          );
+if (designTbody) {
 
-        const webp =
-          `${GH}${encoded}.webp`;
+  const colorId =
+    snapshot.colorId;
 
-        const png =
-          `${GH}${encoded}.png`;
+  const colorImgHtml =
+    colorId
+      ? `
+        <img
+          src="images/conf/clr/${encodeURIComponent(colorId)}.webp"
+          style="height:36px; object-fit:contain;"
+          onerror="this.onerror=null; this.src='images/conf/clr/${encodeURIComponent(colorId)}.png'"
+        />
+      `
+      : '—';
 
-        handleImg.src = webp;
+  const designCode =
+    snapshot.designId ||
+    '—';
 
-        handleImg.hidden = false;
+  const designPrice =
+    snapshot.designPrice !== ''
+      ? formatPrice(snapshot.designPrice)
+      : '—';
 
-        handleImg.onerror = function () {
+  designTbody.innerHTML = `
+    <tr class="item-row">
 
-          if (
-            this.src.endsWith('.webp')
-          ) {
+      <td class="col-section">
+        التصميم
+      </td>
 
-            this.src = png;
+      <td class="col-name">
+        ${order['التصميم'] || '—'}
+      </td>
 
-          } else {
+      <td class="col-code">
+        ${designCode}
+      </td>
+
+      <td class="col-color">
+        ${colorImgHtml}
+      </td>
 
-            this.hidden = true;
-          }
-        };
+      <td class="col-price">
+        ${designPrice}
+      </td>
 
-      } else {
+    </tr>
+  `;
+}
 
-        handleImg.hidden = true;
-      }
-    }
 
+// =========================================================
+// جدول التقسيمة
+// =========================================================
 
-    // =========================================================
-    // جدول التصميم
-    // =========================================================
+const divisionTbody =
+  content.querySelector(
+    '#sink-division-items'
+  );
 
-    const designTbody =
-      content.querySelector(
-        '#sink-design-items'
-      );
+if (divisionTbody) {
 
-    if (designTbody) {
+  const divisionCode =
+    snapshot.divisionId ||
+    '—';
 
-      const colorId =
-        snapshot.colorId;
+  const divisionPrice =
+    snapshot.divisionPrice !== ''
+      ? formatPrice(
+          snapshot.divisionPrice
+        )
+      : '—';
 
-      const colorImgHtml =
-        colorId
-          ? `
-            <img
-              src="images/conf/clr/${encodeURIComponent(colorId)}.webp"
-              style="height:36px; object-fit:contain;"
-              onerror="this.onerror=null; this.src='images/conf/clr/${encodeURIComponent(colorId)}.png'"
-            />
-          `
-          : '—';
+  divisionTbody.innerHTML = `
+    <tr class="item-row">
 
+      <td class="col-section">
+        التقسيمة الداخلية
+      </td>
 
-      const designCode =
-        snapshot.designId ||
-        '—';
+      <td class="col-name">
+        ${order['التقسيمة'] || '—'}
+      </td>
 
+      <td class="col-code">
+        ${divisionCode}
+      </td>
 
-      const designPrice =
-        snapshot.designPrice !== ''
-          ? formatPrice(snapshot.designPrice)
-          : '—';
+      <td class="col-price">
+        ${divisionPrice}
+      </td>
 
+    </tr>
+  `;
+}
 
-      designTbody.innerHTML = `
 
-        <tr class="item-row">
+// =========================================================
+// جدول المقابض
+// =========================================================
 
-          <td class="col-section">
-            التصميم
-          </td>
+const handleTbody =
+  content.querySelector(
+    '#sink-handle-items'
+  );
 
-          <td class="col-name">
-            ${order['التصميم'] || '—'}
-          </td>
+if (handleTbody) {
 
-          <td class="col-code">
-            ${designCode}
-          </td>
+  const shape1 =
+    order['شكل المقبض 1'] || '';
 
-          <td class="col-color">
-            ${colorImgHtml}
-          </td>
+  const shape2 =
+    order['شكل المقبض 2'] || '';
 
-          <td class="col-price">
-            ${designPrice}
-          </td>
 
-        </tr>
+  const shape1Html =
+    shape1
+      ? `
+        <img
+          src="images/conf/hnd/${encodeURIComponent(shape1)}.webp"
+          style="height:36px; object-fit:contain;"
+          onerror="this.onerror=null; this.src='images/conf/hnd/${encodeURIComponent(shape1)}.png'"
+        />
+      `
+      : '—';
 
-      `;
-    }
 
+  const shape2Html =
+    shape2
+      ? `
+        <img
+          src="images/conf/hnd/${encodeURIComponent(shape2)}.webp"
+          style="height:36px; object-fit:contain;"
+          onerror="this.onerror=null; this.src='images/conf/hnd/${encodeURIComponent(shape2)}.png'"
+        />
+      `
+      : '—';
 
-    // =========================================================
-    // جدول التقسيمة
-    // =========================================================
 
-    const divisionTbody =
-      content.querySelector(
-        '#sink-division-items'
-      );
+  const handleCode =
+    snapshot.handleId ||
+    '—';
 
-    if (divisionTbody) {
 
-      const divisionCode =
-        snapshot.divisionId ||
-        '—';
+  const handlePrice =
+    snapshot.handlePrice !== ''
+      ? formatPrice(
+          snapshot.handlePrice
+        )
+      : '—';
 
 
-      const divisionPrice =
-        snapshot.divisionPrice !== ''
-          ? formatPrice(
-              snapshot.divisionPrice
-            )
-          : '—';
+  handleTbody.innerHTML = `
+    <tr class="item-row">
 
+      <td class="col-section">
+        نوع المقبض
+      </td>
 
-      divisionTbody.innerHTML = `
+      <td class="col-name">
+        ${order['المقبض'] || '—'}
+      </td>
 
-        <tr class="item-row">
+      <td class="col-code">
+        ${handleCode}
+      </td>
 
-          <td class="col-section">
-            التقسيمة الداخلية
-          </td>
+      <td class="col-handle-priority">
+        ${shape1Html}
+      </td>
 
-          <td class="col-name">
-            ${order['التقسيمة'] || '—'}
-          </td>
+      <td class="col-handle-priority">
+        ${shape2Html}
+      </td>
 
-          <td class="col-code">
-            ${divisionCode}
-          </td>
+      <td class="col-price">
+        ${handlePrice}
+      </td>
 
-          <td class="col-price">
-            ${divisionPrice}
-          </td>
-
-        </tr>
-
-      `;
-    }
-
-
-    // =========================================================
-    // جدول المقابض
-    // =========================================================
-
-    const handleTbody =
-      content.querySelector(
-        '#sink-handle-items'
-      );
-
-    if (handleTbody) {
-
-      const shape1 =
-        order['شكل المقبض 1'] || '';
-
-      const shape2 =
-        order['شكل المقبض 2'] || '';
-
-
-      const shape1Html =
-        shape1
-          ? `
-            <img
-              src="images/conf/hnd/${encodeURIComponent(shape1)}.webp"
-              style="height:36px; object-fit:contain;"
-              onerror="this.onerror=null; this.src='images/conf/hnd/${encodeURIComponent(shape1)}.png'"
-            />
-          `
-          : '—';
-
-
-      const shape2Html =
-        shape2
-          ? `
-            <img
-              src="images/conf/hnd/${encodeURIComponent(shape2)}.webp"
-              style="height:36px; object-fit:contain;"
-              onerror="this.onerror=null; this.src='images/conf/hnd/${encodeURIComponent(shape2)}.png'"
-            />
-          `
-          : '—';
-
-
-      const handleCode =
-        snapshot.handleId ||
-        '—';
-
-
-      const handlePrice =
-        snapshot.handlePrice !== ''
-          ? formatPrice(
-              snapshot.handlePrice
-            )
-          : '—';
-
-
-      handleTbody.innerHTML = `
-
-        <tr class="item-row">
-
-          <td class="col-section">
-            نوع المقبض
-          </td>
-
-          <td class="col-name">
-            ${order['المقبض'] || '—'}
-          </td>
-
-          <td class="col-code">
-            ${handleCode}
-          </td>
-
-          <td class="col-handle-priority">
-            ${shape1Html}
-          </td>
-
-          <td class="col-handle-priority">
-            ${shape2Html}
-          </td>
-
-          <td class="col-price">
-            ${handlePrice}
-          </td>
-
-        </tr>
-
-      `;
-    }
+    </tr>
+  `;
+}
 
 
     // =========================================================

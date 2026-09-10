@@ -1008,21 +1008,110 @@ fetch('nav.html')
 
 <!-- Tab جانبي مثبت دائماً -->
 <div class="dr-sidebar-tab" onclick="drOpenOrdersDrawer()">
-  <span class="dr-tab-text">طلباتي</span>
-  <span class="dr-tab-icon">‹</span>
+  <span class="dr-tab-icon">❯</span>
+  <span class="dr-tab-text">متابعة الطلب</span>
 </div>
 
-<!-- خلفية التظليل والـ Drawer -->
-<div id="drDrawerOverlay" class="dr-drawer-backdrop" onclick="drCloseOrdersDrawer()"></div>
-
+<!-- خلفية التظليل والـ Drawer --> 
+<div id="drDrawerOverlay" class="dr-drawer-backdrop" onclick="drCloseOrdersDrawer()"></div> 
+ 
 <div id="drOrdersDrawer" class="dr-orders-drawer">
-  <div class="dr-drawer-header">
-    <button type="button" class="dr-close-btn" onclick="drCloseOrdersDrawer()">&times;</button>
-    <h3>متابعة الطلبات</h3>
+  <div class="dr-drawer-header"> 
+    <button type="button" class="dr-close-btn" onclick="drCloseOrdersDrawer()"> 
+      <span class="dr-close-arrow">❮</span> 
+    </button> 
+ 
+    <h3>متابعة الطلب</h3> 
+  </div> 
+   
+  <div class="dr-drawer-body" id="drOrdersContainer"> 
+    <!-- يتم تحميل الطلبات هنا عبر JS --> 
   </div>
-  <div class="dr-drawer-body" id="drOrdersContainer">
-    <!-- يتم تحميل الطلبات هنا عبر JS -->
-  </div>
+</div>
+
+  <template id="dr-orders-loading-template">
+    <div class="dr-orders-loading">
+
+      <div class="loader-top">
+
+        <svg class="hourglass-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round">
+
+          <path d="M5 22h14"></path>
+          <path d="M5 2h14"></path>
+          <path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"></path>
+          <path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"></path>
+
+        </svg>
+
+        <span class="loader-title">
+          جاري تحميل طلباتك
+        </span>
+
+      </div>
+
+      <div class="loader-bar-container">
+        <div class="loader-bar-fill"></div>
+      </div>
+
+    </div>
+  </template>
+S
+  <template id="dr-orders-login-template">
+    <div class="dr-orders-empty" style="text-align: center; padding: 24px 16px;">
+
+      <div class="placeholder-icon">
+        <img src="/images/ui/order-status.svg" alt="تسجيل الدخول">
+      </div>
+
+      <div class="placeholder-title" style="margin-bottom: 8px;">
+        تابع طلباتك بسهولة!
+      </div>
+
+      <div class="placeholder-text" style="margin: 0 auto 20px;">
+        قم بتسجيل الدخول لمتابعة طلباتك السابقة, ومعرفة حالة كل طلب في أي وقت.
+      </div>
+
+      <button type="button"
+              class="dr-google-btn"
+              onclick="window.loginWithGoogle()">
+
+        <span>المتابعة باستخدام Google</span>
+
+        <img
+          src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+          alt="Google">
+
+      </button>
+
+    </div>
+  </template>
+
+  <template id="dr-orders-empty-template">
+    <div class="dr-orders-empty">
+
+      <div class="placeholder-icon">
+        <img
+          src="/images/ui/empty-cart.svg"
+          alt="لا توجد طلبات">
+      </div>
+
+      <div class="placeholder-title">
+        لا توجد طلبات حتى الآن
+      </div>
+
+      <div class="placeholder-text">
+        ابدأ بتصميم وحدتك، وسنحتفظ بطلبك هنا للمتابعة.
+      </div>
+
+    </div>
+  </template>
+
 </div>
 
 <script>
