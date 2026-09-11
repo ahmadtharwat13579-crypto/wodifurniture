@@ -2632,12 +2632,6 @@ select.dr-input {
   opacity: 0.75;
 }
 
-.dr-order-cancel-btn.unavailable:hover {
-  background: #f3f4f6;
-  border-color: #d1d5db;
-  color: var(--color-bg-white);
-}
-
 /* =========================================
    Order Card Placeholder
 ========================================= */

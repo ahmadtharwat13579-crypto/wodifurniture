@@ -128,25 +128,25 @@ const EGYPT_DISTRICTS = {
   ]
 };
 
-// 2. دالة تحديث قائمة الأحياء عند تغيير المحافظة
 function drOnGovChange() {
   const govSelect = document.getElementById('dr-select-gov');
   const districtSelect = document.getElementById('dr-select-district');
-  
+
   if (!govSelect || !districtSelect) return;
 
   const selectedGov = govSelect.value;
 
-  // إذا قام العميل بترك خيار المحافظة فاضي ("اختر المحافظة...")
+  // إعادة ضبط الحي عند تغيير المحافظة
+  districtSelect.innerHTML = '<option value="" selected>اختر المنطقة...</option>';
+
   if (!selectedGov) {
     districtSelect.innerHTML = '<option value="" selected>اختر المحافظة أولاً...</option>';
     districtSelect.disabled = true;
+
     return;
   }
 
-  // تفريق القائمة وتفعيل حقل الأحياء
   districtSelect.disabled = false;
-  districtSelect.innerHTML = '<option value="" selected>اختر المنطقة...</option>';
 
   if (EGYPT_DISTRICTS[selectedGov]) {
     EGYPT_DISTRICTS[selectedGov].forEach(function(district) {
@@ -155,6 +155,211 @@ function drOnGovChange() {
       option.textContent = district;
       districtSelect.appendChild(option);
     });
+  }
+}
+
+async function drGeocodeManualDistrict(governorate, district) {
+  const governorateName =
+    governorate === 'Cairo' ? 'القاهرة' :
+    governorate === 'Giza' ? 'الجيزة' :
+    governorate;
+
+  const queries = [
+    `${district}, ${governorateName}, مصر`,
+    `${district}, ${governorateName}, Egypt`,
+    `${district}, مصر`
+  ];
+
+  for (const query of queries) {
+    try {
+      const url =
+        `https://nominatim.openstreetmap.org/search` +
+        `?format=json` +
+        `&limit=1` +
+        `&accept-language=ar` +
+        `&countrycodes=eg` +
+        `&q=${encodeURIComponent(query)}`;
+
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        continue;
+      }
+
+      const data = await response.json();
+
+      if (Array.isArray(data) && data.length > 0) {
+        const lat = parseFloat(data[0].lat);
+        const lng = parseFloat(data[0].lon);
+
+        if (Number.isFinite(lat) && Number.isFinite(lng)) {
+          return {
+            lat,
+            lng,
+            displayName: data[0].display_name || ''
+          };
+        }
+      }
+    } catch (error) {
+      console.warn('Manual district geocoding failed:', error);
+    }
+  }
+
+  return null;
+}
+
+async function drOnDistrictChange() {
+  const govSelect = document.getElementById('dr-select-gov');
+  const districtSelect = document.getElementById('dr-select-district');
+  const res = document.getElementById('dr-loc-result');
+
+  if (!govSelect || !districtSelect) return;
+
+  const governorate = govSelect.value;
+  const district = districtSelect.value;
+
+  if (!governorate || !district) {
+    return;
+  }
+
+  // إلغاء أي موقع GPS سابق والاعتماد على الاختيار اليدوي
+  window.drIsManualLocation = true;
+
+  window.userLat = null;
+  window.userLng = null;
+  window.installCost = null;
+
+  if (typeof userLat !== 'undefined') {
+    userLat = null;
+  }
+
+  if (typeof userLng !== 'undefined') {
+    userLng = null;
+  }
+
+  if (typeof installCost !== 'undefined') {
+    installCost = null;
+  }
+
+  if (res) {
+    res.innerHTML = `
+      <span style="display:inline-flex;align-items:center;gap:8px">
+        <svg class="spin" width="14" height="14" viewBox="0 0 24 24"
+          fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+        </svg>
+        <span>جارٍ تحديد المنطقة وحساب تكلفة التوصيل...</span>
+      </span>
+    `;
+    res.className = 'loc-result';
+    res.style.display = 'block';
+  }
+
+  const result = await drGeocodeManualDistrict(governorate, district);
+
+  if (!result) {
+    window.drIsManualLocation = false;
+
+    if (res) {
+      res.innerHTML = `
+        تعذر تحديد المنطقة تلقائيًا.
+        يرجى اختيار منطقة أخرى أو استخدام تحديد الموقع الحالي.
+      `;
+      res.className = 'loc-result error show';
+    }
+
+    return;
+  }
+
+  let calculatedCost = null;
+
+  try {
+    if (typeof calcInstall === 'function') {
+      calculatedCost = calcInstall(result.lat, result.lng);
+    }
+  } catch (error) {
+    console.warn('calcInstall error for manual location:', error);
+  }
+
+  if (calculatedCost === null) {
+    window.drIsManualLocation = false;
+
+    if (res) {
+      res.innerHTML = `
+        هذه المنطقة خارج نطاق خدمتنا.
+        <button
+          onclick="outOfRangeWA()"
+          style="background:none;border:none;color:#9caf88;cursor:pointer;font-family:'Cairo',sans-serif;font-size:12px;text-decoration:underline;"
+        >
+          هل يمكن التنفيذ في منطقتي؟
+        </button>
+      `;
+      res.className = 'loc-result show out-of-range';
+    }
+
+    return;
+  }
+
+  // حفظ بيانات الموقع التقريبي
+  window.userLat = result.lat;
+  window.userLng = result.lng;
+  window.installCost = calculatedCost;
+
+  if (typeof installCost !== 'undefined') {
+    installCost = calculatedCost;
+  }
+
+  window.drIsManualLocation = true;
+
+  // الحفاظ على نفس شكل بيانات الموقع المستخدمة في باقي النظام
+  window.userLocationAddress = {
+    governorate: governorate === 'Cairo' ? 'القاهرة' : 'الجيزة',
+    district: district,
+    city: governorate === 'Cairo' ? 'القاهرة' : 'الجيزة',
+    fullAddress: `${district}، ${governorate === 'Cairo' ? 'القاهرة' : 'الجيزة'}`
+  };
+
+  // لا نظهر الخريطة في حالة الموقع اليدوي،
+  // لأن الإحداثيات هنا تقريبية وليست موقع العميل الفعلي.
+  const mapContainer = document.getElementById('dr-mapContainer');
+
+  if (mapContainer) {
+    mapContainer.hidden = true;
+    mapContainer.style.display = 'none';
+  }
+
+  const expBtn = document.getElementById('export-location');
+
+  if (expBtn) {
+    expBtn.disabled = false;
+  }
+
+  if (res) {
+    res.innerHTML = `
+      تم تحديد المنطقة — تكلفة التوصيل التقريبية:
+      ${Number(calculatedCost).toLocaleString('en-US')} EGP
+      <br>
+      <small>
+        التكلفة تقديرية بناءً على المحافظة والحي المختارين.
+      </small>
+    `;
+    res.className = 'loc-result show';
+  }
+
+  if (typeof completeStep === 'function') {
+    try {
+      completeStep('step-location');
+    } catch (e) {
+      console.warn(e);
+    }
+  }
+
+  if (typeof upd === 'function') {
+    try {
+      upd();
+    } catch (e) {
+      console.warn(e);
+    }
   }
 }
 
@@ -332,7 +537,10 @@ async function drLoadUserOrders(options = {}) {
 
           <div class="dr-order-detail">
             <span class="dr-order-detail-label">إجمالي الطلب</span>
-            <span class="dr-order-detail-value">${Number(order.unitPrice).toLocaleString('en-US')} ج.م</span>
+            <span class="dr-order-detail-value">
+            ${Number(order.unitPrice).toLocaleString('en-US')} ج.م
+            ${order.locationMethod === 'يدوي' ? '<small class="dr-approximate-price"> (تقريبي)</small>' : ''}
+          </span>
           </div>
         </div>
 
@@ -2622,6 +2830,7 @@ function getLocation(btn, res, mapContainer, mapImage) {
           userLng = pos.coords.longitude;
           window.userLat = userLat;
           window.userLng = userLng;
+          window.drIsManualLocation = false;
 
           if (mapImage) {
             const mapUrl = buildStaticMapUrl(userLat, userLng, 600, 300);
@@ -3225,34 +3434,7 @@ async function drRenderPreview() {
     const lat = window.userLat;
     const lng = window.userLng;
     const shippingCost = window.installCost;
-
-    const handlesTbody = content.querySelector('#sink-handle-items');
-
-    if (handlesTbody) {
-      const h1 = S.selectedHandleShapes && S.selectedHandleShapes[0] ? S.selectedHandleShapes[0] : null;
-      const h2 = S.selectedHandleShapes && S.selectedHandleShapes[1] ? S.selectedHandleShapes[1] : null;
-
-      const h1Src = h1 ? await makeSquareImage(`images/conf/hnd/${encodeURIComponent(h1)}.webp`) : '';
-      const h2Src = h2 ? await makeSquareImage(`images/conf/hnd/${encodeURIComponent(h2)}.webp`) : '';
-
-      const h1Html = h1Src
-        ? `<img src="${h1Src}" style="width:40px; height:40px; object-fit:contain; background:#ffffff; display:block; margin:0 auto;" />`
-        : '—';
-
-      const h2Html = h2Src
-        ? `<img src="${h2Src}" style="width:40px; height:40px; object-fit:contain; background:#ffffff; display:block; margin:0 auto;" />`
-        : '—';
-
-      handlesTbody.innerHTML = `
-        <tr class="item-row">
-          <td class="col-section">المقابض</td>
-          <td class="col-code">${config.handle ? config.handle.id : '—'}</td>
-          <td class="col-priority-1">${h1Html}</td>
-          <td class="col-priority-2">${h2Html}</td>
-          <td class="col-price">${config.handle ? config.handle.price : 0} ج.م</td>
-        </tr>
-      `;
-    }
+    const isManualLocation = window.drIsManualLocation === true;
 
     const designImg = content.querySelector('#design-img');
     const divisionImg = content.querySelector('#division-img');
@@ -3368,25 +3550,66 @@ async function drRenderPreview() {
 
     const lngEl = content.querySelector('#shipping-lng');
     if (lngEl) {
-      lngEl.textContent = typeof lng === 'number' ? lng.toFixed(6) : 'غير متوفر';
+      lngEl.textContent =
+        !isManualLocation && typeof lng === 'number'
+          ? lng.toFixed(6)
+          : 'غير متوفر';
     }
 
     const latEl = content.querySelector('#shipping-lat');
     if (latEl) {
-      latEl.textContent = typeof lat === 'number' ? lat.toFixed(6) : 'غير متوفر';
+      latEl.textContent =
+        !isManualLocation && typeof lat === 'number'
+          ? lat.toFixed(6)
+          : 'غير متوفر';
     }
 
     const shippingMapEl = content.querySelector('#shipping-map-image');
-    if (
-      shippingMapEl &&
-      typeof lat === 'number' &&
-      typeof lng === 'number'
-    ) {
-      const mapUrl = buildStaticMapUrl(lat, lng, 700, 350);
-      if (mapUrl) {
-        shippingMapEl.src = mapUrl;
-        shippingMapEl.hidden = false;
+
+    if (shippingMapEl) {
+      if (
+        !isManualLocation &&
+        typeof lat === 'number' &&
+        typeof lng === 'number'
+      ) {
+        const mapUrl = buildStaticMapUrl(lat, lng, 700, 350);
+
+        if (mapUrl) {
+          shippingMapEl.src = mapUrl;
+          shippingMapEl.hidden = false;
+        }
+      } else {
+        shippingMapEl.hidden = true;
       }
+    }
+
+    const shippingCostEl = content.querySelector('#shipping-cost');
+
+    if (shippingCostEl) {
+      if (
+        shippingCost !== null &&
+        shippingCost !== undefined &&
+        shippingCost !== ''
+      ) {
+        shippingCostEl.textContent =
+          `${Number(shippingCost).toLocaleString('en-US')} ج.م` +
+          (isManualLocation ? ' (تقريبي)' : '');
+      } else {
+        shippingCostEl.textContent = 'غير متوفر';
+      }
+    }
+
+    const notesEl = content.querySelector('#order-notes');
+
+    if (notesEl) {
+      notesEl.innerHTML = isManualLocation
+        ? `
+          1. يرجى التواصل قبل التوصيل بيوم لتحديد الميعاد المناسب.<br>
+          2. تكلفة النقل تقديرية بناءً على المحافظة والحي المحددين يدويًا، وقد تختلف التكلفة الفعلية بعد تحديد الموقع بدقة.
+        `
+        : `
+          1. يرجى التواصل قبل التوصيل بيوم لتحديد الميعاد المناسب.
+        `;
     }
 
     const designTbody = content.querySelector('#sink-design-items');
@@ -3450,22 +3673,22 @@ async function drRenderPreview() {
 
     const orderNumEl = content.querySelector('#order-number');
     if (orderNumEl) {
-const orderNum =
-  window.drCurrentOrderNum || '—';
+    const orderNum =
+      window.drCurrentOrderNum || '—';
 
-orderNumEl.textContent = orderNum;
+    orderNumEl.textContent = orderNum;
+        }
+
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            fitPreviewToWidth();
+          });
+        });
+
+      } catch (e) {
+        console.warn('Preview error:', e);
+      }
     }
-
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        fitPreviewToWidth();
-      });
-    });
-
-  } catch (e) {
-    console.warn('Preview error:', e);
-  }
-}
 
 window.drRenderPreview = drRenderPreview;
 
@@ -3575,9 +3798,39 @@ async function saveDRDraft() {
     code: document.getElementById('dr-sink-code')?.value || '',
     name: document.getElementById('dr-customer-name')?.value || '',
     phone: document.getElementById('dr-customer-phone')?.value || '',
+
     locationAddress: window.userLocationAddress || saved.locationAddress || null,
-    userLat: window.userLat || saved.userLat || null,
-    userLng: window.userLng || saved.userLng || null,
+
+    userLat:
+      window.userLat !== undefined && window.userLat !== null
+        ? window.userLat
+        : (saved.userLat || null),
+
+    userLng:
+      window.userLng !== undefined && window.userLng !== null
+        ? window.userLng
+        : (saved.userLng || null),
+
+    installCost:
+      window.installCost !== undefined && window.installCost !== null
+        ? window.installCost
+        : (saved.installCost ?? null),
+
+    isManualLocation:
+      window.drIsManualLocation !== undefined
+        ? window.drIsManualLocation
+        : (saved.isManualLocation || false),
+
+    manualGovernorate:
+      document.getElementById('dr-select-gov')?.value ||
+      saved.manualGovernorate ||
+      '',
+
+    manualDistrict:
+      document.getElementById('dr-select-district')?.value ||
+      saved.manualDistrict ||
+      '',
+
     wallImage: wallBase64,
     sinkPhoto: photoBase64,
     stickerPhoto: stickerBase64
@@ -3611,34 +3864,140 @@ function loadDRDraft() {
     document.getElementById('dr-customer-phone').value =
       window.currentUser?.phoneNumber || data.phone || '';
 
+    // Restore saved location
     if (data.locationAddress) {
       window.userLocationAddress = data.locationAddress;
-      window.userLat = data.userLat;
-      window.userLng = data.userLng;
-      
-      const locResult = document.getElementById('dr-loc-result');
-       if (locResult) {
-         locResult.textContent = `${data.locationAddress.governorate || ''} - ${data.locationAddress.district || ''}`;
-         locResult.classList.add('show');
-         locResult.style.display = 'block';
-       }
 
-       const locateBtn = document.getElementById('dr-btn-locate') || document.getElementById('btn-locate');
-       if (locateBtn) {
-         locateBtn.classList.add('success');
-         locateBtn.innerHTML = 'تم تحديد الموقع بنجاح';
-       }
+      window.userLat =
+        data.userLat !== undefined && data.userLat !== null
+          ? data.userLat
+          : null;
 
-      const mapContainer = document.getElementById('dr-mapContainer');
-      if (mapContainer && typeof data.userLat === 'number' && typeof data.userLng === 'number') {
-        mapContainer.hidden = false;
-        if (typeof renderStaticMap === 'function') {
-          renderStaticMap(data.userLat, data.userLng);
-        } else {
-          const mapImg = mapContainer.querySelector('img');
-          if (mapImg && typeof buildStaticMapUrl === 'function') {
-            mapImg.src = buildStaticMapUrl(data.userLat, data.userLng, 700, 350);
+      window.userLng =
+        data.userLng !== undefined && data.userLng !== null
+          ? data.userLng
+          : null;
+
+      window.installCost =
+        data.installCost !== undefined && data.installCost !== null
+          ? data.installCost
+          : null;
+
+      window.drIsManualLocation = data.isManualLocation === true;
+
+      const govSelect = document.getElementById('dr-select-gov');
+      const districtSelect = document.getElementById('dr-select-district');
+
+      // =========================================
+      // Restore manual location
+      // =========================================
+      if (
+        window.drIsManualLocation &&
+        govSelect &&
+        districtSelect &&
+        data.manualGovernorate
+      ) {
+        govSelect.value = data.manualGovernorate;
+
+        // إعادة بناء قائمة الأحياء فقط
+        // بدون تشغيل geocoding أو إعادة حساب التكلفة
+        drOnGovChange();
+
+        if (data.manualDistrict) {
+          districtSelect.value = data.manualDistrict;
+        }
+
+        window.drIsManualLocation = true;
+
+        const manualGroup =
+          document.getElementById('dr-manual-address-group');
+
+        if (manualGroup) {
+          manualGroup.style.display = 'block';
+        }
+
+        const manualLink =
+          document.getElementById('dr-toggle-manual-address');
+
+        if (manualLink) {
+          manualLink.style.display = 'block';
+        }
+
+        const res = document.getElementById('dr-loc-result');
+
+        if (res) {
+          res.innerHTML = `
+            تم استعادة موقعك المحدد يدويًا — تكلفة التوصيل التقريبية:
+            ${window.installCost !== null
+              ? Number(window.installCost).toLocaleString('en-US') + ' EGP'
+              : '—'}
+            <br>
+            <small>
+              التكلفة تقديرية بناءً على المحافظة والحي المختارين.
+            </small>
+          `;
+
+          res.className = 'loc-result show';
+          res.style.display = 'block';
+        }
+
+      // =========================================
+      // Restore GPS location
+      // =========================================
+      } else if (
+        !window.drIsManualLocation &&
+        typeof window.userLat === 'number' &&
+        typeof window.userLng === 'number'
+      ) {
+
+        const res = document.getElementById('dr-loc-result');
+        const mapContainer = document.getElementById('dr-mapContainer');
+        const mapImage = document.getElementById('dr-staticMap');
+
+        if (mapImage) {
+          const mapUrl = buildStaticMapUrl(
+            window.userLat,
+            window.userLng,
+            600,
+            300
+          );
+
+          if (mapUrl) {
+            mapImage.src = mapUrl;
           }
+        }
+
+        if (mapContainer) {
+          mapContainer.hidden = false;
+          mapContainer.style.display = 'block';
+        }
+
+        if (res) {
+          res.innerHTML = `
+            تم استعادة موقعك — تكلفة التوصيل:
+            ${window.installCost !== null
+              ? Number(window.installCost).toLocaleString('en-US') + ' EGP'
+              : '—'}
+          `;
+
+          res.className = 'loc-result show';
+          res.style.display = 'block';
+        }
+
+        const btn = document.getElementById('dr-btn-locate');
+
+        if (btn) {
+          btn.innerHTML = `
+            <svg width="14" height="14" viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            تم تحديد الموقع
+          `;
+
+          btn.disabled = false;
         }
       }
     }
@@ -3767,8 +4126,9 @@ async function submitOrderToSheet() {
 
     locationAddress,
 
-    lat: window.userLat || '',
-    lng: window.userLng || '',
+  locationAddress,
+  locationMethod: window.drIsManualLocation === true ? 'يدوي' : 'تلقائي',
+  lat: window.userLat || '',
 
     sinkType: config?.sinkType || '',
     designName: config?.design?.name || '',
@@ -3953,6 +4313,7 @@ function drShowConfirmation(orderNum) {
     </div>
   `;
 }
+
 async function drViewSummary(orderNum) {
 
   if (!orderNum) return;

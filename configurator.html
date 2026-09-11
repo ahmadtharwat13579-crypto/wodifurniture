@@ -881,7 +881,13 @@ fetch('nav.html')
 
         <!-- يغلف الـ select للحفاظ على التقاط الضغطة وإظهار التوست عندما يكون القائمة معطلة -->
         <div id="dr-district-wrapper" style="position: relative; display: block; width: 100%;">
-          <select id="dr-select-district" class="dr-input" style="width: 100%;" disabled>
+          <select
+            id="dr-select-district"
+            class="dr-input"
+            style="width: 100%;"
+            disabled
+            onchange="drOnDistrictChange()"
+          >
             <option value="" selected>اختر المحافظة أولاً...</option>
           </select>
         </div>
