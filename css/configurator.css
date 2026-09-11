@@ -2629,8 +2629,7 @@ select.dr-input {
 }
 
 .dr-order-cancel-btn:hover {
-  background: rgba(239, 68, 68, 0.06);
-  border-color: #ef4444;
+  opacity: 0.9;
 }
 
 .dr-order-cancel-btn.unavailable {
@@ -2827,6 +2826,30 @@ select.dr-input {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+.dr-order-card-new {
+  animation: drOrderCardEnter 500ms ease-out;
+}
+
+@keyframes drOrderCardEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(18px);
+    border-color: rgba(156, 175, 136, 0.45);
+  }
+
+  35% {
+    opacity: 1;
+    transform: translateY(0);
+    border-color: rgba(156, 175, 136, 0.45);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    border-color: rgba(51, 48, 40, 0.08);
   }
 }
 
