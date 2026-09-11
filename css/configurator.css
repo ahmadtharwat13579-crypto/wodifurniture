@@ -865,6 +865,15 @@
   background-color: #ffffff !important;
 }
 
+#handle-shapes-row {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex-wrap: nowrap;
+}
+
 /* نافذة التكبير المكبرة */
 .shape-lightbox-modal {
   position: fixed;
@@ -2127,10 +2136,10 @@ select.dr-input {
 
 .dr-hint {
   font-size: 12px;
-  color: var(--color-text-muted);
-  margin-top: 4px;
+  color: var(--color-text-main);
+  margin-top: 2px;
   margin-right: 8px;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   display: block;
 }
 
@@ -2143,7 +2152,7 @@ select.dr-input {
 .dr-location-title {
   font-size: 12px;
   font-weight: 600;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
   color: var(--color-text-main);
   padding-right: 4px;
 }
@@ -2307,7 +2316,7 @@ select.dr-input {
   left: 0;
   width: 100%;
   max-width: 360px;
-  height: 65vh;
+  height: 75vh;
   background-color: var(--color-bg-light);
   z-index: var(--z-modal);
   box-shadow: var(--shadow-modal);
@@ -2466,8 +2475,11 @@ select.dr-input {
   z-index: 0;
 }
 
+.dr-status-step:last-of-type::before {
+  display: none !important;
+}
 
-.dr-status-step.completed:not(:last-child)::before {
+.dr-status-step.completed:not(:last-of-type)::before {
   background: var(--color-primary);
 }
 
@@ -2559,6 +2571,17 @@ select.dr-input {
   padding-bottom: 5px;
 }
 
+.dr-status-step-marker svg {
+  display: block;
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 /* =========================================
    Cancelled Order Status
 ========================================= */
@@ -2594,10 +2617,34 @@ select.dr-input {
 
 .dr-order-card-actions {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
-  margin-top: 12px;
+}
+
+.dr-order-card-actions button {
+  white-space: nowrap;
+}
+
+.dr-order-summary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.dr-order-summary-btn svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.dr-order-cancel-btn {
+  flex: 1 1 0;
+}
+
+.dr-order-card-actions .dr-order-summary-btn:last-child {
+  flex: 0 0 100%;
 }
 
 .dr-order-summary-btn,

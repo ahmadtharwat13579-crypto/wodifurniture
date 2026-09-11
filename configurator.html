@@ -803,15 +803,12 @@ fetch('nav.html')
 
       <h4 class="dr-location-title">
         العنوان
-        <span
-          class="info-tooltip"
-          role="button"
-          tabindex="0"
-          aria-label="معلومات عن تحديد الموقع"
-          data-tooltip="يساعدنا تحديد موقعك في حساب تكلفة المعاينة ونقل الوحدة بدقة أكبر. يمكنك اختيار المحافظة والمنطقة يدويًا إذا كنت تفضل ذلك، لكن في هذه الحالة ستكون التكلفة تقديرية وقد تزيد أو تقل قليلًا عن التكلفة الفعلية."
-        >i</span>
         <span class="required">*</span>
       </h4>
+
+      <p class="dr-hint">
+        يتم تحديد موقعك لدقة حساب تكلفة الانتقالات (المعاينة والنقل) بدقة. يمكنك اختيار المحافظة والمنطقة يدويًا إذا كنت ترغب، لكن التكلفة ستكون تقديرية.
+      </p>
 
 <button
           type="button"
@@ -891,6 +888,10 @@ fetch('nav.html')
       <label for="dr-select-district" class="dr-label"> 
         الحي
       </label>
+
+      <p class="dr-hint">
+       يمكنك اختيار أقرب حيّ لك إذا لم تجد حيّك بالتحديد.
+      </p>
 
         <!-- يغلف الـ select للحفاظ على التقاط الضغطة وإظهار التوست عندما يكون القائمة معطلة -->
         <div id="dr-district-wrapper" style="position: relative; display: block; width: 100%;">
@@ -995,28 +996,12 @@ fetch('nav.html')
       <button id="dr-btn-close" class="dr-btn-secondary" onclick="closeDesignRequestModal()">إغلاق</button>
       <button id="dr-btn-prev" class="dr-btn-secondary" onclick="drPrevStep()" style="display: none;">السابق</button>
       <button id="dr-btn-next" class="dr-btn-primary" onclick="drNextStep()">التالي</button>
-      <button id="dr-btn-download" class="dr-btn-secondary" onclick="drDownloadPdf()" style="display: none;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-        تحميل الطلب
-      </button>
       <button
         id="dr-btn-whatsapp"
         class="dr-btn-primary"
         onclick="drSubmitOrder()"
         style="display: none;"
       >
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path d="M20 6L9 17l-5-5"></path>
-        </svg>
         تأكيد الطلب
       </button>
     </div>
@@ -1045,7 +1030,7 @@ fetch('nav.html')
 
 <!-- Tab جانبي مثبت دائماً -->
 <div class="dr-sidebar-tab" onclick="drOpenOrdersDrawer()">
-  <span class="dr-tab-icon">❯</span>
+  <span class="dr-tab-icon">❮</span>
   <span class="dr-tab-text">متابعة الطلب</span>
 </div>
 
@@ -1055,7 +1040,7 @@ fetch('nav.html')
 <div id="drOrdersDrawer" class="dr-orders-drawer">
   <div class="dr-drawer-header"> 
     <button type="button" class="dr-close-btn" onclick="drCloseOrdersDrawer()"> 
-      <span class="dr-close-arrow">❮</span> 
+      <span class="dr-close-arrow">❯</span> 
     </button> 
  
     <h3>متابعة الطلب</h3> 

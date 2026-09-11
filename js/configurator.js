@@ -336,21 +336,10 @@ async function drOnDistrictChange() {
 
   if (res) {
     res.innerHTML = `
-      <div>تم تحديد المنطقة — تكلفة التوصيل:</div>
+      <div>تم تحديد المنطقة — التكلفة التقديرية:</div>
 
       <div style="font-size: 15px; font-weight: 600; margin-top: 2px;">
         ${Number(calculatedCost).toLocaleString('en-US')} EGP
-      </div>
-
-      <div style="font-size: 10px; font-weight: 400; margin-top: 1px;">
-        (تقريبية)
-        <span
-          class="info-tooltip"
-          role="button"
-          tabindex="0"
-          aria-label="معلومات عن التكلفة التقريبية"
-          data-tooltip="تم تقدير التكلفة بناءً على المحافظة والحي المختارين. لتحديد التكلفة بدقة أكبر، يُفضل استخدام تحديد الموقع تلقائيًا."
-        >i</span>
       </div>
     `;
     res.className = 'loc-result show';
@@ -585,6 +574,8 @@ async function drLoadUserOrders(options = {}) {
       return;
     }
 
+    const eyeIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+
     bodyContainer.innerHTML = data.orders.map(order => `
       <div class="dr-order-card">
         <div class="dr-order-card-header">
@@ -624,58 +615,59 @@ async function drLoadUserOrders(options = {}) {
           </div>
         ` : `
           <div class="dr-order-status-stepper">
-
             ${(() => {
               const steps = [
                 {
                   status: 'بانتظار المراجعة',
                   title: 'بانتظار المراجعة',
-                  description: 'تم استلام طلبك وجارٍ مراجعته'
+                  description: 'وصلنا طلبك بنجاح. جارٍ مراجعته وتأكيده، وسنتواصل معك عند الانتهاء.',
+                  icon: `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><polyline points="12 7 12 12 15 14"></polyline></svg>`
                 },
                 {
-                  status: 'تم تأكيد الطلب',
-                  title: 'تم تأكيد الطلب',
-                  description: 'تم تأكيد طلبك وبدء التجهيز'
+                  status: 'المعاينة ودفع المقدم',
+                  title: 'المعاينة ودفع المقدم',
+                  description: 'سيتم تحديد موعد المعاينة وأخذ المقاسات، ثم استكمال تأكيد الطلب ودفع المقدم.',
+                  icon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 4H3a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path><path d="M1 10h22"></path><path d="M7 15h.01"></path><path d="M11 15h2"></path></svg>`
+                },
+                {
+                  status: 'رؤية التصميم وملاحظاتك',
+                  title: 'رؤية التصميم وملاحظاتك',
+                  description: 'سنجهز لك تصورًا واقعيًا لشكل وحدتك النهائي بناءً على المقاسات واختياراتك، لتراه وتبدي ملاحظاتك وتفضيلاتك قبل بدء التصنيع.',
+                  icon: `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line><path d="M8 10l2 2 4-4"></path></svg>`
                 },
                 {
                   status: 'قيد التنفيذ',
                   title: 'قيد التنفيذ',
-                  description: 'يتم تجهيز طلبك حاليًا'
+                  description: 'بعد اعتماد التصميم، نبدأ تجهيز وتصنيع وحدتك.',
+                  icon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 4l5 5-9 9-5-5 9-9z"></path><path d="M7 14l-4 4 1.5 1.5L8.5 15.5 7 14z"></path><path d="M14 6l1 1M12 8l1 1M10 10l1 1M8 12l1 1"></path><circle cx="5.5" cy="18.5" r="1.5"></circle></svg>`
                 },
                 {
                   status: 'جاهز للتسليم',
                   title: 'جاهز للتسليم',
-                  description: 'طلبك جاهز للتسليم والتنسيق معك'
+                  description: 'وحدتك جاهزة، وسنتواصل معك لتنسيق موعد التسليم والتركيب.',
+                  icon: `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>`
                 },
                 {
                   status: 'تم التسليم',
                   title: 'تم التسليم',
-                  description: 'تم تسليم طلبك بنجاح'
+                  description: 'تم تسليم وتركيب وحدتك بنجاح.',
+                  icon: `<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="5 12 10 17 19 7"></polyline></svg>`
                 }
               ];
-              const currentIndex = steps.findIndex(
-                step => step.status === order.status
-              );
+
+              const currentIndex = steps.findIndex(step => step.status === order.status);
 
               return steps.map((step, index) => {
                 const isCompleted = currentIndex > index;
                 const isActive = currentIndex === index;
                 return `
                   <div class="dr-status-step ${isCompleted ? 'completed' : ''} ${isActive ? 'active' : ''}">
-
                     <div class="dr-status-step-marker">
-                      ${isCompleted ? '✓' : ''}
+                      ${isCompleted ? '✓' : step.icon}
                     </div>
                     <div class="dr-status-step-content">
-                      <div class="dr-status-step-title">
-                        ${step.title}
-                      </div>
-
-                      ${isActive ? `
-                        <div class="dr-status-step-description">
-                          ${step.description}
-                        </div>
-                      ` : ''}
+                      <div class="dr-status-step-title">${step.title}</div>
+                      ${isActive ? `<div class="dr-status-step-description">${step.description}</div>` : ''}
                     </div>
                   </div>
                 `;
@@ -684,25 +676,58 @@ async function drLoadUserOrders(options = {}) {
           </div>
         `}
 
-        <div class="dr-order-card-actions">
-          <button
-            type="button"
-            onclick="drViewSummary('${order.orderNum}', this)"
-            class="dr-order-summary-btn"
-          >
-            عرض الملخص
-          </button>
+      <div class="dr-order-card-actions">
 
-          <button
-            type="button"
-            onclick="${order.status === 'بانتظار المراجعة'
-              ? `drCancelOrder('${order.orderNum}')`
-              : `showToast('لا يمكن إلغاء الطلب الآن. تواصل معنا عبر واتساب.')`}"
-            class="dr-order-cancel-btn ${order.status !== 'بانتظار المراجعة' ? 'unavailable' : ''}"
+        <button
+          type="button"
+          onclick="drViewSummary('${order.orderNum}', this)"
+          class="dr-order-summary-btn"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
           >
-            إلغاء الطلب
-          </button>
-        </div>
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+          عرض الملخص
+        </button>
+
+        <button
+          type="button"
+          onclick="${order.status === 'بانتظار المراجعة'
+            ? `drCancelOrder('${order.orderNum}')`
+            : `showToast('لا يمكن إلغاء الطلب في هذه المرحلة. تواصل معنا للمساعدة.')`}"
+          class="dr-order-cancel-btn ${order.status !== 'بانتظار المراجعة' ? 'unavailable' : ''}"
+        >
+          إلغاء الطلب
+        </button>
+
+        <button
+          type="button"
+          onclick="drContactOrderWhatsApp('${order.orderNum}')"
+          class="dr-order-summary-btn"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            aria-hidden="true"
+          >
+            <path d="M12 2a10 10 0 0 0-8.66 15L2 22l5.16-1.35A10 10 0 1 0 12 2zm0 18a8 8 0 0 1-4.1-1.13l-.3-.18-3.06.8.82-2.98-.2-.31A8 8 0 1 1 12 20zm4.38-5.9c-.24-.12-1.42-.7-1.64-.78-.22-.08-.38-.12-.54.12-.16.24-.62.78-.76.94-.14.16-.28.18-.52.06-.24-.12-1.02-.38-1.94-1.2-.72-.64-1.2-1.43-1.34-1.67-.14-.24-.01-.37.1-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.3-.74-1.78-.2-.48-.4-.41-.54-.42h-.46c-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2s.86 2.32.98 2.48c.12.16 1.69 2.58 4.1 3.62.57.25 1.02.4 1.37.51.58.18 1.02.4 1.37.51.58.18 1.1.16 1.51.1.46-.07 1.42-.58 1.62-1.14.2-.56.2-1.04.14-1.14-.06-.1-.22-.16-.46-.28z"></path>
+          </svg>
+          تواصل معنا
+        </button>
+
+      </div>
 
         </div>
       </div>
@@ -911,7 +936,6 @@ function loadConfiguratorData() {
 
       const rows = data && data.configurator;
       const colorRows = data && data.colors;
-      console.log('colorRows:', colorRows);
       const settings = data && data.locationSettings;
 
       if (settings && settings.workshop_lat) {
@@ -1959,21 +1983,8 @@ function rHnd() {
         S.selectedHandleShapes = [];
       }
 
-      document.querySelectorAll('#hc .handle-card').forEach(card => {
-        card.classList.remove('selected');
-        if (S.handle && card.dataset.id === S.handle.id) {
-          card.classList.add('selected');
-        }
-      });
-      const shapesRow = document.getElementById('handle-shapes-row');
-      if (shapesRow) {
-        if (S.handle && (S.handle.id === '4c_h&k01' || S.handle.id === '4c_h&k02')) {
-          shapesRow.style.display = 'block';
-        } else {
-          shapesRow.style.display = 'none';
-        }
-      }
-      upd();
+    rHnd();
+    upd();
     };
 
     c.appendChild(el);
@@ -2180,12 +2191,17 @@ function calc() {
   }
 
   const sg = sgr(S.size.size);
-  const installationFee = 200;
-  const unitPrice = r5(S.size.price + colorExtra + dvp(S.div, sg) + (noH ? 0 : S.handle.price * S.design.hc));
 
-  if (installCost === null) return unitPrice + installationFee;
+  const unitPrice = r5(
+    S.size.price +
+    colorExtra +
+    dvp(S.div, sg) +
+    (noH ? 0 : S.handle.price * S.design.hc)
+  );
 
-  return unitPrice + installationFee + installCost;
+  if (installCost === null) return unitPrice;
+
+  return unitPrice + installCost;
 }
 
 let updateTimeout = null;
@@ -3008,14 +3024,22 @@ function getLocation(btn, res, mapContainer, mapImage) {
 }
 
 function requestLocation() {
-  const btn = document.getElementById('btn-locate');
-  const res = document.getElementById('loc-result');
-  const mapContainer = document.getElementById('mapContainer');
-  const mapImage = document.getElementById('staticMap');
+  const btn = document.getElementById('dr-btn-locate');
+  const res = document.getElementById('dr-loc-result');
+  const mapContainer = document.getElementById('dr-mapContainer');
+  const mapImage = document.getElementById('dr-staticMap');
 
   if (!navigator.geolocation) {
-    if (res) { res.textContent = 'خدمة تحديد الموقع غير متاحة حالياً'; res.className = 'loc-result error show'; }
-    if (btn) { btn.disabled = false; btn.innerHTML = 'تحديد موقعي الحالي'; }
+    if (res) {
+      res.textContent = 'خدمة تحديد الموقع غير متاحة حالياً';
+      res.className = 'loc-result error show';
+    }
+
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = 'تحديد موقعي الحالي';
+    }
+
     return;
   }
 
@@ -3088,13 +3112,45 @@ function openDesignRequestModal() {
   modal.style.display = 'flex';
   modal.setAttribute('aria-hidden', 'false');
 
+  const noHandle = isNoHandle();
+  let colorExtra = 0;
+
+  if (S.selectedColors && S.selectedColors[0]) {
+    const selectedId = S.selectedColors[0];
+    let familyKey = 'solid';
+
+    if (selectedId.startsWith('clr_wd_')) familyKey = 'wood';
+    else if (selectedId.startsWith('clr_gls_')) familyKey = 'gloss';
+
+    const colorFamilyObj = (D.colors || []).find(c => c.family === familyKey);
+
+    if (colorFamilyObj) {
+      colorExtra = colorFamilyObj.price || 0;
+    } else {
+      if (familyKey === 'wood') colorExtra = 800;
+      else if (familyKey === 'gloss') colorExtra = 1100;
+    }
+  }
+
+  const sg = sgr(S.size.size);
+
+  const unitPrice = r5(
+    S.size.price +
+    colorExtra +
+    dvp(S.div, sg) +
+    (noHandle ? 0 : S.handle.price * S.design.hc)
+  );
+
   window.drDesignConfig = {
     sinkType: S.sinkType,
     design: S.design,
     size: S.size,
     division: S.div,
     handle: S.handle,
-    unitPrice: calc()
+
+    unitPrice,
+    installationFee: 200,
+    installationCost: installCost
   };
 
   document.getElementById('dr-sink-type').value =
@@ -3677,17 +3733,37 @@ async function drRenderPreview() {
     if (notesEl) {
       notesEl.innerHTML = isManualLocation
         ? `
-          1. يرجى التواصل قبل التوصيل بيوم لتحديد الميعاد المناسب.<br>
-          2. تكلفة النقل تقديرية بناءً على المحافظة والحي المحددين يدويًا، وقد تختلف التكلفة الفعلية بعد تحديد الموقع بدقة.
+          1. الأسعار الموضحة في هذا الملخص مبنية على الاختيارات والمواصفات المحددة في الطلب.<br>
+          2. تكلفة الانتقالات تقديرية بناءً على المحافظة والحي المحددين يدويًا، وقد تختلف التكلفة الفعلية بعد تحديد الموقع بدقة.
         `
         : `
-          1. يرجى التواصل قبل التوصيل بيوم لتحديد الميعاد المناسب.
+          1. الأسعار الموضحة في هذا الملخص مبنية على الاختيارات والمواصفات المحددة في الطلب.
         `;
     }
 
     const designTbody = content.querySelector('#sink-design-items');
     if (designTbody) {
       const selectedColorId = S.selectedColors && S.selectedColors[0] ? S.selectedColors[0] : null;
+      let colorExtra = 0;
+
+      if (selectedColorId) {
+        let familyKey = 'solid';
+
+        if (selectedColorId.startsWith('clr_wd_')) {
+          familyKey = 'wood';
+        } else if (selectedColorId.startsWith('clr_gls_')) {
+          familyKey = 'gloss';
+        }
+
+        const colorFamilyObj = (D.colors || []).find(c => c.family === familyKey);
+
+        if (colorFamilyObj) {
+          colorExtra = colorFamilyObj.price || 0;
+        } else {
+          if (familyKey === 'wood') colorExtra = 800;
+          else if (familyKey === 'gloss') colorExtra = 1100;
+        }
+      }
       const colorImgHtml = selectedColorId
         ? `<img src="images/conf/clr/${encodeURIComponent(selectedColorId)}.webp" style="height:36px; object-fit:contain;" onerror="this.src='images/conf/clr/${encodeURIComponent(selectedColorId)}.png'" />`
         : '—';
@@ -3698,7 +3774,7 @@ async function drRenderPreview() {
           <td class="col-name">${config.design.name}</td>
           <td class="col-code">${config.design.id}</td>
           <td class="col-color">${colorImgHtml}</td>
-          <td class="col-price">${config.size.price} ج.م</td>
+          <td class="col-price">${(Number(config.size.price) + colorExtra).toLocaleString('en-US')} ج.م</td>
         </tr>
       `;
     }
@@ -3739,9 +3815,77 @@ async function drRenderPreview() {
       `;
     }
 
+    const unitTotalEl = content.querySelector('#sink-unit-total');
+
+    const noHandle = isNoHandle();
+    const previewSizeGroup = sgr(config.size.size);
+
+    let colorExtra = 0;
+
+    const selectedColorId =
+      S.selectedColors && S.selectedColors[0]
+        ? S.selectedColors[0]
+        : '';
+
+    if (selectedColorId) {
+      let familyKey = 'solid';
+
+      if (selectedColorId.startsWith('clr_wd_')) {
+        familyKey = 'wood';
+      } else if (selectedColorId.startsWith('clr_gls_')) {
+        familyKey = 'gloss';
+      }
+
+      const colorFamilyObj = (D.colors || [])
+        .find(c => c.family === familyKey);
+
+      if (colorFamilyObj) {
+        colorExtra = colorFamilyObj.price || 0;
+      } else {
+        if (familyKey === 'wood') colorExtra = 800;
+        else if (familyKey === 'gloss') colorExtra = 1100;
+      }
+    }
+
+    const previewUnitPrice = r5(
+      config.size.price +
+      colorExtra +
+      dvp(config.division, previewSizeGroup) +
+      (
+        noHandle
+          ? 0
+          : config.handle.price * config.design.hc
+      )
+    );
+
+    if (unitTotalEl) {
+      unitTotalEl.textContent =
+        `${previewUnitPrice.toLocaleString('en-US')} ج.م`;
+    }
+
+    const inspectionCostEl = content.querySelector('#inspection-cost');
+
+    if (inspectionCostEl) {
+      inspectionCostEl.textContent = '200 ج.م';
+    }
+
     const totalEl = content.querySelector('#order-total');
+
     if (totalEl) {
-      totalEl.textContent = `${config.unitPrice} ج.م`;
+      const shipping =
+        shippingCost !== null &&
+        shippingCost !== undefined &&
+        shippingCost !== ''
+          ? Number(shippingCost)
+          : 0;
+
+      const total =
+        previewUnitPrice +
+        shipping +
+        200;
+
+      totalEl.textContent =
+        `${total.toLocaleString('en-US')} ج.م`;
     }
 
     const orderNumEl = content.querySelector('#order-number');
@@ -4394,9 +4538,6 @@ async function drSubmitOrder() {
       button.disabled = false;
       button.classList.remove('is-loading');
       button.innerHTML = `
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M20 6L9 17l-5-5"></path>
-        </svg>
         تأكيد الطلب
       `;
     }
