@@ -1781,7 +1781,7 @@
   background: var(--color-bg-white);
   max-width: 900px;
   width: 95%;
-  max-height: 85vh;
+  height: 85vh;
   overflow-y: auto;
   box-shadow: 0 10px 40px rgba(0,0,0,0.2);
   display: flex;
@@ -2427,6 +2427,15 @@ select.dr-input {
   font-weight: 400;
 }
 
+.dr-approximate-price {
+  display: block;
+  margin-top: 2px;
+  color: var(--color-text-muted);
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.3;
+}
+
 /* =========================================
    Order Status Stepper
 ========================================= */
@@ -2738,6 +2747,116 @@ select.dr-input {
   color: rgba(51, 48, 40, 0.58);
 }
 
+.dr-orders-loading-new {
+  padding: 10px 0 20px;
+}
+
+.dr-order-skeleton {
+  padding: 16px;
+  border: 1px solid rgba(51, 48, 40, 0.08);
+  border-radius: 10px;
+  background: #fff;
+}
+
+.dr-skeleton-line {
+  border-radius: 5px;
+  background: rgba(51, 48, 40, 0.08);
+  animation: drSkeletonPulse 1.4s ease-in-out infinite;
+}
+
+.dr-skeleton-date {
+  width: 90px;
+  height: 10px;
+  margin-bottom: 16px;
+}
+
+.dr-skeleton-title {
+  width: 65%;
+  height: 15px;
+  margin-bottom: 10px;
+}
+
+.dr-skeleton-price {
+  width: 40%;
+  height: 13px;
+  margin-bottom: 24px;
+}
+
+.dr-skeleton-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.dr-skeleton-step {
+  width: 100%;
+  height: 12px;
+  border-radius: 5px;
+  background: rgba(51, 48, 40, 0.07);
+  animation: drSkeletonPulse 1.4s ease-in-out infinite;
+}
+
+.dr-orders-loading-message {
+  margin-top: 12px;
+  color: var(--color-text-muted, #666);
+  font-size: 11px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+@keyframes drSkeletonPulse {
+  0%, 100% {
+    opacity: 0.45;
+  }
+
+  50% {
+    opacity: 0.9;
+  }
+}
+
+.dr-order-card-new {
+  animation: drOrderCardAppear 0.45s ease-out;
+}
+
+@keyframes drOrderCardAppear {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dr-btn-primary:disabled {
+  cursor: wait;
+  opacity: 0.75;
+}
+
+.dr-btn-primary.is-loading {
+  pointer-events: none;
+}
+
+.dr-btn-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: drButtonSpin 0.7s linear infinite;
+  vertical-align: middle;
+  margin-inline-end: 6px;
+}
+
+@keyframes drButtonSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* الشريط الجانبي المثبت دائماً */
 .dr-sidebar-tab {
   position: fixed;
@@ -2965,9 +3084,9 @@ select.dr-input {
 .loc-result {
   display: none;
   margin-top: 10px;
-  padding: 8px 12px;
-  background: rgba(156, 175, 136, 0.15);
-  border: 1px solid rgba(156, 175, 136, 0.3);
+  padding: 9px 12px;
+  background: rgba(156, 175, 136, 0.08);
+  border: none;
   border-radius: var(--radius-xs);
   font-size: 12px;
   color: var(--color-primary);
@@ -2983,6 +3102,24 @@ select.dr-input {
   background: rgba(255, 100, 100, 0.1);
   border-color: rgba(255, 100, 100, 0.3);
   color: #ff9999;
+}
+
+.info-tooltip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  margin-right: 4px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font-size: 9px;
+  font-family: Arial, sans-serif;
+  font-weight: 600;
+  line-height: 1;
+  cursor: help;
+  vertical-align: 1px;
+  opacity: 0.75;
 }
 
 /* Map Wrapper */

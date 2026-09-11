@@ -336,12 +336,22 @@ async function drOnDistrictChange() {
 
   if (res) {
     res.innerHTML = `
-      تم تحديد المنطقة — تكلفة التوصيل التقريبية:
-      ${Number(calculatedCost).toLocaleString('en-US')} EGP
-      <br>
-      <small>
-        التكلفة تقديرية بناءً على المحافظة والحي المختارين.
-      </small>
+      <div>تم تحديد المنطقة — تكلفة التوصيل:</div>
+
+      <div style="font-size: 15px; font-weight: 600; margin-top: 2px;">
+        ${Number(calculatedCost).toLocaleString('en-US')} EGP
+      </div>
+
+      <div style="font-size: 10px; font-weight: 400; margin-top: 1px;">
+        (تقريبية)
+        <span
+          class="info-tooltip"
+          role="button"
+          tabindex="0"
+          aria-label="معلومات عن التكلفة التقريبية"
+          data-tooltip="تم تقدير التكلفة بناءً على المحافظة والحي المختارين. لتحديد التكلفة بدقة أكبر، يُفضل استخدام تحديد الموقع تلقائيًا."
+        >i</span>
+      </div>
     `;
     res.className = 'loc-result show';
   }
@@ -400,10 +410,13 @@ function formatOrderDate(dateString) {
 
 window.drOrdersLoaded = false;
 
-async function drOpenOrdersDrawer() {
+async function drOpenOrdersDrawer(options = {}) {
   const drawer = document.getElementById('drOrdersDrawer');
   const backdrop = document.getElementById('drDrawerOverlay');
   const bodyContainer = document.getElementById('drOrdersContainer');
+
+  const focusOrderNum = options.focusOrderNum || null;
+  const showLoading = options.showLoading === true;
 
   if (drawer && backdrop) {
 
@@ -424,26 +437,75 @@ async function drOpenOrdersDrawer() {
       }
 
     }, 180);
-
   }
 
   if (!window.currentUser) {
     if (bodyContainer) {
       const loginTemplate =
-    document.getElementById('dr-orders-login-template');
+        document.getElementById('dr-orders-login-template');
 
-  if (loginTemplate) {
-    bodyContainer.replaceChildren(
-      loginTemplate.content.cloneNode(true)
-    );
-  }
+      if (loginTemplate) {
+        bodyContainer.replaceChildren(
+          loginTemplate.content.cloneNode(true)
+        );
+      }
     }
     return;
-    }
+  }
 
-  if (!window.drOrdersLoaded) {
-    await drLoadUserOrders();
-    window.drOrdersLoaded = true;
+  // عند فتح الدرج بعد إرسال طلب جديد، نعرض skeleton فورًا
+  if (showLoading && bodyContainer) {
+    bodyContainer.innerHTML = `
+      <div class="dr-orders-loading-new">
+        <div class="dr-order-skeleton">
+          <div class="dr-skeleton-line dr-skeleton-date"></div>
+          <div class="dr-skeleton-line dr-skeleton-title"></div>
+          <div class="dr-skeleton-line dr-skeleton-price"></div>
+
+          <div class="dr-skeleton-steps">
+            <div class="dr-skeleton-step"></div>
+            <div class="dr-skeleton-step"></div>
+            <div class="dr-skeleton-step"></div>
+            <div class="dr-skeleton-step"></div>
+          </div>
+        </div>
+
+        <div class="dr-orders-loading-message">
+          جاري تحميل بيانات طلبك، قد يستغرق الأمر بضع ثوانٍ...
+        </div>
+      </div>
+    `;
+  }
+
+  // إجبار تحميل البيانات من جديد بعد إرسال الطلب
+  window.drOrdersLoaded = false;
+
+  await drLoadUserOrders();
+
+  window.drOrdersLoaded = true;
+
+  // محاولة الوصول تلقائيًا للطلب الذي تم إرساله
+  if (focusOrderNum && bodyContainer) {
+    const orderCards = bodyContainer.querySelectorAll('.dr-order-card');
+
+    orderCards.forEach(card => {
+      const orderId = card.querySelector('.dr-order-id');
+
+      if (orderId && orderId.textContent.trim() === String(focusOrderNum)) {
+        requestAnimationFrame(() => {
+          card.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+
+          card.classList.add('dr-order-card-new');
+
+          setTimeout(() => {
+            card.classList.remove('dr-order-card-new');
+          }, 2500);
+        });
+      }
+    });
   }
 }
 
@@ -537,9 +599,20 @@ async function drLoadUserOrders(options = {}) {
 
           <div class="dr-order-detail">
             <span class="dr-order-detail-label">إجمالي الطلب</span>
-            <span class="dr-order-detail-value">
+          <span class="dr-order-detail-value">
             ${Number(order.unitPrice).toLocaleString('en-US')} ج.م
-            ${order.locationMethod === 'يدوي' ? '<small class="dr-approximate-price"> (تقريبي)</small>' : ''}
+            ${order.locationMethod === 'يدوي'
+              ? `<span class="dr-approximate-price">
+                  تقريبي
+                  <span
+                    class="info-tooltip"
+                    role="button"
+                    tabindex="0"
+                    aria-label="معلومات عن التكلفة التقريبية"
+                    data-tooltip="تم تقدير تكلفة النقل بناءً على المحافظة والحي المختارين. التكلفة النهائية قد تزيد أو تقل قليلًا بعد تحديد الموقع بدقة."
+                  >i</span>
+                </span>`
+              : ''}
           </span>
           </div>
         </div>
@@ -614,21 +687,21 @@ async function drLoadUserOrders(options = {}) {
         <div class="dr-order-card-actions">
           <button
             type="button"
-            onclick="drViewSummary('${order.orderNum}')"
+            onclick="drViewSummary('${order.orderNum}', this)"
             class="dr-order-summary-btn"
           >
             عرض الملخص
           </button>
 
-        <button
-          type="button"
-          onclick="${order.status === 'بانتظار المراجعة'
-            ? `drCancelOrder('${order.orderNum}')`
-            : `showToast('لا يمكن إلغاء الطلب الآن. تواصل معنا عبر واتساب.')`}"
-          class="dr-order-cancel-btn ${order.status !== 'بانتظار المراجعة' ? 'unavailable' : ''}"
-        >
-          إلغاء الطلب
-        </button>
+          <button
+            type="button"
+            onclick="${order.status === 'بانتظار المراجعة'
+              ? `drCancelOrder('${order.orderNum}')`
+              : `showToast('لا يمكن إلغاء الطلب الآن. تواصل معنا عبر واتساب.')`}"
+            class="dr-order-cancel-btn ${order.status !== 'بانتظار المراجعة' ? 'unavailable' : ''}"
+          >
+            إلغاء الطلب
+          </button>
         </div>
 
         </div>
@@ -3694,10 +3767,59 @@ window.drRenderPreview = drRenderPreview;
 
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
-    if (!file) return resolve(null);
-        const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
+    if (!file) {
+      resolve(null);
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      const img = new Image();
+
+      img.onload = () => {
+        const maxSize = 1600;
+
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxSize || height > maxSize) {
+          if (width >= height) {
+            height = Math.round(height * (maxSize / width));
+            width = maxSize;
+          } else {
+            width = Math.round(width * (maxSize / height));
+            height = maxSize;
+          }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+
+        if (!ctx) {
+          reject(new Error('Canvas is not supported'));
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.78);
+
+        resolve(compressedBase64);
+      };
+
+      img.onerror = () => {
+        reject(new Error('Failed to load image'));
+      };
+
+      img.src = reader.result;
+    };
+
     reader.onerror = error => reject(error);
+
     reader.readAsDataURL(file);
   });
 }
@@ -3920,21 +4042,25 @@ function loadDRDraft() {
           document.getElementById('dr-toggle-manual-address');
 
         if (manualLink) {
-          manualLink.style.display = 'block';
+          manualLink.style.display = 'none';
         }
 
         const res = document.getElementById('dr-loc-result');
 
         if (res) {
           res.innerHTML = `
-            تم استعادة موقعك المحدد يدويًا — تكلفة التوصيل التقريبية:
-            ${window.installCost !== null
-              ? Number(window.installCost).toLocaleString('en-US') + ' EGP'
-              : '—'}
-            <br>
-            <small>
-              التكلفة تقديرية بناءً على المحافظة والحي المختارين.
-            </small>
+            <div>
+              تكلفة التوصيل:
+              <strong>
+                ${window.installCost !== null
+                  ? Number(window.installCost).toLocaleString('en-US') + ' EGP'
+                  : '—'}
+              </strong>
+            </div>
+
+            <div style="font-size: 10px; font-weight: 400; margin-top: 2px;">
+              (تقديرية — يُفضل تحديد الموقع تلقائيًا لحساب التكلفة بدقة أكبر)
+            </div>
           `;
 
           res.className = 'loc-result show';
@@ -4107,13 +4233,26 @@ function drGetLocation() {
 window.drGetLocation = drGetLocation;
 
 async function submitOrderToSheet() {
-
   const config = window.drDesignConfig;
+
+  // ID ثابت لنفس محاولة إرسال الطلب
+  let submissionId =
+    localStorage.getItem('wodi_pending_submission_id');
+
+  if (!submissionId) {
+    submissionId =
+      `SUB-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+
+    localStorage.setItem(
+      'wodi_pending_submission_id',
+      submissionId
+    );
+  }
   const locationAddress = window.userLocationAddress || {};
   const currentUser = window.currentUser || null;
 
   const body = {
-
+    submissionId,
     email: currentUser?.email || null,
     uid: currentUser?.uid || null,
 
@@ -4125,10 +4264,9 @@ async function submitOrderToSheet() {
     sinkCode: document.getElementById('dr-sink-code')?.value || '',
 
     locationAddress,
-
-  locationAddress,
-  locationMethod: window.drIsManualLocation === true ? 'يدوي' : 'تلقائي',
-  lat: window.userLat || '',
+    locationMethod: window.drIsManualLocation === true ? 'يدوي' : 'تلقائي',
+    lat: window.drIsManualLocation === true ? '' : (window.userLat || ''),
+    lng: window.drIsManualLocation === true ? '' : (window.userLng || ''),
 
     sinkType: config?.sinkType || '',
     designName: config?.design?.name || '',
@@ -4229,32 +4367,48 @@ async function submitOrderToSheet() {
   }
 }
 
-async function drSendWhatsApp() {
-  const config = window.drDesignConfig;
-  const brand = document.getElementById('dr-sink-brand').value || 'غير متوفر';
-  const width = document.getElementById('dr-sink-width').value || 'غير متوفر';
-  const code = document.getElementById('dr-sink-code').value || 'غير متوفر';
-  const name = document.getElementById('dr-customer-name').value || 'غير متوفر';
-  const locationAddress = window.userLocationAddress || {};
-  const location = locationAddress.governorate ? `${locationAddress.governorate} - ${locationAddress.district || ''}` : 'غير متوفر';
+async function drSubmitOrder() {
+  const button = document.getElementById('dr-btn-whatsapp');
 
-  // منع إعادة الإرسال
-  if (localStorage.getItem('wodi_order_submitted')) {
-    showToast('تم إرسال طلبك مسبقاً — تواصل معنا على الواتساب للمتابعة');
-    return;
+  // منع الضغط المتكرر أثناء الإرسال
+  if (button?.disabled) return;
+
+  // تغيير شكل الزر فورًا لإظهار أن الضغط تم الاستجابة له
+  if (button) {
+    button.disabled = true;
+    button.classList.add('is-loading');
+    button.innerHTML = `
+      <span class="dr-btn-spinner"></span>
+      جاري إرسال الطلب...
+    `;
   }
 
   const orderNum = await submitOrderToSheet();
-    
+
+  // لو فشل الإرسال: لا نقفل المودال ولا نصفر أي بيانات
   if (!orderNum) {
     console.warn('Order not saved to sheet');
     showToast('حدث خطأ أثناء إرسال الطلب — حاول مرة أخرى');
+
+    if (button) {
+      button.disabled = false;
+      button.classList.remove('is-loading');
+      button.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 6L9 17l-5-5"></path>
+        </svg>
+        تأكيد الطلب
+      `;
+    }
+
     return;
   }
 
+  // وصلنا هنا فقط بعد نجاح حفظ الطلب
   window.drCurrentOrderNum = orderNum;
   localStorage.setItem('wodi_order_submitted', orderNum);
-  drShowConfirmation(orderNum);
+
+  localStorage.removeItem('wodi_pending_submission_id');
 
   // مسح اختيارات الكونفيجوريتور والداتا
   if (typeof resetAll === 'function') resetAll();
@@ -4262,34 +4416,20 @@ async function drSendWhatsApp() {
   localStorage.removeItem(DR_STORAGE_KEY);
   sessionStorage.removeItem('wodi_configurator_cache');
 
-  const message = `السلام عليكم،
+  // إغلاق مودال طلب التصميم
+  closeDesignRequestModal();
 
-    أرغب في طلب معاينة وتصميم لوحدة حوض.
-    *رقم الطلب:* ${orderNum}
+  // فتح درج الطلبات وإظهار حالة التحميل
+  await drOpenOrdersDrawer({
+    focusOrderNum: orderNum,
+    showLoading: true
+  });
 
-    *بيانات العميل:*
-    الاسم: ${name}
-    العنوان: ${location}
-
-    *مواصفات الحوض:*
-    العلامة: ${brand}
-    العرض: ${width} سم
-    الكود: ${code}
-
-    *مواصفات الوحدة المطلوبة:*
-    النوع: ${config.sinkType}
-    التصميم: ${config.design.name}
-    المقاس: ${config.size.size}
-    التقسيمة: ${config.division.name}
-    المقبض: ${config.handle ? config.handle.name : 'بدون'}
-    إجمالي الطلب: ${config.unitPrice} ج.م
-
-    يرجى التواصل معي لتأكيد التفاصيل والمتابعة.
-    شكراً لكم.`;
-
-  const waUrl = `https://wa.me/201556840368?text=${encodeURIComponent(message)}`;
-  window.open(waUrl, '_blank');
+  // تم إرسال الطلب بنجاح
+  showToast('تم إرسال الطلب بنجاح');
 }
+
+window.drSubmitOrder = drSubmitOrder;
 
 function drShowConfirmation(orderNum) {
   const modal = document.getElementById('design-request-modal');
@@ -4314,7 +4454,7 @@ function drShowConfirmation(orderNum) {
   `;
 }
 
-async function drViewSummary(orderNum) {
+async function drViewSummary(orderNum, button) {
 
   if (!orderNum) return;
 
@@ -4325,39 +4465,64 @@ async function drViewSummary(orderNum) {
     return;
   }
 
+  // منع الضغط المتكرر أثناء التحميل
+  if (button?.disabled) return;
+
+  let loadingToastTimer = null;
+
+  if (button) {
+    button.disabled = true;
+    button.classList.add('is-loading');
+    button.innerHTML = `
+      <span class="dr-btn-spinner"></span>
+      جاري تحميل الملخص...
+    `;
+
+    loadingToastTimer = setTimeout(() => {
+      showToast(
+        'جاري تحميل بيانات الطلب، قد يستغرق الأمر بضع ثوانٍ...'
+      );
+    }, 3000);
+  }
+
+  if (!currentUser?.email) {
+    showToast('تعذر تحديد حساب المستخدم');
+    return;
+  }
+
   try {
 
     // =========================================================
-    // تحميل بيانات الطلب من Sheet
+    // تحميل الطلب + قالب الملخص بالتوازي
     // =========================================================
 
-    const response = await fetch(
+    const orderPromise = fetch(
       `/api/get-config?action=getOrder&orderNum=${encodeURIComponent(orderNum)}&email=${encodeURIComponent(currentUser.email)}`
-    );
+    ).then(response => response.json());
 
-    const data = await response.json();
+    if (!window.drOrderSummaryTemplatePromise) {
+      window.drOrderSummaryTemplatePromise =
+        fetch('product-order-summary.html', {
+          cache: 'force-cache'
+        }).then(response => {
+          if (!response.ok) {
+            throw new Error('Failed to load invoice template');
+          }
+
+          return response.text();
+        });
+    }
+
+    const [data, html] = await Promise.all([
+      orderPromise,
+      window.drOrderSummaryTemplatePromise
+    ]);
 
     if (!data.success || !data.order) {
-      showToast('ملخص هذا الطلب غير متوفر');
-      return;
+      throw new Error('Order summary not available');
     }
 
     const order = data.order;
-
-    // =========================================================
-    // تحميل قالب الملخص
-    // =========================================================
-
-    const templateResponse =
-      await fetch('product-order-summary.html', {
-        cache: 'no-store'
-      });
-
-    if (!templateResponse.ok) {
-      throw new Error('Failed to load invoice template');
-    }
-
-    const html = await templateResponse.text();
 
     const parser = new DOMParser();
 
@@ -4528,6 +4693,24 @@ async function drViewSummary(orderNum) {
           ? lat.toFixed(6)
           : 'غير متوفر';
     }
+
+ // =========================================================
+// Tooltip
+// =========================================================
+  
+  document.addEventListener('click', function (e) {
+  const tooltip = e.target.closest('.info-tooltip');
+
+  document.querySelectorAll('.info-tooltip.is-open').forEach(el => {
+    if (el !== tooltip) {
+      el.classList.remove('is-open');
+    }
+  });
+
+  if (tooltip) {
+    tooltip.classList.toggle('is-open');
+  }
+});
 
 
  // =========================================================
@@ -5114,25 +5297,19 @@ if (handleTbody) {
     const htmlContent = `
 
 <!DOCTYPE html>
-
 <html lang="ar" dir="rtl">
 
 <head>
-
   <meta charset="UTF-8">
-
   <base href="${baseUrl}">
-
   <link
     href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap"
     rel="stylesheet"
   >
-
   <link
     rel="stylesheet"
     href="${baseUrl}css/product-order-summary.css"
   >
-
   <style>
 
     body {
@@ -5147,103 +5324,67 @@ if (handleTbody) {
     }
 
     @media print {
-
       body {
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
       }
-
       @page {
         size: A4;
         margin: 10mm;
       }
-
       .print-btn {
         display: none;
       }
-
     }
 
     .print-btn {
-
       position: fixed;
-
       bottom: 24px;
-
       left: 50%;
-
       transform: translateX(-50%);
-
       background: #91a37f;
-
       color: #fff;
-
       border: none;
-
       padding: 12px 32px;
-
       font-size: 16px;
-
       font-family: 'Cairo', sans-serif;
-
       border-radius: 8px;
-
       cursor: pointer;
-
       z-index: 9999;
-
-      box-shadow:
-        0 4px 12px rgba(0,0,0,0.2);
-
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
-
   </style>
-
 </head>
-
 <body>
-
   <button
     class="print-btn"
     onclick="window.print()"
   >
     طباعة / حفظ كـ PDF
   </button>
-
   ${content.innerHTML}
-
 </body>
-
 </html>
 
 `;
+  const blob = new Blob(
+    [htmlContent],
+    {
+      type: 'text/html'
+    }
+  );
 
+  const blobUrl = URL.createObjectURL(blob);
 
-    const blob =
-      new Blob(
-        [htmlContent],
-        {
-          type: 'text/html'
-        }
-      );
+  window.open(
+    blobUrl,
+    '_blank'
+  );
 
-
-    const blobUrl =
-      URL.createObjectURL(blob);
-
-
-    window.open(
-      blobUrl,
-      '_blank'
-    );
-
-
-    setTimeout(
-      () => URL.revokeObjectURL(blobUrl),
-      30000
-    );
-
-
+  setTimeout(
+    () => URL.revokeObjectURL(blobUrl),
+    30000
+  );
   } catch (error) {
 
     console.error(
@@ -5252,8 +5393,23 @@ if (handleTbody) {
     );
 
     showToast(
-      'تعذر تحميل ملخص الطلب'
+      'تعذر تحميل ملخص الطلب — حاول مرة أخرى'
     );
+
+  } finally {
+
+    if (loadingToastTimer) {
+      clearTimeout(loadingToastTimer);
+    }
+
+    if (button) {
+      button.disabled = false;
+      button.classList.remove('is-loading');
+
+      button.innerHTML = `
+        عرض الملخص
+      `;
+    }
   }
 }
 
