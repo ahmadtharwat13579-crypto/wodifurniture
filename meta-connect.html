@@ -23,7 +23,8 @@
     };
 
     (function (d, s, id) {
-      var js, fjs = d.getElementsByTagName(s)[0];
+      var js;
+      var fjs = d.getElementsByTagName(s)[0];
 
       if (d.getElementById(id)) return;
 
@@ -34,19 +35,44 @@
     }(document, 'script', 'facebook-jssdk'));
 
 
+    window.addEventListener('message', function (event) {
+
+      if (event.origin !== 'https://www.facebook.com') return;
+
+      try {
+        const data = JSON.parse(event.data);
+
+        if (data.type === 'WA_EMBEDDED_SIGNUP') {
+          console.log('WhatsApp Embedded Signup:', data);
+        }
+      } catch (error) {
+        console.log('Meta message:', event.data);
+      }
+
+    });
+
+
     document.getElementById('connect-whatsapp').addEventListener('click', function () {
 
       FB.login(function (response) {
 
-        console.log('Embedded Signup response:', response);
+        console.log('Facebook Login response:', response);
+
+        if (response.authResponse) {
+          console.log(
+            'Authorization code:',
+            response.authResponse.code
+          );
+        }
 
       }, {
         config_id: '1390408459872085',
         response_type: 'code',
         override_default_response_type: true,
+
         extras: {
-          featureType: 'whatsapp_business_app_onboarding',
-          sessionInfoVersion: '3'
+          setup: {},
+          featureType: 'whatsapp_business_app_onboarding'
         }
       });
 
