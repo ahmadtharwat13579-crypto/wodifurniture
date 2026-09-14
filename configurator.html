@@ -1011,7 +1011,6 @@ fetch('nav.html')
 <div id="config-loader-overlay" class="config-loader-overlay" style="display:none;">
   <div class="config-loader-card">
     <div class="loader-top">
-      <!-- أيقونة الساعة الرملية -->
       <svg class="hourglass-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <path d="M5 22h14"></path>
         <path d="M5 2h14"></path>
@@ -1020,10 +1019,18 @@ fetch('nav.html')
       </svg>
       <span class="loader-title">جاري تطبيق اختياراتك السابقة</span>
     </div>
-    
+
     <div class="loader-bar-container">
       <div class="loader-bar-fill"></div>
     </div>
+
+    <button
+      type="button"
+      class="config-loader-skip"
+      onclick="skipSavedConfiguratorState()"
+    >
+      لا أرغب في تطبيق اختياراتي السابقة
+    </button>
   </div>
 </div>
 
@@ -1072,7 +1079,7 @@ fetch('nav.html')
         </svg>
 
         <span class="loader-title">
-          جاري تحميل طلباتك
+          جاري تحميل طلباتك...
         </span>
 
       </div>

@@ -2437,8 +2437,8 @@ select.dr-input {
 }
 
 .dr-approximate-price {
-  display: block;
-  margin-top: 2px;
+  display: inline;
+  margin-right: 4px;
   color: var(--color-text-muted);
   font-size: 10px;
   font-weight: 400;
@@ -2616,13 +2616,24 @@ select.dr-input {
 ========================================= */
 
 .dr-order-card-actions {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 8px;
+  width: 100%;
+  margin-top: var(--space-3);
+  box-sizing: border-box;
 }
 
-.dr-order-card-actions button {
-  white-space: nowrap;
+.dr-order-card-actions .dr-order-summary-btn {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.dr-order-card-actions .dr-order-cancel-btn {
+  grid-column: 1 / -1;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .dr-order-summary-btn {
@@ -2637,14 +2648,6 @@ select.dr-input {
   width: 16px;
   height: 16px;
   flex-shrink: 0;
-}
-
-.dr-order-cancel-btn {
-  flex: 1 1 0;
-}
-
-.dr-order-card-actions .dr-order-summary-btn:last-child {
-  flex: 0 0 100%;
 }
 
 .dr-order-summary-btn,
@@ -2795,6 +2798,32 @@ select.dr-input {
 
 .dr-orders-loading-new {
   padding: 10px 0 20px;
+}
+
+.config-loader-skip {
+  margin: 6px 0 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #333028;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  align-self: flex-start;
+  text-align: right;
+}
+
+.config-loader-skip:hover {
+  opacity: 0.7;
+}
+
+.config-loader-skip:focus-visible {
+  outline: 2px solid #9caf88;
+  outline-offset: 3px;
+  border-radius: 2px;
 }
 
 .dr-order-skeleton {

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connect WhatsApp</title>
+</head>
+
+<body>
+
+  <button id="connect-whatsapp">
+    Connect WhatsApp
+  </button>
+
+  <script>
+    window.fbAsyncInit = function () {
+      FB.init({
+        appId: '1608289084251626',
+        cookie: true,
+        xfbml: true,
+        version: 'v24.0'
+      });
+    };
+
+    (function (d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+
+      if (d.getElementById(id)) return;
+
+      js = d.createElement(s);
+      js.id = id;
+      js.src = 'https://connect.facebook.net/en_US/sdk.js';
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+
+
+    document.getElementById('connect-whatsapp').addEventListener('click', function () {
+
+      FB.login(function (response) {
+
+        console.log('Embedded Signup response:', response);
+
+      }, {
+        config_id: '1390408459872085',
+        response_type: 'code',
+        override_default_response_type: true,
+        extras: {
+          featureType: 'whatsapp_business_app_onboarding',
+          sessionInfoVersion: '3'
+        }
+      });
+
+    });
+  </script>
+
+</body>
+</html>
