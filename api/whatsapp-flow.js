@@ -58,7 +58,7 @@ module.exports = async (req, res) => {
         if (decryptedData.action === 'ping') {
             responsePayload = {
                 version: decryptedData.version || "3.0",
-                data: decryptedData.data || {}
+                data: {}
             };
         } else {
             responsePayload = {
