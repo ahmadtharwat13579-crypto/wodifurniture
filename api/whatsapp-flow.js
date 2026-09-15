@@ -5,6 +5,7 @@ const PASSPHRASE = process.env.WHATSAPP_PASSPHRASE || '';
 
 function generateUpcomingDays() {
     const daysArabic = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+    const monthsArabic = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
     const options = [];
     const today = new Date();
 
@@ -13,8 +14,8 @@ function generateUpcomingDays() {
         d.setDate(today.getDate() + i);
 
         const dayName = daysArabic[d.getDay()];
-        const dayDate = `${d.getDate()}/${d.getMonth() + 1}`;
-        const title = `${dayName} (${dayDate})`;
+        const monthName = monthsArabic[d.getMonth()];
+        const title = `${dayName}، ${d.getDate()} ${monthName}`;
         const id = `day_${d.getFullYear()}_${d.getMonth() + 1}_${d.getDate()}`;
 
         options.push({ id, title });
@@ -73,7 +74,6 @@ module.exports = async (req, res) => {
         const { encrypted_aes_key, encrypted_flow_data, initial_vector } = req.body;
         const { decryptedData, decryptedAesKey } = decryptRequest(encrypted_flow_data, encrypted_aes_key, initial_vector);
 
-        console.log("RECEIVED PAYLOAD:", JSON.stringify(decryptedData, null, 2));
 
         let responsePayload;
         const { action, screen, data, flow_token } = decryptedData;
@@ -117,7 +117,7 @@ module.exports = async (req, res) => {
                     day2_show: Boolean(selectedDaysData[1]),
                     day3_title: selectedDaysData[2] ? selectedDaysData[2].title : '',
                     day3_show: Boolean(selectedDaysData[2]),
-                    day4_title: selectedDaysData[4] ? selectedDaysData[3].title : '',
+                    day4_title: selectedDaysData[3] ? selectedDaysData[3].title : '',
                     day4_show: Boolean(selectedDaysData[3]),
                     day5_title: selectedDaysData[4] ? selectedDaysData[4].title : '',
                     day5_show: Boolean(selectedDaysData[4]),
