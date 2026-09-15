@@ -84,15 +84,6 @@ module.exports = async (req, res) => {
         else if (action === 'INIT') {
             const dynamicDays = generateUpcomingDays();
             responsePayload = {
-                screen: "DAY_SCREEN",
-                data: {
-                    days_list: dynamicDays
-                }
-            };
-        } 
-        else if (action === 'INIT') {
-            const dynamicDays = generateUpcomingDays();
-            responsePayload = {
                 screen: "BOOKING_SCREEN",
                 data: {
                     days_list: dynamicDays
@@ -110,13 +101,6 @@ module.exports = async (req, res) => {
                         }
                     }
                 }
-            };
-        } 
-        else if (action === 'BACK') {
-            const dynamicDays = generateUpcomingDays();
-            responsePayload = {
-                screen: "DAY_SCREEN",
-                data: { days_list: dynamicDays }
             };
         } else {
             responsePayload = {
