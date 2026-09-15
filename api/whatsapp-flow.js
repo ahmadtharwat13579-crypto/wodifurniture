@@ -90,36 +90,27 @@ module.exports = async (req, res) => {
                 }
             };
         } 
+        else if (action === 'INIT') {
+            const dynamicDays = generateUpcomingDays();
+            responsePayload = {
+                screen: "BOOKING_SCREEN",
+                data: {
+                    days_list: dynamicDays
+                }
+            };
+        } 
         else if (action === 'data_exchange') {
-            if (screen === 'DAY_SCREEN') {
-                responsePayload = {
-                    screen: "TIME_SCREEN",
-                    data: {}
-                };
-            } else if (screen === 'TIME_SCREEN') {
-                const formValues = decryptedData.form || {};
-                
-                responsePayload = {
-                    screen: "SUCCESS",
-                    data: {
-                        extension_message_response: {
-                            params: {
-                                flow_token: flow_token || "default_token",
-                                time_details: formValues.user_time_inputs || "done"
-                            }
+            responsePayload = {
+                screen: "SUCCESS",
+                data: {
+                    extension_message_response: {
+                        params: {
+                            flow_token: flow_token || "default_token",
+                            booking_data: decryptedData.form || {}
                         }
                     }
-                };
-            } else {
-                responsePayload = {
-                    screen: "SUCCESS",
-                    data: {
-                        extension_message_response: {
-                            params: { flow_token: flow_token || "default_token" }
-                        }
-                    }
-                };
-            }
+                }
+            };
         } 
         else if (action === 'BACK') {
             const dynamicDays = generateUpcomingDays();
