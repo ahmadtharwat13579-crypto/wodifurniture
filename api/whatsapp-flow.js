@@ -92,27 +92,32 @@ module.exports = async (req, res) => {
         } 
         else if (action === 'data_exchange' && screen === 'DAY_SCREEN') {
             const formValues = decryptedData.form || {};
-            const selectedDayIds = formValues.selected_days || [];
+            let selectedDayIds = formValues.selected_days || [];
             
+            // للتأكيد: لو جات كـ Object أو String مش Array بنحولها لـ Array
+            if (!Array.isArray(selectedDayIds)) {
+                selectedDayIds = Object.values(selectedDayIds);
+            }
+
             const allDays = generateUpcomingDays();
             const selectedDaysData = allDays.filter(d => selectedDayIds.includes(d.id));
 
             responsePayload = {
                 screen: "TIME_SCREEN",
                 data: {
-                    day1_title: selectedDaysData[0] ? selectedDaysData[0].title : 'غير متاح',
+                    day1_title: selectedDaysData[0] ? selectedDaysData[0].title : '',
                     day1_show: !!selectedDaysData[0],
-                    day2_title: selectedDaysData[1] ? selectedDaysData[1].title : 'غير متاح',
+                    day2_title: selectedDaysData[1] ? selectedDaysData[1].title : '',
                     day2_show: !!selectedDaysData[1],
-                    day3_title: selectedDaysData[2] ? selectedDaysData[2].title : 'غير متاح',
+                    day3_title: selectedDaysData[2] ? selectedDaysData[2].title : '',
                     day3_show: !!selectedDaysData[2],
-                    day4_title: selectedDaysData[3] ? selectedDaysData[3].title : 'غير متاح',
+                    day4_title: selectedDaysData[3] ? selectedDaysData[3].title : '',
                     day4_show: !!selectedDaysData[3],
-                    day5_title: selectedDaysData[4] ? selectedDaysData[4].title : 'غير متاح',
+                    day5_title: selectedDaysData[4] ? selectedDaysData[4].title : '',
                     day5_show: !!selectedDaysData[4],
-                    day6_title: selectedDaysData[5] ? selectedDaysData[5].title : 'غير متاح',
+                    day6_title: selectedDaysData[5] ? selectedDaysData[5].title : '',
                     day6_show: !!selectedDaysData[5],
-                    day7_title: selectedDaysData[6] ? selectedDaysData[6].title : 'غير متاح',
+                    day7_title: selectedDaysData[6] ? selectedDaysData[6].title : '',
                     day7_show: !!selectedDaysData[6]
                 }
             };
