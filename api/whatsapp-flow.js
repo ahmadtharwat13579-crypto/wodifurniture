@@ -84,6 +84,12 @@ module.exports = async (req, res) => {
             };
         } 
         else if (action === 'INIT') {
+            responsePayload = {
+                screen: "WELCOME_SCREEN",
+                data: {}
+            };
+        } 
+        else if (action === 'data_exchange' && screen === 'WELCOME_SCREEN') {
             const dynamicDays = generateUpcomingDays();
             responsePayload = {
                 screen: "DAY_SCREEN",
