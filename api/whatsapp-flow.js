@@ -34,7 +34,6 @@ function decryptRequest(encryptedFlowData, encryptedAesKey, initialVector) {
 }
 
 function encryptResponse(responseData, decryptedAesKey, initialVector) {
-    // invert IV for response encryption as required by WhatsApp Flows
     const invertedIv = Buffer.from(initialVector, 'base64').map(b => ~b & 0xff);
 
     const cipher = crypto.createCipheriv('aes-128-gcm', decryptedAesKey, invertedIv);
@@ -56,15 +55,72 @@ module.exports = async (req, res) => {
     try {
         const { encrypted_aes_key, encrypted_flow_data, initial_vector } = req.body;
 
-        // فك التشفير مرة واحدة فقط للحصول على البيانات والمفتاح معاَ
         const { decryptedData, decryptedAesKey } = decryptRequest(encrypted_flow_data, encrypted_aes_key, initial_vector);
 
         let responsePayload;
-        if (decryptedData.action === 'ping') {
+        const { action, screen, data, flow_token } = decryptedData;
+
+        // 1. معالجة طلب فحص الصحة
+        if (action === 'ping') {
             responsePayload = {
                 data: {
                     status: "active"
                 }
+            };
+        } 
+        // 2. معالجة فتح الفلو لأول مرة
+        else if (action === 'INIT') {
+            responsePayload = {
+                screen: "DAY_SCREEN",
+                data: {
+                    // يمكنك تمرير أي بيانات افتتاحية للشاشة الأولى هنا إن أردت
+                }
+            };
+        } 
+        // 3. معالجة تبادل البيانات عند التفاعل أو التنقل بين الشاشات
+        else if (action === 'data_exchange') {
+            if (screen === 'DAY_SCREEN') {
+                // المستخدم اختار الأيام وضغط متابعة، نقوم بالانتقال للشاشة التالية TIME_SCREEN
+                const selectedDays = data ? data.selected_days : [];
+                
+                responsePayload = {
+                    screen: "TIME_SCREEN",
+                    data: {
+                        // يمكنك إرسال بيانات للشاشة الثانية بناءً على اختيار الأيام
+                        chosen_days: selectedDays
+                    }
+                };
+            } else if (screen === 'TIME_SCREEN') {
+                // المستخدم ضغط تأكيد في الشاشة الأخيرة، نقوم بإنهاء الفلو وإرسال رسالة النجاح
+                responsePayload = {
+                    screen: "SUCCESS",
+                    data: {
+                        extension_message_response: {
+                            params: {
+                                flow_token: flow_token || "default_token",
+                                status: "completed"
+                            }
+                        }
+                    }
+                };
+            } else {
+                responsePayload = {
+                    screen: "SUCCESS",
+                    data: {
+                        extension_message_response: {
+                            params: {
+                                flow_token: flow_token || "default_token"
+                            }
+                        }
+                    }
+                };
+            }
+        } 
+        // 4. في حال الضغط على زر الرجوع (BACK)
+        else if (action === 'BACK') {
+            responsePayload = {
+                screen: "DAY_SCREEN",
+                data: {}
             };
         } else {
             responsePayload = {
