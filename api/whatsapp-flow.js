@@ -3,7 +3,6 @@ const crypto = require('crypto');
 const PRIVATE_KEY = process.env.WHATSAPP_PRIVATE_KEY;
 const PASSPHRASE = process.env.WHATSAPP_PASSPHRASE || '';
 
-// دالة لتوليد الأيام السبعة القادمة بدءاً من اليوم الحالي
 function generateUpcomingDays() {
     const daysArabic = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
     const options = [];
@@ -83,7 +82,6 @@ module.exports = async (req, res) => {
             };
         } 
         else if (action === 'INIT') {
-            // توليد الأيام السبعة ابتداءً من اليوم وتمريرها للشاشة الأولى
             const dynamicDays = generateUpcomingDays();
             responsePayload = {
                 screen: "DAY_SCREEN",
@@ -94,9 +92,10 @@ module.exports = async (req, res) => {
         } 
         else if (action === 'data_exchange') {
             if (screen === 'DAY_SCREEN') {
-                const selectedDays = data ? data.selected_days : [];
-                
-                // تمرير الأيام المختارة فقط للشاشة الثانية
+                const formValues = decryptedData.form || {};
+                const dataValues = decryptedData.data || data || {};
+                const selectedDays = formValues.selected_days || dataValues.selected_days || [];
+
                 responsePayload = {
                     screen: "TIME_SCREEN",
                     data: {
@@ -104,14 +103,16 @@ module.exports = async (req, res) => {
                     }
                 };
             } else if (screen === 'TIME_SCREEN') {
-                // استلام المواعيد المكتوبة وإتمام الفلو
+                const formValues = decryptedData.form || {};
+                const dataValues = decryptedData.data || data || {};
+
                 responsePayload = {
                     screen: "SUCCESS",
                     data: {
                         extension_message_response: {
                             params: {
                                 flow_token: flow_token || "default_token",
-                                booking_data: data
+                                booking_data: formValues.user_time_inputs || dataValues.user_time_inputs || "completed"
                             }
                         }
                     }
