@@ -73,6 +73,8 @@ module.exports = async (req, res) => {
         const { encrypted_aes_key, encrypted_flow_data, initial_vector } = req.body;
         const { decryptedData, decryptedAesKey } = decryptRequest(encrypted_flow_data, encrypted_aes_key, initial_vector);
 
+        console.log("RECEIVED PAYLOAD:", JSON.stringify(decryptedData, null, 2));
+
         let responsePayload;
         const { action, screen, data, flow_token } = decryptedData;
 
@@ -91,34 +93,38 @@ module.exports = async (req, res) => {
             };
         } 
         else if (action === 'data_exchange' && screen === 'DAY_SCREEN') {
-            const formValues = decryptedData.form || {};
-            let selectedDayIds = formValues.selected_days || [];
+            // استخراج القيم سواء كانت في decryptedData مباشرة أو جوه decryptedData.data أو decryptedData.form
+            const rawSelected = decryptedData.selected_days || (decryptedData.form && decryptedData.form.selected_days) || (decryptedData.data && decryptedData.data.selected_days) || [];
             
-            // للتأكيد: لو جات كـ Object أو String مش Array بنحولها لـ Array
-            if (!Array.isArray(selectedDayIds)) {
-                selectedDayIds = Object.values(selectedDayIds);
+            let selectedDayIds = [];
+            if (Array.isArray(rawSelected)) {
+                selectedDayIds = rawSelected.map(String);
+            } else if (typeof rawSelected === 'object' && rawSelected !== null) {
+                selectedDayIds = Object.values(rawSelected).map(String);
+            } else if (typeof rawSelected === 'string') {
+                selectedDayIds = [rawSelected];
             }
 
             const allDays = generateUpcomingDays();
-            const selectedDaysData = allDays.filter(d => selectedDayIds.includes(d.id));
+            const selectedDaysData = allDays.filter(d => selectedDayIds.includes(String(d.id)));
 
             responsePayload = {
                 screen: "TIME_SCREEN",
                 data: {
                     day1_title: selectedDaysData[0] ? selectedDaysData[0].title : '',
-                    day1_show: !!selectedDaysData[0],
+                    day1_show: Boolean(selectedDaysData[0]),
                     day2_title: selectedDaysData[1] ? selectedDaysData[1].title : '',
-                    day2_show: !!selectedDaysData[1],
+                    day2_show: Boolean(selectedDaysData[1]),
                     day3_title: selectedDaysData[2] ? selectedDaysData[2].title : '',
-                    day3_show: !!selectedDaysData[2],
-                    day4_title: selectedDaysData[3] ? selectedDaysData[3].title : '',
-                    day4_show: !!selectedDaysData[3],
+                    day3_show: Boolean(selectedDaysData[2]),
+                    day4_title: selectedDaysData[4] ? selectedDaysData[3].title : '',
+                    day4_show: Boolean(selectedDaysData[3]),
                     day5_title: selectedDaysData[4] ? selectedDaysData[4].title : '',
-                    day5_show: !!selectedDaysData[4],
+                    day5_show: Boolean(selectedDaysData[4]),
                     day6_title: selectedDaysData[5] ? selectedDaysData[5].title : '',
-                    day6_show: !!selectedDaysData[5],
+                    day6_show: Boolean(selectedDaysData[5]),
                     day7_title: selectedDaysData[6] ? selectedDaysData[6].title : '',
-                    day7_show: !!selectedDaysData[6]
+                    day7_show: Boolean(selectedDaysData[6])
                 }
             };
         }
