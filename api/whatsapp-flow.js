@@ -92,27 +92,20 @@ module.exports = async (req, res) => {
         } 
         else if (action === 'data_exchange') {
             if (screen === 'DAY_SCREEN') {
-                const formValues = decryptedData.form || {};
-                const dataValues = decryptedData.data || data || {};
-                const selectedDays = formValues.selected_days || dataValues.selected_days || [];
-
                 responsePayload = {
                     screen: "TIME_SCREEN",
-                    data: {
-                        selected_days_info: selectedDays
-                    }
+                    data: {}
                 };
             } else if (screen === 'TIME_SCREEN') {
                 const formValues = decryptedData.form || {};
-                const dataValues = decryptedData.data || data || {};
-
+                
                 responsePayload = {
                     screen: "SUCCESS",
                     data: {
                         extension_message_response: {
                             params: {
                                 flow_token: flow_token || "default_token",
-                                booking_data: formValues.user_time_inputs || dataValues.user_time_inputs || "completed"
+                                time_details: formValues.user_time_inputs || "done"
                             }
                         }
                     }
