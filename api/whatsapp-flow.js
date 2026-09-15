@@ -27,10 +27,14 @@ function decryptRequest(encryptedFlowData, encryptedAesKey, initialVector) {
     let decrypted = decipher.update(actualCiphertext);
     decrypted = Buffer.concat([decrypted, decipher.final()]);
 
-    return JSON.parse(decrypted.toString('utf8'));
+    return {
+        decryptedData: JSON.parse(decrypted.toString('utf8')),
+        decryptedAesKey: decryptedAesKey
+    };
 }
 
 function encryptResponse(responseData, decryptedAesKey, initialVector) {
+    // invert IV for response encryption as required by WhatsApp Flows
     const invertedIv = Buffer.from(initialVector, 'base64').map(b => ~b & 0xff);
 
     const cipher = crypto.createCipheriv('aes-128-gcm', decryptedAesKey, invertedIv);
@@ -52,12 +56,13 @@ module.exports = async (req, res) => {
     try {
         const { encrypted_aes_key, encrypted_flow_data, initial_vector } = req.body;
 
-        const decryptedData = decryptRequest(encrypted_flow_data, encrypted_aes_key, initial_vector);
+        // فك التشفير مرة واحدة فقط للحصول على البيانات والمفتاح معاَ
+        const { decryptedData, decryptedAesKey } = decryptRequest(encrypted_flow_data, encrypted_aes_key, initial_vector);
 
         let responsePayload;
         if (decryptedData.action === 'ping') {
             responsePayload = {
-                version: decryptedData.version,
+                version: decryptedData.version || "3.0",
                 data: {}
             };
         } else {
@@ -68,16 +73,6 @@ module.exports = async (req, res) => {
                 }
             };
         }
-
-        const decryptedAesKey = crypto.privateDecrypt(
-            {
-                key: PRIVATE_KEY,
-                passphrase: PASSPHRASE,
-                padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
-                oaepHash: 'sha256'
-            },
-            Buffer.from(encrypted_aes_key, 'base64')
-        );
 
         const encryptedResponse = encryptResponse(responsePayload, decryptedAesKey, initial_vector);
 
