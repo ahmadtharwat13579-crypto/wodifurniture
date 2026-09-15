@@ -30,12 +30,12 @@ function decryptRequest(encryptedFlowData, encryptedAesKey, initialVector) {
     return JSON.parse(decrypted.toString('utf8'));
 }
 
-function encryptResponse(responseलData, decryptedAesKey, initialVector) {
+function encryptResponse(responseData, decryptedAesKey, initialVector) {
     const invertedIv = Buffer.from(initialVector, 'base64').map(b => ~b & 0xff);
 
     const cipher = crypto.createCipheriv('aes-128-gcm', decryptedAesKey, invertedIv);
     
-    let encrypted = cipher.update(JSON.stringify(responseलData), 'utf8');
+    let encrypted = cipher.update(JSON.stringify(responseData), 'utf8');
     encrypted = Buffer.concat([encrypted, cipher.final()]);
 
     const authTag = cipher.getAuthTag();
@@ -54,12 +54,20 @@ module.exports = async (req, res) => {
 
         const decryptedData = decryptRequest(encrypted_flow_data, encrypted_aes_key, initial_vector);
 
-        const responsePayload = {
-            screen: "SUCCESS",
-            data: {
-                extension_message_response: "Received successfully"
-            }
-        };
+        let responsePayload;
+        if (decryptedData.action === 'ping') {
+            responsePayload = {
+                version: decryptedData.version || "3.0",
+                data: {}
+            };
+        } else {
+            responsePayload = {
+                screen: "SUCCESS",
+                data: {
+                    extension_message_response: "Received successfully"
+                }
+            };
+        }
 
         const decryptedAesKey = crypto.privateDecrypt(
             {
