@@ -135,13 +135,19 @@ module.exports = async (req, res) => {
             };
         }
         else if (action === 'data_exchange' && screen === 'TIME_SCREEN') {
+            const formData = decryptedData.form || {};
+            const totalPrice = Number(formData.total_price) || 0;
+            const advancePayment = totalPrice * 0.40;
+
             responsePayload = {
                 screen: "SUCCESS",
                 data: {
+                    advance_amount: advancePayment,
                     extension_message_response: {
                         params: {
                             flow_token: flow_token || "default_token",
-                            booking_details: decryptedData.form || {}
+                            booking_details: formData,
+                            advance_payment: advancePayment
                         }
                     }
                 }
