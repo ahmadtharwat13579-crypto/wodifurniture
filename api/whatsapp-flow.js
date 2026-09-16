@@ -156,7 +156,7 @@ module.exports = async (req, res) => {
         }
 
         const encryptedResponse = encryptResponse(responsePayload, decryptedAesKey, initial_vector);
-        return res.status(200).send(encryptedResponse);
+        return res.status(200).setHeader('Content-Type', 'text/plain').send(encryptedResponse);
     } catch (error) {
         console.error('Flow endpoint error:', error);
         return res.status(500).json({ error: 'Internal Server Error' });

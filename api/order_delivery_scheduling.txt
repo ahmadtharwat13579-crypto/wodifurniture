@@ -1,0 +1,223 @@
+{
+  "version": "7.3",
+  "data_api_version": "3.0",
+  "routing_model": {
+    "WELCOME_SCREEN": ["DAY_SCREEN"],
+    "DAY_SCREEN": ["TIME_SCREEN"],
+    "TIME_SCREEN": []
+  },
+  "screens": [
+    {
+      "id": "WELCOME_SCREEN",
+      "title": "تنسيق موعد التسليم",
+      "data": {},
+      "layout": {
+        "type": "SingleColumnLayout",
+        "children": [
+          {
+            "type": "TextSubheading",
+            "text": "نسّق مواعيد استلام وحدتك بخطوات بسيطة"
+          },
+          {
+            "type": "TextBody",
+            "text": "في الخطوات القادمة، ستتمكن من تحديد الأيام والأوقات المناسبة لاستلام وتركيب الوحدة.\n\nبعد إتمام اختيارك، سنتواصل معك لتأكيد الموعد النهائي للتسليم."
+          },
+          {
+            "type": "TextCaption",
+            "text": "ملاحظة: سيتم الاتصال بك هاتفياً قبل موعد التسليم المتفق عليه بفترة كافية لتأكيد الموعد وضمان جاهزيتك للاستلام والتركيب."
+          },
+          {
+            "type": "Footer",
+            "label": "بدء التحديد",
+            "on-click-action": {
+              "name": "data_exchange",
+              "payload": {}
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "DAY_SCREEN",
+      "title": "تنسيق موعد التسليم",
+      "data": {
+        "days_list": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "title": { "type": "string" }
+            }
+          },
+          "__example__": [
+            { "id": "day_1", "title": "الثلاثاء، 15 سبتمبر" },
+            { "id": "day_2", "title": "الأربعاء، 16 سبتمبر" }
+          ]
+        }
+      },
+      "layout": {
+        "type": "SingleColumnLayout",
+        "children": [
+          {
+            "type": "TextSubheading",
+            "text": "اختر الأيام المتاحة للإستلام والتركيب"
+          },
+          {
+            "type": "TextBody",
+            "text": "يمكنك اختيار أكثر من يوم، ثم اضغط على متابعة لتحديد الوقت المناسب لكل يوم."
+          },
+          {
+            "type": "CheckboxGroup",
+            "label": "الأيام المتاحة",
+            "name": "selected_days",
+            "required": true,
+            "data-source": "${data.days_list}"
+          },
+          {
+            "type": "Footer",
+            "label": "متابعة",
+            "on-click-action": {
+              "name": "data_exchange",
+              "payload": {
+                "selected_days": "${form.selected_days}"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "TIME_SCREEN",
+      "title": "تنسيق موعد التسليم",
+      "terminal": true,
+      "success": true,
+      "data": {
+        "day1_title": { "type": "string", "__example__": "اليوم الأول" },
+        "day1_show": { "type": "boolean", "__example__": true },
+        "day2_title": { "type": "string", "__example__": "" },
+        "day2_show": { "type": "boolean", "__example__": false },
+        "day3_title": { "type": "string", "__example__": "" },
+        "day3_show": { "type": "boolean", "__example__": false },
+        "day4_title": { "type": "string", "__example__": "" },
+        "day4_show": { "type": "boolean", "__example__": false },
+        "day5_title": { "type": "string", "__example__": "" },
+        "day5_show": { "type": "boolean", "__example__": false },
+        "day6_title": { "type": "string", "__example__": "" },
+        "day6_show": { "type": "boolean", "__example__": false },
+        "day7_title": { "type": "string", "__example__": "" },
+        "day7_show": { "type": "boolean", "__example__": false }
+      },
+      "layout": {
+        "type": "SingleColumnLayout",
+        "children": [
+          {
+            "type": "TextSubheading",
+            "text": "اكتب الأوقات المتاحة لكل يوم اخترته"
+          },
+          {
+            "type": "TextBody",
+            "text": "${data.day1_title}",
+            "visible": "${data.day1_show}"
+          },
+          {
+            "type": "TextInput",
+            "label": "الوقت المناسب",
+            "name": "slot_1",
+            "required": false,
+            "input-type": "text",
+            "visible": "${data.day1_show}"
+          },
+          {
+            "type": "TextBody",
+            "text": "${data.day2_title}",
+            "visible": "${data.day2_show}"
+          },
+          {
+            "type": "TextInput",
+            "label": "الوقت المناسب",
+            "name": "slot_2",
+            "required": false,
+            "input-type": "text",
+            "visible": "${data.day2_show}"
+          },
+          {
+            "type": "TextBody",
+            "text": "${data.day3_title}",
+            "visible": "${data.day3_show}"
+          },
+          {
+            "type": "TextInput",
+            "label": "الوقت المناسب",
+            "name": "slot_3",
+            "required": false,
+            "input-type": "text",
+            "visible": "${data.day3_show}"
+          },
+          {
+            "type": "TextBody",
+            "text": "${data.day4_title}",
+            "visible": "${data.day4_show}"
+          },
+          {
+            "type": "TextInput",
+            "label": "الوقت المناسب",
+            "name": "slot_4",
+            "required": false,
+            "input-type": "text",
+            "visible": "${data.day4_show}"
+          },
+          {
+            "type": "TextBody",
+            "text": "${data.day5_title}",
+            "visible": "${data.day5_show}"
+          },
+          {
+            "type": "TextInput",
+            "label": "الوقت المناسب",
+            "name": "slot_5",
+            "required": false,
+            "input-type": "text",
+            "visible": "${data.day5_show}"
+          },
+          {
+            "type": "TextBody",
+            "text": "${data.day6_title}",
+            "visible": "${data.day6_show}"
+          },
+          {
+            "type": "TextInput",
+            "label": "الوقت المناسب",
+            "name": "slot_6",
+            "required": false,
+            "input-type": "text",
+            "visible": "${data.day6_show}"
+          },
+          {
+            "type": "TextBody",
+            "text": "${data.day7_title}",
+            "visible": "${data.day7_show}"
+          },
+          {
+            "type": "TextInput",
+            "label": "الوقت المناسب",
+            "name": "slot_7",
+            "required": false,
+            "input-type": "text",
+            "visible": "${data.day7_show}"
+          },
+          {
+            "type": "Footer",
+            "label": "تأكيد المواعيد",
+            "on-click-action": {
+              "name": "complete",
+              "payload": {
+                "slots": "${form}"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
