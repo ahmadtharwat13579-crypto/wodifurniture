@@ -20,6 +20,10 @@ function generateUpcomingDays() {
 
         options.push({ id, title });
     }
+
+    // إضافة خيار الأيام غير المناسبة في نهاية القائمة
+    options.push({ id: 'other_times', title: 'هذه الأيام غير مناسبة لي' });
+
     return options;
 }
 
