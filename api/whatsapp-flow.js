@@ -9,7 +9,7 @@ function generateUpcomingDays() {
     const options = [];
     const today = new Date();
 
-    for (let i = 0; i < 7; i++) {
+    for (let i = 0; i < 5; i++) {
         const d = new Date(today);
         d.setDate(today.getDate() + i);
 
@@ -99,7 +99,6 @@ module.exports = async (req, res) => {
             };
         } 
         else if (action === 'data_exchange' && screen === 'DAY_SCREEN') {
-            // استخراج القيم سواء كانت في decryptedData مباشرة أو جوه decryptedData.data أو decryptedData.form
             const rawSelected = decryptedData.selected_days || (decryptedData.form && decryptedData.form.selected_days) || (decryptedData.data && decryptedData.data.selected_days) || [];
             
             let selectedDayIds = [];
@@ -111,28 +110,39 @@ module.exports = async (req, res) => {
                 selectedDayIds = [rawSelected];
             }
 
-            const allDays = generateUpcomingDays();
-            const selectedDaysData = allDays.filter(d => selectedDayIds.includes(String(d.id)));
+            // لو العميل اختار إن مفيش ولا يوم مناسب (مثلا لو الid المرسل هو other_times أو القائمة فارغة)
+            if (selectedDayIds.includes('other_times') || selectedDayIds.length === 0) {
+                responsePayload = {
+                    screen: "SUCCESS",
+                    data: {
+                        extension_message_response: {
+                            params: {
+                                flow_token: flow_token || "default_token",
+                                note: "العميل أفاد بأن المواعيد المتاحة غير مناسبة ويحتاج لتواصل لتنسيق موعد آخر."
+                            }
+                        }
+                    }
+                };
+            } else {
+                const allDays = generateUpcomingDays();
+                const selectedDaysData = allDays.filter(d => selectedDayIds.includes(String(d.id)));
 
-            responsePayload = {
-                screen: "TIME_SCREEN",
-                data: {
-                    day1_title: selectedDaysData[0] ? selectedDaysData[0].title : '',
-                    day1_show: Boolean(selectedDaysData[0]),
-                    day2_title: selectedDaysData[1] ? selectedDaysData[1].title : '',
-                    day2_show: Boolean(selectedDaysData[1]),
-                    day3_title: selectedDaysData[2] ? selectedDaysData[2].title : '',
-                    day3_show: Boolean(selectedDaysData[2]),
-                    day4_title: selectedDaysData[3] ? selectedDaysData[3].title : '',
-                    day4_show: Boolean(selectedDaysData[3]),
-                    day5_title: selectedDaysData[4] ? selectedDaysData[4].title : '',
-                    day5_show: Boolean(selectedDaysData[4]),
-                    day6_title: selectedDaysData[5] ? selectedDaysData[5].title : '',
-                    day6_show: Boolean(selectedDaysData[5]),
-                    day7_title: selectedDaysData[6] ? selectedDaysData[6].title : '',
-                    day7_show: Boolean(selectedDaysData[6])
-                }
-            };
+                responsePayload = {
+                    screen: "TIME_SCREEN",
+                    data: {
+                        day1_title: selectedDaysData[0] ? selectedDaysData[0].title : '',
+                        day1_show: Boolean(selectedDaysData[0]),
+                        day2_title: selectedDaysData[1] ? selectedDaysData[1].title : '',
+                        day2_show: Boolean(selectedDaysData[1]),
+                        day3_title: selectedDaysData[2] ? selectedDaysData[2].title : '',
+                        day3_show: Boolean(selectedDaysData[2]),
+                        day4_title: selectedDaysData[3] ? selectedDaysData[3].title : '',
+                        day4_show: Boolean(selectedDaysData[3]),
+                        day5_title: selectedDaysData[4] ? selectedDaysData[4].title : '',
+                        day5_show: Boolean(selectedDaysData[4])
+                    }
+                };
+            }
         }
         else if (action === 'data_exchange' && screen === 'TIME_SCREEN') {
             const formData = decryptedData.form || {};
