@@ -973,10 +973,12 @@ function loadConfiguratorData() {
         const colorRows = parsed.colorRows || [];
         D = build(rows, colorRows);
         dataLoaded = true;
+        hideConfiguratorLoading();
         
-        // If state restoration is pending, apply it now
         if (stateRestorePending) {
           applyStateIfReady();
+        } else if (S.sinkType) {
+          renderDesigns();
         }
       } catch (e) {
         console.warn('Failed to parse cached configurator', e);
