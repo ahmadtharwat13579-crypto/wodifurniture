@@ -11,38 +11,18 @@ export default async function handler(req, res) {
     pwd: process.env.SHEET_PWD
   };
 
-  try {
+  // ابعت للـ GAS من غير ما تستنى
+  fetch(process.env.SHEET_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
+  }).catch(e => console.error('GAS error:', e));
 
-    const response = await fetch(process.env.SHEET_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(body)
-    });
-
-    const responseText = await response.text();
-
-    let data;
-
-    try {
-      data = JSON.parse(responseText);
-    } catch {
-      data = {
-        success: false,
-        error: 'Invalid response from Apps Script',
-        raw: responseText
-      };
-    }
-
-    return res.status(response.status).json(data);
-
-  } catch (e) {
-
-    return res.status(500).json({
-      success: false,
-      error: e.message
-    });
-
-  }
+  // ارجع للموقع فوراً
+  return res.status(200).json({
+    success: true,
+    orderNum: req.body.orderNum || null
+  });
 }

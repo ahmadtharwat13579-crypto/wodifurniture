@@ -1,1 +1,7 @@
-{}
+{
+  "functions": {
+    "api/submit-order.js": {
+      "maxDuration": 60
+    }
+  }
+}
