@@ -4521,6 +4521,63 @@ function drGetLocation() {
 
 window.drGetLocation = drGetLocation;
 
+async function compressBase64Image(base64, maxWidth, quality) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      let width = img.width;
+      let height = img.height;
+
+      if (width > maxWidth) {
+        height = (height * maxWidth) / width;
+        width = maxWidth;
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.src = base64;
+  });
+}
+
+async function uploadImageToCloudinary(base64Image, fileName) {
+  if (!base64Image) return '';
+
+  try {
+    const compressed = await compressBase64Image(base64Image, 800, 0.7);
+
+    const response = await fetch(compressed);
+    const blob = await response.blob();
+
+    const formData = new FormData();
+    formData.append('file', blob, fileName);
+    formData.append('upload_preset', 'wodi_orders');
+    formData.append('folder', 'wodi-orders');
+
+    const res = await fetch(
+      'https://api.cloudinary.com/v1_1/fpz05btz/image/upload',
+      {
+        method: 'POST',
+        body: formData
+      }
+    );
+
+    const data = await res.json();
+    return data.secure_url || '';
+
+  } catch (err) {
+    console.error('Cloudinary upload error:', err);
+    return '';
+  }
+}
+
+
 async function submitOrderToSheet() {
   const config = window.drDesignConfig;
 
@@ -4539,6 +4596,34 @@ async function submitOrderToSheet() {
   }
   const locationAddress = window.userLocationAddress || {};
   const currentUser = window.currentUser || null;
+
+  let wallImageUrl = '';
+  let sinkPhotoUrl = '';
+  let stickerPhotoUrl = '';
+
+  const orderNumForImages = 
+    `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+
+  if (window.drSavedImages?.wall) {
+    wallImageUrl = await uploadImageToCloudinary(
+      window.drSavedImages.wall,
+      `${orderNumForImages}_wall`
+    );
+  }
+
+  if (window.drSavedImages?.photo) {
+    sinkPhotoUrl = await uploadImageToCloudinary(
+      window.drSavedImages.photo,
+      `${orderNumForImages}_sink`
+    );
+  }
+
+  if (window.drSavedImages?.sticker) {
+    stickerPhotoUrl = await uploadImageToCloudinary(
+      window.drSavedImages.sticker,
+      `${orderNumForImages}_sticker`
+    );
+  }
 
   const body = {
     submissionId,
@@ -4619,9 +4704,9 @@ async function submitOrderToSheet() {
     handleShape2: S?.selectedHandleShapes?.[1] || '',
 
     // صور الطلب
-    wallImage: window.drSavedImages?.wall || '',
-    sinkPhoto: window.drSavedImages?.photo || '',
-    stickerPhoto: window.drSavedImages?.sticker || ''
+    wallImage: wallImageUrl,
+    sinkPhoto: sinkPhotoUrl,
+    stickerPhoto: stickerPhotoUrl,
   };
 
   try {
@@ -4845,6 +4930,58 @@ async function drViewSummary(orderNum, button) {
 
     content.innerHTML =
       parsedDoc.body.innerHTML;
+  
+async function uploadImageToCloudinary(base64Image, fileName) {
+  if (!base64Image) return '';
+
+  // ضغط الصورة
+  const compressed = await compressBase64Image(base64Image, 800, 0.7);
+
+  // تحويل base64 لـ Blob
+  const response = await fetch(compressed);
+  const blob = await response.blob();
+
+  const formData = new FormData();
+  formData.append('file', blob, fileName);
+  formData.append('upload_preset', 'wodi_orders');
+  formData.append('folder', 'wodi-orders');
+
+  const res = await fetch(
+    'https://api.cloudinary.com/v1_1/fpz05btz/image/upload',
+    {
+      method: 'POST',
+      body: formData
+    }
+  );
+
+  const data = await res.json();
+  return data.secure_url || '';
+}
+
+async function compressBase64Image(base64, maxWidth, quality) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      let width = img.width;
+      let height = img.height;
+
+      if (width > maxWidth) {
+        height = (height * maxWidth) / width;
+        width = maxWidth;
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.src = base64;
+  });
+}
 
 
     // =========================================================

@@ -150,8 +150,6 @@ module.exports = async (req, res) => {
         }
         else if (action === 'data_exchange' && screen === 'TIME_SCREEN') {
             const formData = decryptedData.form || {};
-            const totalPrice = Number(formData.total_price) || 0;
-            const advancePayment = totalPrice * 0.40;
 
             responsePayload = {
                 screen: "SUCCESS",
