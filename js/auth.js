@@ -27,6 +27,7 @@ window.addEventListener('load', () => {
     callback: async (response) => {
       const credential = GoogleAuthProvider.credential(response.credential);
       await signInWithCredential(auth, credential);
+      console.log('One Tap callback - before reload, pendingOrder:', localStorage.getItem('pendingOrder'), 'reopenModal:', localStorage.getItem('reopenOrderModal'));
       window.location.reload();
     }
   });
