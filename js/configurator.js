@@ -4744,6 +4744,14 @@ async function submitOrderToSheet() {
 }
 
 async function drSubmitOrder() {
+  // التحقق من تسجيل الدخول أولاً
+  if (!window.currentUser) {
+    const orderData = { pendingSubmit: true };
+    sessionStorage.setItem('pendingOrder', JSON.stringify(orderData));
+    window.loginWithGoogle();
+    return;
+  }
+
   const button = document.getElementById('dr-btn-whatsapp');
 
   // منع الضغط المتكرر أثناء الإرسال

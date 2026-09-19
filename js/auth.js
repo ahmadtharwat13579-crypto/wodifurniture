@@ -1,6 +1,8 @@
 // 1. استيراد المكتبات الأساسية من الـ CDN
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult,
+         GoogleAuthProvider, onAuthStateChanged, signOut }
+  from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
 // 2. بيانات الفايربيس
@@ -18,6 +20,17 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
+
+getRedirectResult(auth)
+  .then((result) => {
+    if (result?.user) {
+      const redirectUrl = sessionStorage.getItem('redirectAfterLogin');
+      sessionStorage.removeItem('redirectAfterLogin');
+      if (redirectUrl) window.location.href = redirectUrl;
+      else window.location.reload();
+    }
+  })
+  .catch((error) => { console.error("Redirect error:", error.message); });
 
 window.saveInvoiceToFirestore = async function(orderNum, invoiceHtml) {
   const user = auth.currentUser;
@@ -60,7 +73,15 @@ window.getInvoiceFromFirestore = async function(orderNum) {
 window.loginWithGoogle = function() {
   grecaptcha.enterprise.ready(async () => {
     const token = await grecaptcha.enterprise.execute('6Lde4nktAAAAAAPAlUeMAGT4Ki99VV9yNW56TuVw', {action: 'login'});
-    if (token) {
+    if (!token) return;
+
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+    if (isMobile) {
+      sessionStorage.setItem('redirectAfterLogin', window.location.href);
+      sessionStorage.setItem('reopenOrderModal', 'true');
+      signInWithRedirect(auth, provider);
+    } else {
       signInWithPopup(auth, provider)
         .then(() => { window.location.reload(); })
         .catch((error) => { console.error("خطأ: ", error.message); });
@@ -192,6 +213,39 @@ onAuthStateChanged(auth, (user) => {
     };
 
     startPolling();
+
+    // إرسال طلب معلق بعد تسجيل الدخول
+    const pendingOrder = sessionStorage.getItem('pendingOrder');
+    const reopenModal = sessionStorage.getItem('reopenOrderModal');
+
+    if (reopenModal) {
+      sessionStorage.removeItem('reopenOrderModal');
+
+      const tryOpenModal = (attempts = 0) => {
+        // استنى الـ state يتحمل من localStorage
+        const savedState = JSON.parse(localStorage.getItem('wodi_configurator_state') || '{}');
+        if (typeof window.openDesignRequestModal !== 'function' || !savedState.designId) {
+          if (attempts < 20) setTimeout(() => tryOpenModal(attempts + 1), 300);
+          return;
+        }
+
+        if (pendingOrder) {
+          sessionStorage.removeItem('pendingOrder');
+          // الاختيارات موجودة → افتح المودال وابعت الطلب مباشرة
+          window.openDesignRequestModal();
+          setTimeout(() => {
+            if (typeof window.drSubmitOrder === 'function') {
+              window.drSubmitOrder();
+            }
+          }, 500);
+        } else {
+          // مجرد إعادة فتح بدون إرسال
+          window.openDesignRequestModal();
+        }
+      };
+
+      tryOpenModal();
+    }
 });
 
 // Expose auth state listener globally for other pages (like wishlist)
