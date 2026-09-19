@@ -149,6 +149,7 @@ onAuthStateChanged(auth, (user) => {
 
     const pendingOrder = localStorage.getItem('pendingOrder');
     const reopenModal = localStorage.getItem('reopenOrderModal');
+    console.log('onAuthStateChanged - pendingOrder:', pendingOrder, 'reopenModal:', reopenModal);
 
     if (reopenModal && pendingOrder) {
         localStorage.removeItem('reopenOrderModal');
