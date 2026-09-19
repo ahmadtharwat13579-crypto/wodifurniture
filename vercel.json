@@ -2,12 +2,15 @@
   "functions": {
     "api/submit-order.js": {
       "maxDuration": 60
+    },
+    "api/auth-proxy.js": {
+      "maxDuration": 10
     }
   },
   "rewrites": [
     {
       "source": "/__/auth/:path*",
-      "destination": "https://wodi-furniture.firebaseapp.com/__/auth/:path*"
+      "destination": "/api/auth-proxy?path=:path*"
     }
   ]
 }
