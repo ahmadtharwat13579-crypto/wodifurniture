@@ -133,7 +133,7 @@ function updateSideNavAccount(user) {
     }
 }
 
-function updateNavbarAccount(user) {
+function updateNavbarAccount(user) { return; // disabled temporarily
     const accountBtn = document.getElementById('accountBtn');
     const accountHint = document.getElementById('accountHint');
     if (!accountBtn) return;

@@ -4748,6 +4748,7 @@ async function drSubmitOrder() {
   if (!window.currentUser) {
     localStorage.setItem('pendingOrder', JSON.stringify({ pendingSubmit: true }));
     localStorage.setItem('reopenOrderModal', 'true');
+    console.log('saved to localStorage:', localStorage.getItem('pendingOrder'), localStorage.getItem('reopenOrderModal'));
     window.loginWithGoogle();
     return;
   }
