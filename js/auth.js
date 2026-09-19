@@ -5,11 +5,7 @@ window.addEventListener('load', () => {
     callback: async (response) => {
       const credential = GoogleAuthProvider.credential(response.credential);
       await signInWithCredential(auth, credential);
-      const reopenModal = localStorage.getItem('reopenOrderModal');
-      if (reopenModal) {
-        localStorage.removeItem('reopenOrderModal');
-        // نفس منطق onAuthStateChanged
-      }
+      // لا تمسح reopenOrderModal أو pendingOrder هنا — onAuthStateChanged هيتعامل معاهم بعد الـ reload
       window.location.reload();
     }
   });
