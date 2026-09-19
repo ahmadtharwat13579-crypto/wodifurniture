@@ -98,23 +98,10 @@ window.loginWithGoogle = function() {
   }
   window.google.accounts.id.prompt((notification) => {
     console.log('One Tap notification:', notification.getNotDisplayedReason?.(), notification.getSkippedReason?.());
-    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-      // افتح صفحة login في نافذة صغيرة
-      const loginWindow = window.open(
-        '/login.html',
-        'login',
-        'width=500,height=600,scrollbars=no'
-      );
-
-      // استنى المستخدم يسجل دخوله وتتقفل النافذة
-      const checkLogin = setInterval(() => {
-        if (loginWindow.closed) {
-          clearInterval(checkLogin);
-          // reload عشان onAuthStateChanged يشتغل
-          window.location.reload();
-        }
-      }, 500);
-    }
+      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+        localStorage.setItem('redirectAfterLogin', window.location.href);
+        window.location.href = '/login.html';
+      }
   });
 };
 

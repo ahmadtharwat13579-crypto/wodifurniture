@@ -23,10 +23,17 @@
 
     signInWithPopup(auth, provider)
       .then(() => {
-        window.close();
+        // ارجع للصفحة الأصلية
+        const returnUrl = localStorage.getItem('redirectAfterLogin') || '/configurator.html';
+        localStorage.removeItem('redirectAfterLogin');
+        window.location.href = returnUrl;
       })
       .catch((error) => {
         console.error(error);
+        // لو فشل ارجع للصفحة الأصلية
+        const returnUrl = localStorage.getItem('redirectAfterLogin') || '/configurator.html';
+        localStorage.removeItem('redirectAfterLogin');
+        window.location.href = returnUrl;
       });
   </script>
 </body>
