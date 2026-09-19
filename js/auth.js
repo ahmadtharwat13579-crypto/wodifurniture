@@ -160,6 +160,14 @@ onAuthStateChanged(auth, (user) => {
 
         const trySubmit = (attempts = 0) => {
             const savedState = JSON.parse(localStorage.getItem('wodi_configurator_state') || '{}');
+            console.log(`trySubmit attempt ${attempts}:`, {
+                hasSubmit: typeof window.drSubmitOrder === 'function',
+                hasDrawer: typeof window.drOpenOrdersDrawer === 'function',
+                hasConfig: typeof window.buildDesignConfig === 'function',
+                designId: savedState.designId,
+                sDesign: !!S?.design,
+                sSinkType: !!S?.sinkType
+            });
             if (
                 typeof window.drSubmitOrder !== 'function' ||
                 typeof window.drOpenOrdersDrawer !== 'function' ||
