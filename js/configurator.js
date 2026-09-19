@@ -4746,8 +4746,8 @@ async function submitOrderToSheet() {
 async function drSubmitOrder() {
   // التحقق من تسجيل الدخول أولاً
   if (!window.currentUser) {
-    const orderData = { pendingSubmit: true };
-    sessionStorage.setItem('pendingOrder', JSON.stringify(orderData));
+    localStorage.setItem('pendingOrder', JSON.stringify({ pendingSubmit: true }));
+    localStorage.setItem('reopenOrderModal', 'true');
     window.loginWithGoogle();
     return;
   }
