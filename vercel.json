@@ -3,5 +3,11 @@
     "api/submit-order.js": {
       "maxDuration": 60
     }
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/__/auth/:path*",
+      "destination": "https://wodi-furniture.firebaseapp.com/__/auth/:path*"
+    }
+  ]
 }
