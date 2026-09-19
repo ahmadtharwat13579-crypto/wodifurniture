@@ -180,7 +180,6 @@ onAuthStateChanged(auth, (user) => {
 
     const pendingOrder = localStorage.getItem('pendingOrder');
     const reopenModal = localStorage.getItem('reopenOrderModal');
-    console.log('onAuthStateChanged - pendingOrder:', pendingOrder, 'reopenModal:', reopenModal);
 
     if (reopenModal && pendingOrder) {
         localStorage.removeItem('reopenOrderModal');
@@ -192,17 +191,8 @@ onAuthStateChanged(auth, (user) => {
 
         const trySubmit = (attempts = 0) => {
             const savedState = JSON.parse(localStorage.getItem('wodi_configurator_state') || '{}');
-            console.log(`trySubmit attempt ${attempts}:`, {
-                hasSubmit: typeof window.drSubmitOrder === 'function',
-                hasDrawer: typeof window.drOpenOrdersDrawer === 'function',
-                hasConfig: typeof window.buildDesignConfig === 'function',
-                designId: savedState.designId,
-                sDesign: !!S?.design,
-                sSinkType: !!S?.sinkType
-            });
             if (
                 typeof window.drSubmitOrder !== 'function' ||
-                typeof window.drOpenOrdersDrawer !== 'function' ||
                 typeof window.buildDesignConfig !== 'function' ||
                 !savedState.designId ||
                 !S?.design ||
@@ -212,19 +202,14 @@ onAuthStateChanged(auth, (user) => {
                 return;
             }
 
-            // ابني الـ config من غير ما تفتح المودال
             window.drDesignConfig = window.buildDesignConfig();
 
             if (!window.drDesignConfig) {
-              // لو مش قادر يبني الـ config، افتح المودال عادي
-              window.openDesignRequestModal?.();
-              return;
+                if (attempts < 20) setTimeout(() => trySubmit(attempts + 1), 300);
+                return;
             }
 
-            // افتح الدرج أول
-            window.drOpenOrdersDrawer({ showLoading: true });
-
-            // ابعت الطلب في الخلفية
+            // ابعت الطلب مباشرة
             window.drSubmitOrder();
         };
 
