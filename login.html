@@ -7,34 +7,45 @@
 <body>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+    import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 
-    const app = initializeApp({
+    const firebaseConfig = {
       apiKey: "AIzaSyCS6kK1nV0FMy_Pk44aImJJTF2zQf3_8sI",
       authDomain: "wodi-furniture.firebaseapp.com",
       projectId: "wodi-furniture",
       storageBucket: "wodi-furniture.firebasestorage.app",
       messagingSenderId: "453802118858",
       appId: "1:453802118858:web:dadf3546af2c3c65e8ee33"
-    });
+    };
 
+    const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
 
-    signInWithPopup(auth, provider)
-      .then(() => {
-        // ارجع للصفحة الأصلية
-        const returnUrl = localStorage.getItem('redirectAfterLogin') || '/configurator.html';
+    const returnUrl = localStorage.getItem('redirectAfterLogin') || '/configurator.html';
+
+    // اتحقق الأول لو في redirect result
+    getRedirectResult(auth).then((result) => {
+      if (result?.user) {
+        // تسجيل دخول ناجح — ارجع للصفحة
         localStorage.removeItem('redirectAfterLogin');
         window.location.href = returnUrl;
-      })
-      .catch((error) => {
-        console.error(error);
-        // لو فشل ارجع للصفحة الأصلية
-        const returnUrl = localStorage.getItem('redirectAfterLogin') || '/configurator.html';
-        localStorage.removeItem('redirectAfterLogin');
-        window.location.href = returnUrl;
-      });
+        return;
+      }
+
+      // مفيش result — ابدأ الـ login
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      if (isMobile) {
+        signInWithRedirect(auth, provider);
+      } else {
+        signInWithPopup(auth, provider)
+          .then(() => {
+            localStorage.removeItem('redirectAfterLogin');
+            window.location.href = returnUrl;
+          })
+          .catch(console.error);
+      }
+    }).catch(console.error);
   </script>
 </body>
 </html>
