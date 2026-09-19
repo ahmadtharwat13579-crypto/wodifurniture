@@ -66,7 +66,10 @@ window.loginWithGoogle = function() {
     window.google.accounts.id.prompt((notification) => {
     if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
       signInWithPopup(auth, provider)
-        .then(() => { window.location.reload(); })
+        .then(() => {
+          console.log('popup success - pendingOrder:', localStorage.getItem('pendingOrder'));
+          window.location.href = window.location.href;
+        })
         .catch((error) => { console.error("خطأ: ", error.message); });
     }
   });
