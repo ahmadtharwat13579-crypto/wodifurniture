@@ -4712,7 +4712,7 @@ async function submitOrderToSheet() {
   };
 
   try {
-
+    console.log('submitting order, config:', JSON.stringify(config));
     const resp = await fetch('/api/submit-order', {
       method: 'POST',
       headers: {
@@ -4720,6 +4720,9 @@ async function submitOrderToSheet() {
       },
       body: JSON.stringify(body)
     });
+
+    const respText = await resp.clone().text();
+    console.log('submit-order response:', resp.status, respText);
 
     const data = await resp.json();
 
@@ -4744,6 +4747,7 @@ async function submitOrderToSheet() {
 }
 
 async function drSubmitOrder() {
+  console.log('drSubmitOrder called, currentUser:', window.currentUser?.email);
   // التحقق من تسجيل الدخول أولاً
   if (!window.currentUser) {
     localStorage.setItem('pendingOrder', JSON.stringify({ pendingSubmit: true }));
