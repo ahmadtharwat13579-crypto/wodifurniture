@@ -4762,11 +4762,16 @@ async function submitOrderToSheet() {
 
 async function drSubmitOrder() {
   console.log('drSubmitOrder called, currentUser:', window.currentUser?.email);
+  console.log('localStorage before save:', localStorage.getItem('pendingOrder'), localStorage.getItem('reopenOrderModal'));
   // التحقق من تسجيل الدخول أولاً
   if (!window.currentUser) {
     localStorage.setItem('pendingOrder', JSON.stringify({ pendingSubmit: true }));
     localStorage.setItem('reopenOrderModal', 'true');
     console.log('saved to localStorage:', localStorage.getItem('pendingOrder'), localStorage.getItem('reopenOrderModal'));
+    // تأكد إن الحفظ اشتغل
+    setTimeout(() => {
+      console.log('localStorage after 100ms:', localStorage.getItem('pendingOrder'), localStorage.getItem('reopenOrderModal'));
+    }, 100);
     window.loginWithGoogle();
     return;
   }
