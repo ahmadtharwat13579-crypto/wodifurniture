@@ -27,7 +27,12 @@ window.addEventListener('load', () => {
     callback: async (response) => {
       const credential = GoogleAuthProvider.credential(response.credential);
       await signInWithCredential(auth, credential);
-      console.log('One Tap callback - before reload, pendingOrder:', localStorage.getItem('pendingOrder'), 'reopenModal:', localStorage.getItem('reopenOrderModal'));
+      // احفظ الـ pending state لو موجود قبل الـ reload
+      const pendingOrder = localStorage.getItem('pendingOrder');
+      const reopenModal = localStorage.getItem('reopenOrderModal');
+      console.log('One Tap callback - pendingOrder:', pendingOrder, 'reopenModal:', reopenModal);
+      if (pendingOrder) localStorage.setItem('pendingOrder', pendingOrder);
+      if (reopenModal) localStorage.setItem('reopenOrderModal', reopenModal);
       window.location.reload();
     }
   });
