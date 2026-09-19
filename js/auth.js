@@ -23,6 +23,7 @@ const provider = new GoogleAuthProvider();
 
 getRedirectResult(auth)
   .then((result) => {
+    console.log("getRedirectResult:", JSON.stringify(result));
     if (result?.user) {
       const redirectUrl = sessionStorage.getItem('redirectAfterLogin');
       sessionStorage.removeItem('redirectAfterLogin');
@@ -30,7 +31,10 @@ getRedirectResult(auth)
       else window.location.reload();
     }
   })
-  .catch((error) => { console.error("Redirect error:", error.message); });
+  .catch((error) => { 
+    console.error("Redirect error:", error.message);
+    console.error("Redirect error full:", JSON.stringify(error));
+  });
 
 window.saveInvoiceToFirestore = async function(orderNum, invoiceHtml) {
   const user = auth.currentUser;
