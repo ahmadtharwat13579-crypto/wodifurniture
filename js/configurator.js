@@ -2300,6 +2300,48 @@ function calc() {
 
 let updateTimeout = null;
 
+function buildDesignConfig() {
+  if (!S.design || !S.size || !S.div || !S.sinkType) return null;
+  const noH = isNoHandle();
+  if (!noH && !S.handle) return null;
+
+  let colorExtra = 0;
+  if (S.selectedColors && S.selectedColors[0]) {
+    const selectedId = S.selectedColors[0];
+    let familyKey = 'solid';
+    if (selectedId.startsWith('clr_wd_')) familyKey = 'wood';
+    else if (selectedId.startsWith('clr_gls_')) familyKey = 'gloss';
+    const colorFamilyObj = (D.colors || []).find(c => c.family === familyKey);
+    if (colorFamilyObj) {
+      colorExtra = colorFamilyObj.price || 0;
+    } else {
+      if (familyKey === 'wood') colorExtra = 800;
+      else if (familyKey === 'gloss') colorExtra = 1100;
+    }
+  }
+
+  const sg = sgr(S.size.size);
+  const unitPrice = r5(
+    S.size.price +
+    colorExtra +
+    dvp(S.div, sg) +
+    (noH ? 0 : S.handle.price * S.design.hc)
+  );
+
+  return {
+    sinkType: S.sinkType,
+    design: S.design,
+    size: S.size,
+    division: S.div,
+    handle: S.handle,
+    unitPrice,
+    installationFee: 200,
+    installationCost: window.installCost ?? null
+  };
+}
+
+window.buildDesignConfig = buildDesignConfig;
+
 function upd() {
   const colorSecs = document.querySelectorAll('.colors-section, .color-section, .clr-section, #clr, #clr-wrap, #sc-section');
   if (!S || !S.sinkType) {

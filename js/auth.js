@@ -150,35 +150,45 @@ onAuthStateChanged(auth, (user) => {
     const pendingOrder = localStorage.getItem('pendingOrder');
     const reopenModal = localStorage.getItem('reopenOrderModal');
 
-    if (reopenModal) {
+    if (reopenModal && pendingOrder) {
         localStorage.removeItem('reopenOrderModal');
+        localStorage.removeItem('pendingOrder');
 
-        const tryOpenModal = (attempts = 0) => {
+        const savedScroll = parseInt(localStorage.getItem('scrollPosition') || '0');
+        localStorage.removeItem('scrollPosition');
+        window.scrollTo(0, savedScroll);
+
+        const trySubmit = (attempts = 0) => {
             const savedState = JSON.parse(localStorage.getItem('wodi_configurator_state') || '{}');
             if (
-                typeof window.openDesignRequestModal !== 'function' ||
+                typeof window.drSubmitOrder !== 'function' ||
+                typeof window.drOpenOrdersDrawer !== 'function' ||
+                typeof window.buildDesignConfig !== 'function' ||
                 !savedState.designId ||
-                !S.design ||
-                !S.sinkType
+                !S?.design ||
+                !S?.sinkType
             ) {
-                if (attempts < 20) setTimeout(() => tryOpenModal(attempts + 1), 300);
+                if (attempts < 20) setTimeout(() => trySubmit(attempts + 1), 300);
                 return;
             }
 
-            if (pendingOrder) {
-                localStorage.removeItem('pendingOrder');
-                window.openDesignRequestModal();
-                const savedScroll = parseInt(localStorage.getItem('scrollPosition') || '0');
-                localStorage.removeItem('scrollPosition');
-                window.scrollTo(0, savedScroll);
-                setTimeout(() => {
-                    if (typeof window.drSubmitOrder === 'function') window.drSubmitOrder();
-                }, 1000);
-            } else {
-                window.openDesignRequestModal();
+            // ابني الـ config من غير ما تفتح المودال
+            window.drDesignConfig = window.buildDesignConfig();
+
+            if (!window.drDesignConfig) {
+              // لو مش قادر يبني الـ config، افتح المودال عادي
+              window.openDesignRequestModal?.();
+              return;
             }
+
+            // افتح الدرج أول
+            window.drOpenOrdersDrawer({ showLoading: true });
+
+            // ابعت الطلب في الخلفية
+            window.drSubmitOrder();
         };
-        tryOpenModal();
+
+        trySubmit();
     }
 });
 
