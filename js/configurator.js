@@ -3297,7 +3297,7 @@ function openDesignRequestModal() {
 
     unitPrice,
     installationFee: 200,
-    installationCost: installCost
+    installationCost: window.installCost
   };
 
   document.getElementById('dr-sink-type').value =
@@ -4425,6 +4425,10 @@ function loadDRDraft() {
       sticker: data.stickerPhoto || null
     };
 
+    if (data.currentStep) {
+      window.drCurrentStep = data.currentStep;
+    }
+
     if (data.wallImage) updateCustomFileUI('dr-sink-image', data.wallImage);
     if (data.sinkPhoto) updateCustomFileUI('dr-sink-photo', data.sinkPhoto);
     if (data.stickerPhoto) updateCustomFileUI('dr-sink-sticker', data.stickerPhoto);
@@ -4548,38 +4552,6 @@ async function compressBase64Image(base64, maxWidth, quality) {
   });
 }
 
-async function uploadImageToCloudinary(base64Image, fileName) {
-  if (!base64Image) return '';
-
-  try {
-    const compressed = await compressBase64Image(base64Image, 800, 0.7);
-
-    const response = await fetch(compressed);
-    const blob = await response.blob();
-
-    const formData = new FormData();
-    formData.append('file', blob, fileName);
-    formData.append('upload_preset', 'wodi_orders');
-    formData.append('folder', 'wodi-orders');
-
-    const res = await fetch(
-      'https://api.cloudinary.com/v1_1/fpz05btz/image/upload',
-      {
-        method: 'POST',
-        body: formData
-      }
-    );
-
-    const data = await res.json();
-    return data.secure_url || '';
-
-  } catch (err) {
-    console.error('Cloudinary upload error:', err);
-    return '';
-  }
-}
-
-
 async function submitOrderToSheet() {
   const config = window.drDesignConfig;
 
@@ -4699,7 +4671,7 @@ async function submitOrderToSheet() {
     })(),
 
     installationFee: 200,
-    installationCost: installCost ?? '',
+    installationCost: window.installCost ?? '',
 
     selectedColor: S?.selectedColors?.[0] || '',
     handleShape1: S?.selectedHandleShapes?.[0] || '',

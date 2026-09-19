@@ -127,7 +127,7 @@ function updateSideNavAccount(user) {
     }
 }
 
-function updateNavbarAccount(user) { return; // disabled temporarily
+function updateNavbarAccount(user) {
     const accountBtn = document.getElementById('accountBtn');
     const accountHint = document.getElementById('accountHint');
     if (!accountBtn) return;
@@ -242,9 +242,13 @@ onAuthStateChanged(auth, (user) => {
         localStorage.removeItem('reopenOrderModal');
 
       const tryOpenModal = (attempts = 0) => {
-        // استنى الـ state يتحمل من localStorage
         const savedState = JSON.parse(localStorage.getItem('wodi_configurator_state') || '{}');
-        if (typeof window.openDesignRequestModal !== 'function' || !savedState.designId) {
+        if (
+          typeof window.openDesignRequestModal !== 'function' ||
+          !savedState.designId ||
+          !S.design ||
+          !S.sinkType
+        ) {
           if (attempts < 20) setTimeout(() => tryOpenModal(attempts + 1), 300);
           return;
         }
@@ -256,11 +260,19 @@ onAuthStateChanged(auth, (user) => {
           const savedScroll = parseInt(localStorage.getItem('scrollPosition') || '0');
           localStorage.removeItem('scrollPosition');
           window.scrollTo(0, savedScroll);
-          setTimeout(() => {
+
+          // استنى الـ step 3 يكون جاهز وبعدين ابعت
+          const waitAndSubmit = (attempts = 0) => {
+            const btn = document.getElementById('dr-btn-whatsapp');
+            if (!btn && attempts < 20) {
+              setTimeout(() => waitAndSubmit(attempts + 1), 300);
+              return;
+            }
             if (typeof window.drSubmitOrder === 'function') {
               window.drSubmitOrder();
             }
-          }, 1000);
+          };
+          setTimeout(() => waitAndSubmit(), 500);
         } else {
           // مجرد إعادة فتح بدون إرسال
           window.openDesignRequestModal();
