@@ -26,7 +26,7 @@ import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/fireb
 // 2. بيانات الفايربيس
 const firebaseConfig = {
   apiKey: "AIzaSyCS6kK1nV0FMy_Pk44aImJJTF2zQf3_8sI",
-  authDomain: "wodi-furniture.firebaseapp.com",
+  authDomain: "wodifurniture.vercel.app",
   projectId: "wodi-furniture",
   storageBucket: "wodi-furniture.firebasestorage.app",
   messagingSenderId: "453802118858",
