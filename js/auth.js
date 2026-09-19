@@ -101,6 +101,7 @@ window.loginWithGoogle = function() {
     const token = await grecaptcha.enterprise.execute('6Lde4nktAAAAAAPAlUeMAGT4Ki99VV9yNW56TuVw', {action: 'login'});
     if (!token) return;
 
+    localStorage.setItem('scrollPosition', window.scrollY);
     window.google.accounts.id.prompt((notification) => {
       if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
         // fallback للـ popup لو One Tap مش شغال
@@ -254,13 +255,16 @@ onAuthStateChanged(auth, (user) => {
 
         if (pendingOrder) {
             localStorage.removeItem('pendingOrder');
-          // الاختيارات موجودة → افتح المودال وابعت الطلب مباشرة
+          // الاختيارات موجودة → افتح المودال على step 3 وابعت الطلب
           window.openDesignRequestModal();
+          const savedScroll = parseInt(localStorage.getItem('scrollPosition') || '0');
+          localStorage.removeItem('scrollPosition');
+          window.scrollTo(0, savedScroll);
           setTimeout(() => {
             if (typeof window.drSubmitOrder === 'function') {
               window.drSubmitOrder();
             }
-          }, 500);
+          }, 1000);
         } else {
           // مجرد إعادة فتح بدون إرسال
           window.openDesignRequestModal();
