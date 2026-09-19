@@ -102,6 +102,9 @@ window.loginWithGoogle = function() {
     if (!token) return;
 
     localStorage.setItem('scrollPosition', window.scrollY);
+    if (typeof window.showToast === 'function') {
+      window.showToast('سجّل دخولك بحساب Google لتأكيد طلبك');
+    }
     window.google.accounts.id.prompt((notification) => {
       if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
         // fallback للـ popup لو One Tap مش شغال
@@ -241,6 +244,9 @@ onAuthStateChanged(auth, (user) => {
     // إرسال طلب معلق بعد تسجيل الدخول
     const pendingOrder = localStorage.getItem('pendingOrder');
     const reopenModal = localStorage.getItem('reopenOrderModal');
+
+    console.log('pendingOrder:', pendingOrder);
+    console.log('reopenModal:', reopenModal);
 
     if (reopenModal) {
         localStorage.removeItem('reopenOrderModal');
