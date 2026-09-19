@@ -93,22 +93,16 @@ window.getInvoiceFromFirestore = async function(orderNum) {
 
 // تسجيل الدخول بحساب جوجل
 window.loginWithGoogle = function() {
-  grecaptcha.enterprise.ready(async () => {
-    const token = await grecaptcha.enterprise.execute('6Lde4nktAAAAAAPAlUeMAGT4Ki99VV9yNW56TuVw', {action: 'login'});
-    if (!token) return;
-
-    localStorage.setItem('scrollPosition', window.scrollY);
-    if (typeof window.showToast === 'function') {
-      window.showToast('سجّل دخولك بحساب Google لتأكيد طلبك');
+  localStorage.setItem('scrollPosition', window.scrollY);
+  if (typeof window.showToast === 'function') {
+    window.showToast('سجّل دخولك بحساب Google لتأكيد طلبك');
+  }
+  window.google.accounts.id.prompt((notification) => {
+    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+      signInWithPopup(auth, provider)
+        .then(() => { window.location.reload(); })
+        .catch((error) => { console.error("خطأ: ", error.message); });
     }
-    window.google.accounts.id.prompt((notification) => {
-      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-        // fallback للـ popup لو One Tap مش شغال
-        signInWithPopup(auth, provider)
-          .then(() => { window.location.reload(); })
-          .catch((error) => { console.error("خطأ: ", error.message); });
-      }
-    });
   });
 };
 
