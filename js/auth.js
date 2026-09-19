@@ -1,3 +1,24 @@
+// Debug: track localStorage changes
+const _setItem = localStorage.setItem.bind(localStorage);
+const _removeItem = localStorage.removeItem.bind(localStorage);
+const _clear = localStorage.clear.bind(localStorage);
+
+localStorage.setItem = function(key, value) {
+  console.log('localStorage.setItem:', key, value);
+  _setItem(key, value);
+};
+
+localStorage.removeItem = function(key) {
+  console.log('localStorage.removeItem:', key, new Error().stack);
+  _removeItem(key);
+};
+
+localStorage.clear = function() {
+  console.log('localStorage.clear called:', new Error().stack);
+  _clear();
+};
+
+
 // 1. استيراد المكتبات الأساسية من الـ CDN
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 import { getAuth, signInWithPopup, signInWithCredential, GoogleAuthProvider, onAuthStateChanged, signOut }
