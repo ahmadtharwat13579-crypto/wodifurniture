@@ -209,7 +209,12 @@ onAuthStateChanged(auth, (user) => {
                 return;
             }
 
-            // ابعت الطلب مباشرة
+            // افتح الدرج فوراً عشان العميل يعرف إن في حاجة بتحصل
+            if (typeof window.drOpenOrdersDrawer === 'function') {
+                window.drOpenOrdersDrawer({ showLoading: true });
+            }
+
+            // ابعت الطلب في الخلفية
             window.drSubmitOrder();
         };
 
