@@ -120,6 +120,7 @@ function updateNavbarAccount(user) {
 }
 
 onAuthStateChanged(auth, (user) => {
+    console.log('onAuthStateChanged fired, user:', user?.email, 'pendingOrder:', localStorage.getItem('pendingOrder'), 'reopenModal:', localStorage.getItem('reopenOrderModal'));
     updateSideNavAccount(user);
     updateNavbarAccount(user);
 
