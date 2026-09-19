@@ -97,13 +97,13 @@ window.loginWithGoogle = function() {
   if (typeof window.showToast === 'function') {
     window.showToast('سجّل دخولك بحساب Google لتأكيد طلبك');
   }
-  window.google.accounts.id.prompt((notification) => {
-    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-      signInWithPopup(auth, provider)
-        .then(() => { window.location.reload(); })
-        .catch((error) => { console.error("خطأ: ", error.message); });
-    }
-  });
+    window.google.accounts.id.prompt((notification) => {
+      console.log('One Tap notification:', notification.getNotDisplayedReason?.(), notification.getSkippedReason?.());
+      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+        localStorage.setItem('redirectAfterLogin', window.location.href);
+        signInWithRedirect(auth, provider);
+      }
+    });
 };
 
 function updateSideNavAccount(user) {
