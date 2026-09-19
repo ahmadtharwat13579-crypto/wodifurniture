@@ -243,6 +243,12 @@ onAuthStateChanged(auth, (user) => {
 
       const tryOpenModal = (attempts = 0) => {
         const savedState = JSON.parse(localStorage.getItem('wodi_configurator_state') || '{}');
+        console.log(`tryOpenModal attempt ${attempts}:`, {
+          hasFunction: typeof window.openDesignRequestModal === 'function',
+          designId: savedState.designId,
+          sDesign: !!S?.design,
+          sSinkType: !!S?.sinkType
+        });
         if (
           typeof window.openDesignRequestModal !== 'function' ||
           !savedState.designId ||
