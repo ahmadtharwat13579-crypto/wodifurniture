@@ -1,3 +1,8 @@
+const script = document.createElement('script');
+script.src = 'https://cdn.jsdelivr.net/npm/eruda';
+document.head.appendChild(script);
+script.onload = () => eruda.init();
+
 // 1. استيراد المكتبات الأساسية من الـ CDN
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult,
