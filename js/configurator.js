@@ -64,7 +64,7 @@ function escapeHtmlSafe(str) {
     .replace(/>/g, '&gt;');
 }
 
-function showToast(msg, duration = 3500) {
+window.showToast = function(msg, duration = 3500) {
   const t = document.getElementById('toast');
   if (!t) return;
 
