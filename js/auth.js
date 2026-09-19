@@ -1,3 +1,20 @@
+// Google One Tap init
+window.addEventListener('load', () => {
+  window.google.accounts.id.initialize({
+    client_id: '453802118858-q3tqor1hco5cr1b36bjpmnthaabmni7d.apps.googleusercontent.com',
+    callback: async (response) => {
+      const credential = GoogleAuthProvider.credential(response.credential);
+      await signInWithCredential(auth, credential);
+      const reopenModal = localStorage.getItem('reopenOrderModal');
+      if (reopenModal) {
+        localStorage.removeItem('reopenOrderModal');
+        // نفس منطق onAuthStateChanged
+      }
+      window.location.reload();
+    }
+  });
+});
+
 const script = document.createElement('script');
 script.src = 'https://cdn.jsdelivr.net/npm/eruda';
 document.head.appendChild(script);
@@ -6,14 +23,14 @@ script.onload = () => eruda.init();
 // 1. استيراد المكتبات الأساسية من الـ CDN
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult,
-         GoogleAuthProvider, onAuthStateChanged, signOut }
+         signInWithCredential, GoogleAuthProvider, onAuthStateChanged, signOut }
   from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
 // 2. بيانات الفايربيس
 const firebaseConfig = {
   apiKey: "AIzaSyCS6kK1nV0FMy_Pk44aImJJTF2zQf3_8sI",
-  authDomain: "wodifurniture.vercel.app",
+  authDomain: "wodi-furniture.firebaseapp.com",
   projectId: "wodi-furniture",
   storageBucket: "wodi-furniture.firebasestorage.app",
   messagingSenderId: "453802118858",
@@ -84,17 +101,14 @@ window.loginWithGoogle = function() {
     const token = await grecaptcha.enterprise.execute('6Lde4nktAAAAAAPAlUeMAGT4Ki99VV9yNW56TuVw', {action: 'login'});
     if (!token) return;
 
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-    if (isMobile) {
-      localStorage.setItem('redirectAfterLogin', window.location.href);
-      localStorage.setItem('reopenOrderModal', 'true');
-      signInWithRedirect(auth, provider);
-    } else {
-      signInWithPopup(auth, provider)
-        .then(() => { window.location.reload(); })
-        .catch((error) => { console.error("خطأ: ", error.message); });
-    }
+    window.google.accounts.id.prompt((notification) => {
+      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+        // fallback للـ popup لو One Tap مش شغال
+        signInWithPopup(auth, provider)
+          .then(() => { window.location.reload(); })
+          .catch((error) => { console.error("خطأ: ", error.message); });
+      }
+    });
   });
 };
 
