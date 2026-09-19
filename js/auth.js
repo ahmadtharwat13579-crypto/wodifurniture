@@ -30,8 +30,8 @@ getRedirectResult(auth)
   .then((result) => {
     console.log("getRedirectResult:", JSON.stringify(result));
     if (result?.user) {
-      const redirectUrl = sessionStorage.getItem('redirectAfterLogin');
-      sessionStorage.removeItem('redirectAfterLogin');
+      const redirectUrl = localStorage.getItem('redirectAfterLogin');
+      localStorage.removeItem('redirectAfterLogin');
       if (redirectUrl) window.location.href = redirectUrl;
       else window.location.reload();
     }
@@ -87,8 +87,8 @@ window.loginWithGoogle = function() {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
     if (isMobile) {
-      sessionStorage.setItem('redirectAfterLogin', window.location.href);
-      sessionStorage.setItem('reopenOrderModal', 'true');
+      localStorage.setItem('redirectAfterLogin', window.location.href);
+      localStorage.setItem('reopenOrderModal', 'true');
       signInWithRedirect(auth, provider);
     } else {
       signInWithPopup(auth, provider)
@@ -224,11 +224,11 @@ onAuthStateChanged(auth, (user) => {
     startPolling();
 
     // إرسال طلب معلق بعد تسجيل الدخول
-    const pendingOrder = sessionStorage.getItem('pendingOrder');
-    const reopenModal = sessionStorage.getItem('reopenOrderModal');
+    const pendingOrder = localStorage.getItem('pendingOrder');
+    const reopenModal = localStorage.getItem('reopenOrderModal');
 
     if (reopenModal) {
-      sessionStorage.removeItem('reopenOrderModal');
+        localStorage.removeItem('reopenOrderModal');
 
       const tryOpenModal = (attempts = 0) => {
         // استنى الـ state يتحمل من localStorage
@@ -239,7 +239,7 @@ onAuthStateChanged(auth, (user) => {
         }
 
         if (pendingOrder) {
-          sessionStorage.removeItem('pendingOrder');
+            localStorage.removeItem('pendingOrder');
           // الاختيارات موجودة → افتح المودال وابعت الطلب مباشرة
           window.openDesignRequestModal();
           setTimeout(() => {
