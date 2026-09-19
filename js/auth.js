@@ -1,25 +1,6 @@
-// Google One Tap init
-window.addEventListener('load', () => {
-  window.google.accounts.id.initialize({
-    client_id: '453802118858-q3tqor1hco5cr1b36bjpmnthaabmni7d.apps.googleusercontent.com',
-    callback: async (response) => {
-      const credential = GoogleAuthProvider.credential(response.credential);
-      await signInWithCredential(auth, credential);
-      // لا تمسح reopenOrderModal أو pendingOrder هنا — onAuthStateChanged هيتعامل معاهم بعد الـ reload
-      window.location.reload();
-    }
-  });
-});
-
-const script = document.createElement('script');
-script.src = 'https://cdn.jsdelivr.net/npm/eruda';
-document.head.appendChild(script);
-script.onload = () => eruda.init();
-
 // 1. استيراد المكتبات الأساسية من الـ CDN
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult,
-         signInWithCredential, GoogleAuthProvider, onAuthStateChanged, signOut }
+import { getAuth, signInWithPopup, signInWithCredential, GoogleAuthProvider, onAuthStateChanged, signOut }
   from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
@@ -39,28 +20,21 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
-getRedirectResult(auth)
-  .then((result) => {
-    console.log("getRedirectResult:", JSON.stringify(result));
-    if (result?.user) {
-      const redirectUrl = localStorage.getItem('redirectAfterLogin');
-      localStorage.removeItem('redirectAfterLogin');
-      if (redirectUrl) window.location.href = redirectUrl;
-      else window.location.reload();
+// Google One Tap init
+window.addEventListener('load', () => {
+  window.google.accounts.id.initialize({
+    client_id: '453802118858-q3tqor1hco5cr1b36bjpmnthaabmni7d.apps.googleusercontent.com',
+    callback: async (response) => {
+      const credential = GoogleAuthProvider.credential(response.credential);
+      await signInWithCredential(auth, credential);
+      window.location.reload();
     }
-  })
-  .catch((error) => { 
-    console.error("Redirect error:", error.message);
-    console.error("Redirect error full:", JSON.stringify(error));
   });
+});
 
 window.saveInvoiceToFirestore = async function(orderNum, invoiceHtml) {
   const user = auth.currentUser;
-
-  if (!user) {
-    throw new Error('User is not authenticated');
-  }
-
+  if (!user) throw new Error('User is not authenticated');
   await setDoc(doc(db, 'invoices', orderNum), {
     html: invoiceHtml,
     uid: user.uid,
@@ -70,38 +44,31 @@ window.saveInvoiceToFirestore = async function(orderNum, invoiceHtml) {
 
 window.getInvoiceFromFirestore = async function(orderNum) {
   const user = auth.currentUser;
-
-  if (!user) {
-    throw new Error('User is not authenticated');
-  }
-
+  if (!user) throw new Error('User is not authenticated');
   const invoiceRef = doc(db, 'invoices', orderNum);
   const invoiceSnap = await getDoc(invoiceRef);
-
-  if (!invoiceSnap.exists()) {
-    return null;
-  }
-
+  if (!invoiceSnap.exists()) return null;
   const data = invoiceSnap.data();
-
-  if (data.uid !== user.uid) {
-    throw new Error('Unauthorized invoice access');
-  }
-
+  if (data.uid !== user.uid) throw new Error('Unauthorized invoice access');
   return data.html || null;
 };
 
+// تسجيل الدخول بحساب جوجل
 window.loginWithGoogle = function() {
-  localStorage.setItem('scrollPosition', window.scrollY);
-  if (typeof window.showToast === 'function') {
-    window.showToast('سجّل دخولك بحساب Google لتأكيد طلبك');
-  }
-  window.google.accounts.id.prompt((notification) => {
-    console.log('One Tap notification:', notification.getNotDisplayedReason?.(), notification.getSkippedReason?.());
-      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-        localStorage.setItem('redirectAfterLogin', window.location.href);
-        window.location.href = '/login.html';
-      }
+  grecaptcha.enterprise.ready(async () => {
+    const token = await grecaptcha.enterprise.execute('6Lde4nktAAAAAAPAlUeMAGT4Ki99VV9yNW56TuVw', {action: 'login'});
+    if (!token) return;
+    localStorage.setItem('scrollPosition', window.scrollY);
+    if (typeof window.showToast === 'function') {
+      window.showToast('سجّل دخولك بحساب Google لتأكيد طلبك');
+    }
+    window.google.accounts.id.prompt((notification) => {
+    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+      signInWithPopup(auth, provider)
+        .then(() => { window.location.reload(); })
+        .catch((error) => { console.error("خطأ: ", error.message); });
+    }
+  });
   });
 };
 
@@ -109,11 +76,9 @@ function updateSideNavAccount(user) {
     const loginSection = document.getElementById('sideNavLogin');
     const userSection = document.getElementById('sideNavUser');
     if (!loginSection || !userSection) return;
-
     const userName = document.getElementById('sideNavUserName');
     const userEmail = document.getElementById('sideNavUserEmail');
     const userImage = document.getElementById('sideNavUserImage');
-
     if (user) {
         loginSection.style.display = 'none';
         userSection.style.display = 'flex';
@@ -130,15 +95,12 @@ function updateNavbarAccount(user) {
     const accountBtn = document.getElementById('accountBtn');
     const accountHint = document.getElementById('accountHint');
     if (!accountBtn) return;
-
     if (user) {
         accountBtn.innerHTML = `<img class="account-profile-image" src="${user.photoURL || ''}" alt="صورة الحساب">`;
         accountBtn.href = '#';
         accountBtn.onclick = function (event) {
             event.preventDefault();
-            if (typeof window.openLogoutModal === 'function') {
-                window.openLogoutModal();
-            }
+            if (typeof window.openLogoutModal === 'function') window.openLogoutModal();
         };
         if (accountHint) accountHint.textContent = 'اضغط لتسجيل الخروج';
     } else {
@@ -160,156 +122,83 @@ onAuthStateChanged(auth, (user) => {
     updateSideNavAccount(user);
     updateNavbarAccount(user);
 
-    // لا يوجد مستخدم: امسح حالة الطلبات وأوقف التحديث التلقائي
     if (!user) {
         window.drOrdersLoaded = false;
-
-        if (typeof window.drStopOrdersPolling === 'function') {
-            window.drStopOrdersPolling();
-        }
-
+        if (typeof window.drStopOrdersPolling === 'function') window.drStopOrdersPolling();
         const bodyContainer = document.getElementById('drOrdersContainer');
-
-        if (bodyContainer) {
-            bodyContainer.replaceChildren();
-        }
-
+        if (bodyContainer) bodyContainer.replaceChildren();
         return;
     }
 
-    // تحميل الطلبات مسبقاً في الخلفية بعد تسجيل الدخول
     const preloadOrders = () => {
-
-        // لو المستخدم اتغير أو سجل خروج، أوقف التحميل
-        if (!auth.currentUser || auth.currentUser.uid !== user.uid) {
-            return;
-        }
-
-        // انتظر حتى يتم تحميل configurator.js
-        if (typeof window.drLoadUserOrders !== 'function') {
-            setTimeout(preloadOrders, 100);
-            return;
-        }
-
-        // لو الطلبات اتحملت بالفعل، لا تعيد الطلب
-        if (window.drOrdersLoaded) {
-            return;
-        }
-
+        if (!auth.currentUser || auth.currentUser.uid !== user.uid) return;
+        if (typeof window.drLoadUserOrders !== 'function') { setTimeout(preloadOrders, 100); return; }
+        if (window.drOrdersLoaded) return;
         window.drLoadUserOrders()
-            .then(() => {
-
-                // تأكد أن نفس المستخدم ما زال مسجلاً
-                if (auth.currentUser?.uid === user.uid) {
-                    window.drOrdersLoaded = true;
-                }
-
-            })
-            .catch((error) => {
-                console.error('Error preloading user orders:', error);
-            });
+            .then(() => { if (auth.currentUser?.uid === user.uid) window.drOrdersLoaded = true; })
+            .catch((error) => { console.error('Error preloading user orders:', error); });
     };
-
     preloadOrders();
 
-    // بدء تحديث الطلبات تلقائياً كل 30 ثانية
     const startPolling = () => {
-
-        if (auth.currentUser?.uid !== user.uid) {
-            return;
-        }
-
-        if (typeof window.drStartOrdersPolling === 'function') {
-            window.drStartOrdersPolling();
-            return;
-        }
-
-        // انتظر حتى يتم تحميل configurator.js
+        if (auth.currentUser?.uid !== user.uid) return;
+        if (typeof window.drStartOrdersPolling === 'function') { window.drStartOrdersPolling(); return; }
         setTimeout(startPolling, 100);
     };
-
     startPolling();
 
-    // إرسال طلب معلق بعد تسجيل الدخول
     const pendingOrder = localStorage.getItem('pendingOrder');
     const reopenModal = localStorage.getItem('reopenOrderModal');
-
-    console.log('pendingOrder:', pendingOrder);
-    console.log('reopenModal:', reopenModal);
 
     if (reopenModal) {
         localStorage.removeItem('reopenOrderModal');
 
-      const tryOpenModal = (attempts = 0) => {
-        const savedState = JSON.parse(localStorage.getItem('wodi_configurator_state') || '{}');
-        console.log(`tryOpenModal attempt ${attempts}:`, {
-          hasFunction: typeof window.openDesignRequestModal === 'function',
-          designId: savedState.designId,
-          sDesign: !!S?.design,
-          sSinkType: !!S?.sinkType
-        });
-        if (
-          typeof window.openDesignRequestModal !== 'function' ||
-          !savedState.designId ||
-          !S.design ||
-          !S.sinkType
-        ) {
-          if (attempts < 20) setTimeout(() => tryOpenModal(attempts + 1), 300);
-          return;
-        }
-
-        if (pendingOrder) {
-            localStorage.removeItem('pendingOrder');
-          // الاختيارات موجودة → افتح المودال على step 3 وابعت الطلب
-          window.openDesignRequestModal();
-          const savedScroll = parseInt(localStorage.getItem('scrollPosition') || '0');
-          localStorage.removeItem('scrollPosition');
-          window.scrollTo(0, savedScroll);
-
-          // استنى الـ step 3 يكون جاهز وبعدين ابعت
-          const waitAndSubmit = (attempts = 0) => {
-            const btn = document.getElementById('dr-btn-whatsapp');
-            if (!btn && attempts < 20) {
-              setTimeout(() => waitAndSubmit(attempts + 1), 300);
-              return;
+        const tryOpenModal = (attempts = 0) => {
+            const savedState = JSON.parse(localStorage.getItem('wodi_configurator_state') || '{}');
+            if (
+                typeof window.openDesignRequestModal !== 'function' ||
+                !savedState.designId ||
+                !S.design ||
+                !S.sinkType
+            ) {
+                if (attempts < 20) setTimeout(() => tryOpenModal(attempts + 1), 300);
+                return;
             }
-            if (typeof window.drSubmitOrder === 'function') {
-              window.drSubmitOrder();
-            }
-          };
-          setTimeout(() => waitAndSubmit(), 500);
-        } else {
-          // مجرد إعادة فتح بدون إرسال
-          window.openDesignRequestModal();
-        }
-      };
 
-      tryOpenModal();
+            if (pendingOrder) {
+                localStorage.removeItem('pendingOrder');
+                window.openDesignRequestModal();
+                const savedScroll = parseInt(localStorage.getItem('scrollPosition') || '0');
+                localStorage.removeItem('scrollPosition');
+                window.scrollTo(0, savedScroll);
+                setTimeout(() => {
+                    if (typeof window.drSubmitOrder === 'function') window.drSubmitOrder();
+                }, 1000);
+            } else {
+                window.openDesignRequestModal();
+            }
+        };
+        tryOpenModal();
     }
 });
 
-// Expose auth state listener globally for other pages (like wishlist)
+// Expose auth state listener globally
 window.onAuthStateChanged = function(callback) {
   onAuthStateChanged(auth, callback);
 };
 
-// Expose current user for other pages
+// Expose current user
 Object.defineProperty(window, 'currentUser', {
-  get() {
-    return auth.currentUser;
-  }
+  get() { return auth.currentUser; }
 });
 
-// نظام إدارة الـ Logout Modal بشكل آمن بدون Duplicate Listeners
+// نظام إدارة الـ Logout Modal
 window.initLogoutSystem = function () {
     const logoutModal = document.getElementById('logoutModal');
     const cancelLogoutBtn = document.getElementById('cancelLogout');
     const closeLogoutModalBtn = document.getElementById('closeLogoutModal');
     const confirmLogoutBtn = document.getElementById('confirmLogout');
     const sideNavLogoutBtn = document.getElementById('sideNavLogoutBtn');
-    const cancelLogout = document.getElementById('cancelLogout');
-    const confirmLogout = document.getElementById('confirmLogout');
-    const closeLogoutModal = document.getElementById('closeLogoutModal');
 
     window.openLogoutModal = function () {
         if (logoutModal) {
@@ -323,31 +212,23 @@ window.initLogoutSystem = function () {
     };
 
     window.closeLogoutConfirmation = function () {
-        if (logoutModal) {
-            logoutModal.classList.remove('active');
-        }
+        if (logoutModal) logoutModal.classList.remove('active');
     };
 
-    // ربط الأحداث مرة واحدة فقط لكل عنصر
     if (cancelLogoutBtn && !cancelLogoutBtn.dataset.listenerAttached) {
         cancelLogoutBtn.dataset.listenerAttached = 'true';
         cancelLogoutBtn.addEventListener('click', window.closeLogoutConfirmation);
     }
-
     if (closeLogoutModalBtn && !closeLogoutModalBtn.dataset.listenerAttached) {
         closeLogoutModalBtn.dataset.listenerAttached = 'true';
         closeLogoutModalBtn.addEventListener('click', window.closeLogoutConfirmation);
     }
-
     if (logoutModal && !logoutModal.dataset.listenerAttached) {
         logoutModal.dataset.listenerAttached = 'true';
         logoutModal.addEventListener('click', function (event) {
-            if (event.target === logoutModal) {
-                window.closeLogoutConfirmation();
-            }
+            if (event.target === logoutModal) window.closeLogoutConfirmation();
         });
     }
-
     if (confirmLogoutBtn && !confirmLogoutBtn.dataset.listenerAttached) {
         confirmLogoutBtn.dataset.listenerAttached = 'true';
         confirmLogoutBtn.addEventListener('click', async function () {
@@ -360,7 +241,6 @@ window.initLogoutSystem = function () {
             }
         });
     }
-
     if (sideNavLogoutBtn && !sideNavLogoutBtn.dataset.listenerAttached) {
         sideNavLogoutBtn.dataset.listenerAttached = 'true';
         sideNavLogoutBtn.addEventListener('click', function (event) {
@@ -371,16 +251,12 @@ window.initLogoutSystem = function () {
     }
 };
 
-// تشغيل نظام الـ Logout بعد التأكد من تحميل محتوى الصفحة بالكامل أو الـ Navbar
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => window.initLogoutSystem());
 } else {
     window.initLogoutSystem();
 }
 
-// محاولة ثانية احترازية في حال كان الـ Navbar يتم حقنه ديناميكياً عبر fetch تأخذ وقتاً إضافياً
 setTimeout(() => {
-    if (typeof window.initLogoutSystem === 'function') {
-        window.initLogoutSystem();
-    }
+    if (typeof window.initLogoutSystem === 'function') window.initLogoutSystem();
 }, 1000);
