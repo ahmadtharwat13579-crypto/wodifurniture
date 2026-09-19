@@ -91,19 +91,31 @@ window.getInvoiceFromFirestore = async function(orderNum) {
   return data.html || null;
 };
 
-// تسجيل الدخول بحساب جوجل
 window.loginWithGoogle = function() {
   localStorage.setItem('scrollPosition', window.scrollY);
   if (typeof window.showToast === 'function') {
     window.showToast('سجّل دخولك بحساب Google لتأكيد طلبك');
   }
-    window.google.accounts.id.prompt((notification) => {
-      console.log('One Tap notification:', notification.getNotDisplayedReason?.(), notification.getSkippedReason?.());
-      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-        localStorage.setItem('redirectAfterLogin', window.location.href);
-        signInWithRedirect(auth, provider);
-      }
-    });
+  window.google.accounts.id.prompt((notification) => {
+    console.log('One Tap notification:', notification.getNotDisplayedReason?.(), notification.getSkippedReason?.());
+    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+      // افتح صفحة login في نافذة صغيرة
+      const loginWindow = window.open(
+        '/login.html',
+        'login',
+        'width=500,height=600,scrollbars=no'
+      );
+
+      // استنى المستخدم يسجل دخوله وتتقفل النافذة
+      const checkLogin = setInterval(() => {
+        if (loginWindow.closed) {
+          clearInterval(checkLogin);
+          // reload عشان onAuthStateChanged يشتغل
+          window.location.reload();
+        }
+      }, 500);
+    }
+  });
 };
 
 function updateSideNavAccount(user) {

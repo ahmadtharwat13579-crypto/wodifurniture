@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>تسجيل الدخول</title>
+</head>
+<body>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+
+    const app = initializeApp({
+      apiKey: "AIzaSyCS6kK1nV0FMy_Pk44aImJJTF2zQf3_8sI",
+      authDomain: "wodi-furniture.firebaseapp.com",
+      projectId: "wodi-furniture",
+      storageBucket: "wodi-furniture.firebasestorage.app",
+      messagingSenderId: "453802118858",
+      appId: "1:453802118858:web:dadf3546af2c3c65e8ee33"
+    });
+
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
+    signInWithPopup(auth, provider)
+      .then(() => {
+        window.close();
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  </script>
+</body>
+</html>
