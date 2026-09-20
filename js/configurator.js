@@ -1403,20 +1403,22 @@ function mkImg(id, cardEl) {
   preloadConfiguratorImage(webpSrc);
 
   img.src = webpSrc;
+  let fallbackTried = false;
   img.onerror = function () {
-    if (this.src.endsWith('.webp')) {
+    if (!fallbackTried) {
+      fallbackTried = true;
       this.src = GH + encoded + '.png';
-    } else {
-      this.style.display = 'none';
-      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      svg.setAttribute('class', 'placeholder');
-      svg.setAttribute('viewBox', '0 0 24 24');
-      svg.setAttribute('fill', 'none');
-      svg.setAttribute('stroke', 'currentColor');
-      svg.setAttribute('stroke-width', '1.5');
-      svg.innerHTML = '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>';
-      w.appendChild(svg);
+      return;
     }
+    this.style.display = 'none';
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('class', 'placeholder');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('fill', 'none');
+    svg.setAttribute('stroke', 'currentColor');
+    svg.setAttribute('stroke-width', '1.5');
+    svg.innerHTML = '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>';
+    w.appendChild(svg);
   };
   w.appendChild(img);
 
@@ -1741,8 +1743,13 @@ function rDes() {
         img.src = GH + `clr/${encoded}.webp`;
         
         img.onerror = function () {
-          if (colorCard) colorCard.remove();
-          if (typeof checkGroupVisibility === 'function') checkGroupVisibility();
+          if (this.dataset.fallbackTried === 'true') {
+            colorCard.remove();
+            if (typeof checkGroupVisibility === 'function') checkGroupVisibility();
+            return;
+          }
+          this.dataset.fallbackTried = 'true';
+          this.src = GH + `clr/${encodeURIComponent(cleanColorId)}.png`;
         };
       }
 
@@ -2221,8 +2228,13 @@ function rHnd() {
         img.src = GH + `hnd/${encoded}.webp`;
 
         img.onerror = function () {
-          shapeCard.remove();
-          setTimeout(() => updateArrows('handle-shapes-row'), 50);
+          if (this.dataset.fallbackTried === 'true') {
+            shapeCard.remove();
+            setTimeout(() => updateArrows('handle-shapes-row'), 50);
+            return;
+          }
+          this.dataset.fallbackTried = 'true';
+          this.src = GH + `hnd/${encodeURIComponent(shapeId)}.png`;
         };
       }
 
@@ -5485,15 +5497,12 @@ if (designImg) {
     designImg.hidden = false;
 
     designImg.onerror = function () {
-
-      if (this.src.endsWith('.webp')) {
-
+      if (this.dataset.fallbackTried !== 'true') {
+        this.dataset.fallbackTried = 'true';
         this.src = png;
-
-      } else {
-
-        this.hidden = true;
+        return;
       }
+      this.hidden = true;
     };
 
   } else {
