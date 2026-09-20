@@ -1,7 +1,7 @@
 {
   "type": "module",
   "engines": {
-    "node": "18.x"
+    "node": "22.x"
   },
   "dependencies": {
     "firebase-admin": "^14.4.0"
