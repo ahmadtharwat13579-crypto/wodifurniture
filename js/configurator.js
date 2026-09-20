@@ -1074,38 +1074,8 @@ function loadConfiguratorData() {
       const colorRows = data && data.colors;
       const settings = data && data.locationSettings;
 
-      if (settings && typeof settings === 'object') {
-        const numberOrFallback = (value, fallback) => {
-          const number = Number(value);
-          return Number.isFinite(number) ? number : fallback;
-        };
-
-        LOC = {
-          workshop_lat: numberOrFallback(
-            settings.workshop_lat,
-            LOC.workshop_lat
-          ),
-          workshop_lng: numberOrFallback(
-            settings.workshop_lng,
-            LOC.workshop_lng
-          ),
-          correction_factor: numberOrFallback(
-            settings.correction_factor,
-            LOC.correction_factor
-          ),
-          price_per_km: numberOrFallback(
-            settings.price_per_km,
-            LOC.price_per_km
-          ),
-          fixed_cost: numberOrFallback(
-            settings.fixed_cost,
-            LOC.fixed_cost
-          ),
-          max_distance_km: numberOrFallback(
-            settings.max_distance_km,
-            25
-          )
-        };
+      if (settings && settings.workshop_lat) {
+        LOC = settings;
       }
 
       if (rows && rows.length > 0) {
@@ -3106,22 +3076,7 @@ Location & Shipping
 */
 
 function calcInstall(lat, lng) {
-  if (
-    !Number.isFinite(Number(lat)) ||
-    !Number.isFinite(Number(lng)) ||
-    !Number.isFinite(Number(LOC.price_per_km)) ||
-    Number(LOC.price_per_km) <= 0
-  ) {
-    console.warn('Invalid location pricing settings:', LOC);
-    return null;
-  }
-
-  const dist = haversine(
-    Number(LOC.workshop_lat),
-    Number(LOC.workshop_lng),
-    Number(lat),
-    Number(lng)
-  );
+  const dist = haversine(LOC.workshop_lat, LOC.workshop_lng, lat, lng);
   const maxDist = (LOC.max_distance_km !== undefined && LOC.max_distance_km !== null)
     ? parseFloat(LOC.max_distance_km)
     : 25;
@@ -4760,6 +4715,7 @@ async function submitOrderToSheet() {
       submissionId
     );
   }
+  const locationAddress = window.userLocationAddress || {};
   const currentUser = window.currentUser || null;
 
   let draft = {};
@@ -4768,22 +4724,6 @@ async function submitOrderToSheet() {
   } catch (error) {
     console.warn('Failed to parse saved order draft:', error);
   }
-
-  const locationAddress =
-    window.userLocationAddress &&
-    typeof window.userLocationAddress === 'object' &&
-    Object.keys(window.userLocationAddress).length > 0
-      ? window.userLocationAddress
-      : (
-          draft.locationAddress &&
-          typeof draft.locationAddress === 'object'
-            ? draft.locationAddress
-            : {}
-        );
-
-  const isManualLocation =
-    window.drIsManualLocation === true ||
-    draft.isManualLocation === true;
 
   if (!currentUser) {
     throw new Error('Authenticated user is required');
@@ -4843,15 +4783,9 @@ async function submitOrderToSheet() {
       '',
 
     locationAddress,
-    locationMethod: isManualLocation ? 'يدوي' : 'تلقائي',
-
-    lat: isManualLocation
-      ? ''
-      : (window.userLat ?? draft.userLat ?? ''),
-
-    lng: isManualLocation
-      ? ''
-      : (window.userLng ?? draft.userLng ?? ''),
+    locationMethod: window.drIsManualLocation === true ? 'يدوي' : 'تلقائي',
+    lat: window.drIsManualLocation === true ? '' : (window.userLat || ''),
+    lng: window.drIsManualLocation === true ? '' : (window.userLng || ''),
 
     sinkType: config?.sinkType || '',
     designName: config?.design?.name || '',
@@ -4908,10 +4842,7 @@ async function submitOrderToSheet() {
     })(),
 
     installationFee: 200,
-    installationCost:
-      window.installCost ??
-      draft.installCost ??
-      '',
+    installationCost: window.installCost ?? '',
 
     selectedColor: S?.selectedColors?.[0] || '',
     handleShape1: S?.selectedHandleShapes?.[0] || '',
