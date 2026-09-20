@@ -4681,9 +4681,20 @@ async function submitOrderToSheet() {
   }
 
   const locationAddress =
-    window.userLocationAddress ||
-    draft.locationAddress ||
-    {};
+    window.userLocationAddress &&
+    typeof window.userLocationAddress === 'object' &&
+    Object.keys(window.userLocationAddress).length > 0
+      ? window.userLocationAddress
+      : (
+          draft.locationAddress &&
+          typeof draft.locationAddress === 'object'
+            ? draft.locationAddress
+            : {}
+        );
+
+  const isManualLocation =
+    window.drIsManualLocation === true ||
+    draft.isManualLocation === true;
 
   if (!currentUser) {
     throw new Error('Authenticated user is required');
@@ -4743,11 +4754,13 @@ async function submitOrderToSheet() {
       '',
 
     locationAddress,
-    locationMethod: window.drIsManualLocation === true ? 'يدوي' : 'تلقائي',
-    lat: window.drIsManualLocation === true
+    locationMethod: isManualLocation ? 'يدوي' : 'تلقائي',
+
+    lat: isManualLocation
       ? ''
       : (window.userLat ?? draft.userLat ?? ''),
-    lng: window.drIsManualLocation === true
+
+    lng: isManualLocation
       ? ''
       : (window.userLng ?? draft.userLng ?? ''),
 
@@ -4807,7 +4820,9 @@ async function submitOrderToSheet() {
 
     installationFee: 200,
     installationCost:
-      window.installCost ?? draft.installCost ?? '',
+      window.installCost ??
+      draft.installCost ??
+      '',
 
     selectedColor: S?.selectedColors?.[0] || '',
     handleShape1: S?.selectedHandleShapes?.[0] || '',
