@@ -1,13 +1,24 @@
-const crypto = require("crypto");
+import crypto from "node:crypto";
 
 const VERIFY_TOKEN =
   process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN;
+
+const WHATSAPP_APP_SECRET =
+  process.env.WHATSAPP_APP_SECRET;
 
 const SHEET_URL =
   process.env.SHEET_URL;
 
 const SHEET_PWD =
   process.env.SHEET_PWD;
+
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: "1mb"
+    }
+  }
+};
 
 export default async function handler(req, res) {
 
@@ -42,6 +53,31 @@ export default async function handler(req, res) {
   }
 
   try {
+    const signature = req.headers["x-hub-signature-256"];
+    const rawBody = req.rawBody
+      ? Buffer.from(req.rawBody)
+      : Buffer.from(JSON.stringify(req.body || {}));
+
+    if (!WHATSAPP_APP_SECRET || !signature) {
+      return res.status(401).send("Unauthorized");
+    }
+
+    const expectedSignature =
+      "sha256=" +
+      crypto
+        .createHmac("sha256", WHATSAPP_APP_SECRET)
+        .update(rawBody)
+        .digest("hex");
+
+    const receivedBuffer = Buffer.from(signature);
+    const expectedBuffer = Buffer.from(expectedSignature);
+
+    if (
+      receivedBuffer.length !== expectedBuffer.length ||
+      !crypto.timingSafeEqual(receivedBuffer, expectedBuffer)
+    ) {
+      return res.status(401).send("Unauthorized");
+    }
 
     const body = req.body;
 
@@ -73,14 +109,12 @@ export default async function handler(req, res) {
     return res.status(200).send("EVENT_RECEIVED");
 
   } catch (error) {
-
     console.error(
       "WhatsApp webhook error:",
       error
     );
 
-    // Always acknowledge Meta.
-    return res.status(200).send("EVENT_RECEIVED");
+    return res.status(500).send("Webhook processing failed");
   }
 }
 

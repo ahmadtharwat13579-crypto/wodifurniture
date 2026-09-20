@@ -19,7 +19,13 @@ Global State
 ================================================================================
 */
 let userLat = null, userLng = null, installCost = null;
-let LOC = { workshop_lat: 30.061113, workshop_lng: 31.394701, correction_factor: 0, price_per_km: 0, fixed_cost: 0 };
+let LOC = {
+  workshop_lat: 30.061113,
+  workshop_lng: 31.394701,
+  correction_factor: 1,
+  price_per_km: 0,
+  fixed_cost: 0
+};
 let D = { designs: [], divisions: [], handles: [], colors: [] };
 let dataLoaded = false;
 
@@ -1068,8 +1074,38 @@ function loadConfiguratorData() {
       const colorRows = data && data.colors;
       const settings = data && data.locationSettings;
 
-      if (settings && settings.workshop_lat) {
-        LOC = settings;
+      if (settings && typeof settings === 'object') {
+        const numberOrFallback = (value, fallback) => {
+          const number = Number(value);
+          return Number.isFinite(number) ? number : fallback;
+        };
+
+        LOC = {
+          workshop_lat: numberOrFallback(
+            settings.workshop_lat,
+            LOC.workshop_lat
+          ),
+          workshop_lng: numberOrFallback(
+            settings.workshop_lng,
+            LOC.workshop_lng
+          ),
+          correction_factor: numberOrFallback(
+            settings.correction_factor,
+            LOC.correction_factor
+          ),
+          price_per_km: numberOrFallback(
+            settings.price_per_km,
+            LOC.price_per_km
+          ),
+          fixed_cost: numberOrFallback(
+            settings.fixed_cost,
+            LOC.fixed_cost
+          ),
+          max_distance_km: numberOrFallback(
+            settings.max_distance_km,
+            25
+          )
+        };
       }
 
       if (rows && rows.length > 0) {
@@ -3070,7 +3106,22 @@ Location & Shipping
 */
 
 function calcInstall(lat, lng) {
-  const dist = haversine(LOC.workshop_lat, LOC.workshop_lng, lat, lng);
+  if (
+    !Number.isFinite(Number(lat)) ||
+    !Number.isFinite(Number(lng)) ||
+    !Number.isFinite(Number(LOC.price_per_km)) ||
+    Number(LOC.price_per_km) <= 0
+  ) {
+    console.warn('Invalid location pricing settings:', LOC);
+    return null;
+  }
+
+  const dist = haversine(
+    Number(LOC.workshop_lat),
+    Number(LOC.workshop_lng),
+    Number(lat),
+    Number(lng)
+  );
   const maxDist = (LOC.max_distance_km !== undefined && LOC.max_distance_km !== null)
     ? parseFloat(LOC.max_distance_km)
     : 25;
@@ -4653,6 +4704,44 @@ async function compressBase64Image(base64, maxWidth, quality) {
     };
     img.src = base64;
   });
+}
+
+async function uploadImageToCloudinary(base64Image, fileName) {
+  if (!base64Image) return '';
+
+  const compressed = await compressBase64Image(
+    base64Image,
+    800,
+    0.7
+  );
+
+  const response = await fetch(compressed);
+  const blob = await response.blob();
+
+  const formData = new FormData();
+  formData.append('file', blob, fileName);
+  formData.append('upload_preset', 'wodi_orders');
+  formData.append('folder', 'wodi-orders');
+
+  const res = await fetch(
+    'https://api.cloudinary.com/v1_1/fpz05btz/image/upload',
+    {
+      method: 'POST',
+      body: formData
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error(`Cloudinary upload failed: ${res.status}`);
+  }
+
+  const data = await res.json();
+
+  if (!data.secure_url) {
+    throw new Error('Cloudinary returned no secure URL');
+  }
+
+  return data.secure_url;
 }
 
 async function submitOrderToSheet() {
