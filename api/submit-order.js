@@ -11,6 +11,14 @@ const firebaseAdminAuth = getAuth(firebaseAdminApp);
 
 module.exports = async function handler(req, res) {
 
+  try {
+    const sa = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON || '{}');
+    console.log('SA project_id:', sa.project_id);
+  } catch(e) {
+    console.error('SA parse error:', e.message);
+    return res.status(500).json({ error: 'SA config error: ' + e.message });
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({
       error: 'Method Not Allowed'
