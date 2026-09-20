@@ -4671,7 +4671,6 @@ async function submitOrderToSheet() {
       submissionId
     );
   }
-  const locationAddress = window.userLocationAddress || {};
   const currentUser = window.currentUser || null;
 
   let draft = {};
@@ -4680,6 +4679,11 @@ async function submitOrderToSheet() {
   } catch (error) {
     console.warn('Failed to parse saved order draft:', error);
   }
+
+  const locationAddress =
+    window.userLocationAddress ||
+    draft.locationAddress ||
+    {};
 
   if (!currentUser) {
     throw new Error('Authenticated user is required');
@@ -4738,10 +4742,14 @@ async function submitOrderToSheet() {
       draft.manualAddress ||
       '',
 
-    locationAddress: locationAddress || draft.locationAddress || {},
+    locationAddress,
     locationMethod: window.drIsManualLocation === true ? 'يدوي' : 'تلقائي',
-    lat: window.drIsManualLocation === true ? '' : (window.userLat || ''),
-    lng: window.drIsManualLocation === true ? '' : (window.userLng || ''),
+    lat: window.drIsManualLocation === true
+      ? ''
+      : (window.userLat ?? draft.userLat ?? ''),
+    lng: window.drIsManualLocation === true
+      ? ''
+      : (window.userLng ?? draft.userLng ?? ''),
 
     sinkType: config?.sinkType || '',
     designName: config?.design?.name || '',
@@ -4798,7 +4806,8 @@ async function submitOrderToSheet() {
     })(),
 
     installationFee: 200,
-    installationCost: window.installCost ?? '',
+    installationCost:
+      window.installCost ?? draft.installCost ?? '',
 
     selectedColor: S?.selectedColors?.[0] || '',
     handleShape1: S?.selectedHandleShapes?.[0] || '',
