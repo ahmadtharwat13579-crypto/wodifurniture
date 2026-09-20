@@ -590,6 +590,12 @@ async function drLoadUserOrders(options = {}) {
       `/api/get-config?action=getUserOrders&email=${encodeURIComponent(userEmail)}`
     );
 
+    if (!response.ok) {
+      const text = await response.text().catch(() => '');
+      console.error('getUserOrders failed:', response.status, text.slice(0, 500));
+      throw new Error(`getUserOrders failed: ${response.status}`);
+    }
+
     const data = await response.json();
     const nextOrdersSnapshot = JSON.stringify(data.orders || []);
 
@@ -1016,6 +1022,13 @@ function loadConfiguratorData() {
         const cachedAt = Array.isArray(parsed) ? 0 : Number(parsed.cachedAt || 0);
         const cacheIsFresh = cachedAt && Date.now() - cachedAt < 10 * 60 * 1000;
 
+        if (parsed && parsed.settings && typeof parsed.settings === 'object' && parsed.settings.workshop_lat) {
+          LOC = {
+            ...LOC,
+            ...parsed.settings
+          };
+        }
+
         D = build(rows, colorRows);
         dataLoaded = true;
         hideConfiguratorLoading();
@@ -1074,8 +1087,19 @@ function loadConfiguratorData() {
       const colorRows = data && data.colors;
       const settings = data && data.locationSettings;
 
-      if (settings && settings.workshop_lat) {
-        LOC = settings;
+      if (settings && typeof settings === 'object' && settings.workshop_lat) {
+        LOC = {
+          ...LOC,
+          ...settings
+        };
+      }
+
+      if (currentRequestId !== window.__wodiConfiguratorLoadRequestId) {
+        return;
+      }
+
+      if (currentRequestId !== window.__wodiConfiguratorLoadRequestId) {
+        return;
       }
 
       if (rows && rows.length > 0) {

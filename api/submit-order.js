@@ -10,10 +10,18 @@ const firebaseAdminApp = getApps().length
 const firebaseAdminAuth = getAuth(firebaseAdminApp);
 
 export default async function handler(req, res) {
-
   if (req.method !== 'POST') {
     return res.status(405).json({
+      success: false,
       error: 'Method Not Allowed'
+    });
+  }
+
+  if (!process.env.SHEET_URL || !process.env.SHEET_PWD) {
+    console.error('submit-order configuration error: missing SHEET_URL or SHEET_PWD');
+    return res.status(500).json({
+      success: false,
+      error: 'Server configuration error'
     });
   }
 
@@ -41,7 +49,10 @@ export default async function handler(req, res) {
     return res.status(401).json({ success: false, error: 'User identity mismatch' });
   }
 
-  if (req.body.email && req.body.email.toLowerCase() !== String(decodedToken.email || '').toLowerCase()) {
+  if (
+    req.body.email &&
+    req.body.email.toLowerCase() !== String(decodedToken.email || '').toLowerCase()
+  ) {
     return res.status(401).json({ success: false, error: 'User email mismatch' });
   }
 
@@ -52,38 +63,62 @@ export default async function handler(req, res) {
     pwd: process.env.SHEET_PWD
   };
 
-  try {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 50000);
 
+  try {
     const response = await fetch(process.env.SHEET_URL, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        Accept: 'application/json'
       },
-      body: JSON.stringify(body)
+      body: JSON.stringify(body),
+      signal: controller.signal
     });
 
     const responseText = await response.text();
+    const contentType = response.headers.get('content-type') || '';
 
     let data;
 
     try {
       data = JSON.parse(responseText);
     } catch {
-      data = {
+      console.error('Apps Script returned invalid submit-order response:', {
+        status: response.status,
+        contentType,
+        body: responseText.slice(0, 1000)
+      });
+
+      return res.status(502).json({
         success: false,
         error: 'Invalid response from Apps Script',
-        raw: responseText
-      };
+        upstreamStatus: response.status
+      });
     }
 
-    return res.status(response.status).json(data);
+    if (!response.ok) {
+      return res.status(502).json({
+        success: false,
+        error: data?.error || 'Apps Script order request failed',
+        upstreamStatus: response.status
+      });
+    }
 
+    return res.status(200).json(data);
   } catch (e) {
+    const isTimeout = e?.name === 'AbortError';
 
-    return res.status(500).json({
+    console.error('submit-order upstream error:', e?.message || e);
+
+    return res.status(isTimeout ? 504 : 502).json({
       success: false,
-      error: e.message
+      error: isTimeout
+        ? 'Apps Script order request timed out'
+        : 'Failed to submit order to Apps Script'
     });
-
+  } finally {
+    clearTimeout(timeout);
   }
 }
