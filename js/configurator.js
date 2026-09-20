@@ -4812,7 +4812,13 @@ async function submitOrderToSheet() {
     const respText = await resp.clone().text();
     console.log('submit-order response:', resp.status, respText);
 
-    const data = await resp.json();
+    const responseContentType = resp.headers.get('content-type') || '';
+    const data = responseContentType.includes('application/json')
+      ? await resp.json()
+      : {
+          success: false,
+          error: (await resp.text()) || `HTTP ${resp.status}`
+        };
 
     if (!data.success && data.error === 'max_orders') {
       showToast('وصلت للحد الأقصى من الطلبات — تواصل معنا على الواتساب للمتابعة');
