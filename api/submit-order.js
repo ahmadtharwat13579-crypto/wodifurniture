@@ -1,5 +1,5 @@
-import { cert, getApps, initializeApp } from 'firebase-admin/app';
-import { getAuth } from 'firebase-admin/auth';
+const { cert, getApps, initializeApp } = require('firebase-admin/app');
+const { getAuth } = require('firebase-admin/auth');
 
 const firebaseAdminApp = getApps().length
   ? getApps()[0]
@@ -9,7 +9,7 @@ const firebaseAdminApp = getApps().length
 
 const firebaseAdminAuth = getAuth(firebaseAdminApp);
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
 
   if (req.method !== 'POST') {
     return res.status(405).json({
