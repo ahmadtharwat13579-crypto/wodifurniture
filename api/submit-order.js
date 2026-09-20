@@ -69,14 +69,22 @@ export default async function handler(req, res) {
     try {
       data = JSON.parse(responseText);
     } catch {
-      data = {
+      return res.status(502).json({
         success: false,
         error: 'Invalid response from Apps Script',
-        raw: responseText
-      };
+        upstreamStatus: response.status
+      });
     }
 
-    return res.status(response.status).json(data);
+    if (!response.ok) {
+      return res.status(502).json({
+        success: false,
+        error: data?.error || 'Apps Script order request failed',
+        upstreamStatus: response.status
+      });
+    }
+
+    return res.status(200).json(data);
 
   } catch (e) {
 
