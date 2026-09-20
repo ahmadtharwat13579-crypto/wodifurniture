@@ -11,14 +11,6 @@ const firebaseAdminAuth = getAuth(firebaseAdminApp);
 
 export default async function handler(req, res) {
 
-  try {
-    const sa = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON || '{}');
-    console.log('SA project_id:', sa.project_id);
-  } catch(e) {
-    console.error('SA parse error:', e.message);
-    return res.status(500).json({ error: 'SA config error: ' + e.message });
-  }
-
   if (req.method !== 'POST') {
     return res.status(405).json({
       error: 'Method Not Allowed'
@@ -45,25 +37,12 @@ export default async function handler(req, res) {
     });
   }
 
-  if (
-    req.body.uid &&
-    req.body.uid !== decodedToken.uid
-  ) {
-    return res.status(401).json({
-      success: false,
-      error: 'User identity mismatch'
-    });
+  if (req.body.uid && req.body.uid !== decodedToken.uid) {
+    return res.status(401).json({ success: false, error: 'User identity mismatch' });
   }
 
-  if (
-    req.body.email &&
-    req.body.email.toLowerCase() !==
-      String(decodedToken.email || '').toLowerCase()
-  ) {
-    return res.status(401).json({
-      success: false,
-      error: 'User email mismatch'
-    });
+  if (req.body.email && req.body.email.toLowerCase() !== String(decodedToken.email || '').toLowerCase()) {
+    return res.status(401).json({ success: false, error: 'User email mismatch' });
   }
 
   const body = {
