@@ -35,6 +35,23 @@ let S = {
 
 let toastTimeout;
 
+// Reuse decoded image resources across configurator re-renders.
+const configuratorImageCache = new Map();
+
+function preloadConfiguratorImage(src) {
+  if (!src || configuratorImageCache.has(src)) return;
+
+  const image = new Image();
+  image.decoding = 'async';
+  image.src = src;
+
+  configuratorImageCache.set(src, image);
+
+  if (typeof image.decode === 'function') {
+    image.decode().catch(() => {});
+  }
+}
+
 // Initialization guard
 let initDone = false;
 
@@ -568,6 +585,16 @@ async function drLoadUserOrders(options = {}) {
     );
 
     const data = await response.json();
+    const nextOrdersSnapshot = JSON.stringify(data.orders || []);
+
+    if (
+      silent &&
+      bodyContainer.dataset.ordersSnapshot === nextOrdersSnapshot
+    ) {
+      return;
+    }
+
+    bodyContainer.dataset.ordersSnapshot = nextOrdersSnapshot;
 
     if (!data.orders || data.orders.length === 0) {
       const emptyTemplate =
@@ -810,6 +837,7 @@ async function drLoadUserOrders(options = {}) {
 
     }).join('');
 
+    bodyContainer.dataset.ordersSnapshot = '';
   } catch (err) {
 
     console.error('Error loading user orders:', err);
@@ -834,7 +862,15 @@ function drStartOrdersPolling() {
         }
 
         try {
-            await drLoadUserOrders({ silent: true });
+            const previousOrders = document
+              .getElementById('drOrdersContainer')
+              ?.dataset.ordersSnapshot || '';
+
+            await drLoadUserOrders({
+              silent: true,
+              previousSnapshot: previousOrders
+            });
+
             window.drOrdersLoaded = true;
         } catch (error) {
             console.error('Error refreshing user orders:', error);
@@ -971,9 +1007,21 @@ function loadConfiguratorData() {
         const parsed = JSON.parse(cached);
         const rows = Array.isArray(parsed) ? parsed : parsed.rows;
         const colorRows = parsed.colorRows || [];
+        const cachedAt = Array.isArray(parsed) ? 0 : Number(parsed.cachedAt || 0);
+        const cacheIsFresh = cachedAt && Date.now() - cachedAt < 10 * 60 * 1000;
+
         D = build(rows, colorRows);
         dataLoaded = true;
         hideConfiguratorLoading();
+
+        if (cacheIsFresh) {
+          if (stateRestorePending) {
+            applyStateIfReady();
+          } else if (S.sinkType) {
+            renderDesigns();
+          }
+          return;
+        }
         
         if (stateRestorePending) {
           applyStateIfReady();
@@ -1029,7 +1077,15 @@ function loadConfiguratorData() {
         dataLoaded = true;
         hideConfiguratorLoading();
         try { 
-          sessionStorage.setItem('wodi_configurator_cache', JSON.stringify({ rows, colorRows, settings })); 
+          sessionStorage.setItem(
+  'wodi_configurator_cache',
+  JSON.stringify({
+    rows,
+    colorRows,
+    settings,
+    cachedAt: Date.now()
+  })
+); 
         } catch (e) { 
           console.warn('sessionStorage set failed', e); 
         }
@@ -1335,7 +1391,12 @@ function mkImg(id, cardEl) {
     finalImgId = finalImgId.replace(/_wh_/, '_' + typeCodeMap[S.sinkType] + '_');
   }
   const encoded = encodeURIComponent(finalImgId);
-  img.src = GH + encoded + '.webp';
+  const webpSrc = GH + encoded + '.webp';
+  const pngSrc = GH + encoded + '.png';
+
+  preloadConfiguratorImage(webpSrc);
+
+  img.src = webpSrc;
   img.onerror = function () {
     if (this.src.endsWith('.webp')) {
       this.src = GH + encoded + '.png';
@@ -4613,6 +4674,12 @@ async function submitOrderToSheet() {
   const locationAddress = window.userLocationAddress || {};
   const currentUser = window.currentUser || null;
 
+  if (!currentUser) {
+    throw new Error('Authenticated user is required');
+  }
+
+  const idToken = await currentUser.getIdToken(true);
+
   let wallImageUrl = '';
   let sinkPhotoUrl = '';
   let stickerPhotoUrl = '';
@@ -4620,31 +4687,38 @@ async function submitOrderToSheet() {
   const orderNumForImages = 
     `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
 
-  if (window.drSavedImages?.wall) {
-    wallImageUrl = await uploadImageToCloudinary(
-      window.drSavedImages.wall,
-      `${orderNumForImages}_wall`
-    );
-  }
+  [
+    wallImageUrl,
+    sinkPhotoUrl,
+    stickerPhotoUrl
+  ] = await Promise.all([
+    window.drSavedImages?.wall
+      ? uploadImageToCloudinary(
+          window.drSavedImages.wall,
+          `${orderNumForImages}_wall`
+        )
+      : Promise.resolve(''),
 
-  if (window.drSavedImages?.photo) {
-    sinkPhotoUrl = await uploadImageToCloudinary(
-      window.drSavedImages.photo,
-      `${orderNumForImages}_sink`
-    );
-  }
+    window.drSavedImages?.photo
+      ? uploadImageToCloudinary(
+          window.drSavedImages.photo,
+          `${orderNumForImages}_sink`
+        )
+      : Promise.resolve(''),
 
-  if (window.drSavedImages?.sticker) {
-    stickerPhotoUrl = await uploadImageToCloudinary(
-      window.drSavedImages.sticker,
-      `${orderNumForImages}_sticker`
-    );
-  }
+    window.drSavedImages?.sticker
+      ? uploadImageToCloudinary(
+          window.drSavedImages.sticker,
+          `${orderNumForImages}_sticker`
+        )
+      : Promise.resolve('')
+  ]);
 
   const body = {
     submissionId,
-    email: currentUser?.email || null,
-    uid: currentUser?.uid || null,
+    idToken,
+    email: currentUser.email || null,
+    uid: currentUser.uid || null,
 
     name: document.getElementById('dr-customer-name')?.value || '',
     phone: document.getElementById('dr-customer-phone')?.value || '',
@@ -4816,7 +4890,7 @@ async function drSubmitOrder() {
   if (typeof resetAll === 'function') resetAll();
   localStorage.removeItem('wodi_configurator_state');
   localStorage.removeItem(DR_STORAGE_KEY);
-  sessionStorage.removeItem('wodi_configurator_cache');
+  // Keep the configurator data cache; it is independent of the submitted order.
 
   // إغلاق مودال طلب التصميم
   closeDesignRequestModal();
@@ -5179,7 +5253,10 @@ async function compressBase64Image(base64, maxWidth, quality) {
 // Tooltip
 // =========================================================
   
-  document.addEventListener('click', function (e) {
+  if (!window.wodiTooltipListenerAttached) {
+    window.wodiTooltipListenerAttached = true;
+
+    document.addEventListener('click', function (e) {
   const tooltip = e.target.closest('.info-tooltip');
 
   document.querySelectorAll('.info-tooltip.is-open').forEach(el => {
@@ -5188,10 +5265,11 @@ async function compressBase64Image(base64, maxWidth, quality) {
     }
   });
 
-  if (tooltip) {
-    tooltip.classList.toggle('is-open');
+    if (tooltip) {
+      tooltip.classList.toggle('is-open');
+    }
+  });
   }
-});
 
 
  // =========================================================

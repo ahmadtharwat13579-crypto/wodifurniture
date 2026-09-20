@@ -171,8 +171,9 @@ onAuthStateChanged(auth, (user) => {
                 typeof window.drSubmitOrder !== 'function' ||
                 typeof window.buildDesignConfig !== 'function' ||
                 !savedState.designId ||
-                !S?.design ||
-                !S?.sinkType
+              typeof S === 'undefined' ||
+              !S.design ||
+              !S.sinkType
             ) {
                 if (attempts < 20) setTimeout(() => trySubmit(attempts + 1), 300);
                 return;
