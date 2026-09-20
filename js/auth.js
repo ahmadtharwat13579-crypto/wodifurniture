@@ -140,9 +140,12 @@ onAuthStateChanged(auth, (user) => {
         return;
     }
 
-    const preloadOrders = () => {
+    const preloadOrders = (attempts = 0) => {
         if (!auth.currentUser || auth.currentUser.uid !== user.uid) return;
-        if (typeof window.drLoadUserOrders !== 'function') { setTimeout(preloadOrders, 100); return; }
+        if (typeof window.drLoadUserOrders !== 'function') {
+            if (attempts < 100) setTimeout(() => preloadOrders(attempts + 1), 100);
+            return;
+        }
         if (window.drOrdersLoaded) return;
         window.drLoadUserOrders()
             .then(() => { if (auth.currentUser?.uid === user.uid) window.drOrdersLoaded = true; })
@@ -150,10 +153,10 @@ onAuthStateChanged(auth, (user) => {
     };
     preloadOrders();
 
-    const startPolling = () => {
+    const startPolling = (attempts = 0) => {
         if (auth.currentUser?.uid !== user.uid) return;
         if (typeof window.drStartOrdersPolling === 'function') { window.drStartOrdersPolling(); return; }
-        setTimeout(startPolling, 100);
+        if (attempts < 100) setTimeout(() => startPolling(attempts + 1), 100);
     };
     startPolling();
 
@@ -273,7 +276,3 @@ if (document.readyState === 'loading') {
 } else {
     window.initLogoutSystem();
 }
-
-setTimeout(() => {
-    if (typeof window.initLogoutSystem === 'function') window.initLogoutSystem();
-}, 1000);

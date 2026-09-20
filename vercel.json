@@ -1,10 +1,8 @@
 {
   "functions": {
-    "api/get-config.js": {
-      "maxDuration": 30
-    },
     "api/submit-order.js": {
       "maxDuration": 60
     }
   }
+
 }

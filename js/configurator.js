@@ -28,6 +28,7 @@ let LOC = {
 };
 let D = { designs: [], divisions: [], handles: [], colors: [] };
 let dataLoaded = false;
+let configuratorRequestId = 0;
 
 let S = {
   sinkType: null,
@@ -40,23 +41,6 @@ let S = {
 };
 
 let toastTimeout;
-
-// Reuse decoded image resources across configurator re-renders.
-const configuratorImageCache = new Map();
-
-function preloadConfiguratorImage(src) {
-  if (!src || configuratorImageCache.has(src)) return;
-
-  const image = new Image();
-  image.decoding = 'async';
-  image.src = src;
-
-  configuratorImageCache.set(src, image);
-
-  if (typeof image.decode === 'function') {
-    image.decode().catch(() => {});
-  }
-}
 
 // Initialization guard
 let initDone = false;
@@ -552,7 +536,9 @@ function drCloseOrdersDrawer() {
 }
 
 // جلب الطلبات الخاصة بالعميل من Google Apps Script
-async function drLoadUserOrders(options = {}) {
+let drOrdersLoadPromise = null;
+
+async function fetchUserOrders(options = {}) {
   const silent = options.silent === true;
   const bodyContainer = document.getElementById('drOrdersContainer');
 
@@ -591,12 +577,13 @@ async function drLoadUserOrders(options = {}) {
     );
 
     if (!response.ok) {
-      const text = await response.text().catch(() => '');
-      console.error('getUserOrders failed:', response.status, text.slice(0, 500));
-      throw new Error(`getUserOrders failed: ${response.status}`);
+      throw new Error(`Failed to load orders: ${response.status}`);
     }
 
     const data = await response.json();
+    if (!Array.isArray(data.orders)) {
+      throw new Error('Invalid orders response');
+    }
     const nextOrdersSnapshot = JSON.stringify(data.orders || []);
 
     if (
@@ -849,7 +836,6 @@ async function drLoadUserOrders(options = {}) {
 
     }).join('');
 
-    bodyContainer.dataset.ordersSnapshot = '';
   } catch (err) {
 
     console.error('Error loading user orders:', err);
@@ -857,6 +843,17 @@ async function drLoadUserOrders(options = {}) {
     bodyContainer.innerHTML =
       '<div class="dr-orders-empty">تعذر جلب البيانات. حاول مرة أخرى.</div>';
   }
+}
+
+function drLoadUserOrders(options = {}) {
+  if (drOrdersLoadPromise) return drOrdersLoadPromise;
+
+  drOrdersLoadPromise = fetchUserOrders(options)
+    .finally(() => {
+      drOrdersLoadPromise = null;
+    });
+
+  return drOrdersLoadPromise;
 }
 
 let drOrdersPollingInterval = null;
@@ -904,6 +901,13 @@ window.drStopOrdersPolling = drStopOrdersPolling;
 async function drCancelOrder(orderNum) {
   if (!confirm('هل أنت متأكد من إلغاء الطلب؟')) return;
   try {
+    const currentUser = window.currentUser;
+    if (!currentUser) {
+      showToast('يرجى تسجيل الدخول أولاً');
+      return;
+    }
+
+    const idToken = await currentUser.getIdToken(true);
 
     const resp = await fetch('/api/submit-order', {
       method: 'POST',
@@ -911,13 +915,15 @@ async function drCancelOrder(orderNum) {
       body: JSON.stringify({
         action: 'cancelOrder',
         orderNum,
-        email: window.currentUser?.email || ''
+        idToken,
+        uid: currentUser.uid,
+        email: currentUser.email || ''
       })
     });
 
     const data = await resp.json();
 
-    if (data.success) {
+    if (resp.ok && data.success) {
       showToast('تم إلغاء الطلب بنجاح');
       await drLoadUserOrders();
       window.drOrdersLoaded = true;
@@ -1011,6 +1017,9 @@ Data Loading & Processing
 */
 
 function loadConfiguratorData() {
+  const requestId = ++configuratorRequestId;
+  const isCurrentRequest = () => requestId === configuratorRequestId;
+
   // Check for cached data first
   try {
     const cached = sessionStorage.getItem('wodi_configurator_cache');
@@ -1022,11 +1031,8 @@ function loadConfiguratorData() {
         const cachedAt = Array.isArray(parsed) ? 0 : Number(parsed.cachedAt || 0);
         const cacheIsFresh = cachedAt && Date.now() - cachedAt < 10 * 60 * 1000;
 
-        if (parsed && parsed.settings && typeof parsed.settings === 'object' && parsed.settings.workshop_lat) {
-          LOC = {
-            ...LOC,
-            ...parsed.settings
-          };
+        if (parsed.settings && parsed.settings.workshop_lat) {
+          LOC = parsed.settings;
         }
 
         D = build(rows, colorRows);
@@ -1068,38 +1074,31 @@ function loadConfiguratorData() {
       const resp = await fetch(SHEET, { signal: controller.signal });
       clearTimeout(timer);
 
+      if (!isCurrentRequest()) return;
+
       if (!resp.ok) {
         const txt = await resp.text().catch(() => '');
         console.error('SHEET fetch non-OK', resp.status, txt.slice ? txt.slice(0, 500) : txt);
         throw new Error('SHEET non-OK ' + resp.status);
       }
 
+      const responseText = await resp.text();
       let data;
       try {
-        data = await resp.json();
+        data = JSON.parse(responseText);
       } catch (jsonErr) {
-        const txt = await resp.text().catch(() => '');
-        console.error('SHEET returned non-JSON (first 500 chars):', txt.slice ? txt.slice(0, 500) : txt);
+        console.error('SHEET returned non-JSON (first 500 chars):', responseText.slice(0, 500));
         throw jsonErr;
       }
+
+      if (!isCurrentRequest()) return;
 
       const rows = data && data.configurator;
       const colorRows = data && data.colors;
       const settings = data && data.locationSettings;
 
-      if (settings && typeof settings === 'object' && settings.workshop_lat) {
-        LOC = {
-          ...LOC,
-          ...settings
-        };
-      }
-
-      if (currentRequestId !== window.__wodiConfiguratorLoadRequestId) {
-        return;
-      }
-
-      if (currentRequestId !== window.__wodiConfiguratorLoadRequestId) {
-        return;
+      if (settings && settings.workshop_lat) {
+        LOC = settings;
       }
 
       if (rows && rows.length > 0) {
@@ -1132,6 +1131,9 @@ function loadConfiguratorData() {
 
     } catch (err) {
       clearTimeout(timer);
+
+      if (!isCurrentRequest()) return;
+
       console.warn('loadConfiguratorData attempt failed', retry, err && err.message ? err.message : err);
 
       if (retry < MAX_RETRIES - 1) {
@@ -1399,7 +1401,7 @@ function mkLockOverlay() {
   return overlay;
 }
 
-function mkImg(id, cardEl) {
+function mkImg(id, cardEl, imagePath = null, fallbackPath = null) {
   const w = document.createElement('div'); 
   w.className = 'cimg';
   const img = document.createElement('img');
@@ -1421,17 +1423,15 @@ function mkImg(id, cardEl) {
     finalImgId = finalImgId.replace(/_wh_/, '_' + typeCodeMap[S.sinkType] + '_');
   }
   const encoded = encodeURIComponent(finalImgId);
-  const webpSrc = GH + encoded + '.webp';
-  const pngSrc = GH + encoded + '.png';
-
-  preloadConfiguratorImage(webpSrc);
+  const webpSrc = imagePath || GH + encoded + '.webp';
+  const pngSrc = fallbackPath || GH + encoded + '.png';
 
   img.src = webpSrc;
   let fallbackTried = false;
   img.onerror = function () {
     if (!fallbackTried) {
       fallbackTried = true;
-      this.src = GH + encoded + '.png';
+      this.src = pngSrc;
       return;
     }
     this.style.display = 'none';
@@ -1752,7 +1752,14 @@ function rDes() {
       colorCard.className = 'design-card color-shape-card';
       colorCard.dataset.colorId = colorId;
 
-      const imgContainer = mkImg(colorId, colorCard);
+      const cleanColorId = String(colorId).replace(/\.(png|webp|jpg|jpeg)$/i, '');
+      const encodedColorId = encodeURIComponent(cleanColorId);
+      const imgContainer = mkImg(
+        colorId,
+        colorCard,
+        GH + `clr/${encodedColorId}.webp`,
+        GH + `clr/${encodedColorId}.png`
+      );
       imgContainer.querySelectorAll('.card-overlay').forEach(el => el.remove());
 
       if (!S.size) {
@@ -1761,11 +1768,6 @@ function rDes() {
 
       const img = imgContainer.querySelector('img');
       if (img) {
-        const cleanColorId = String(colorId).replace(/\.(png|webp|jpg|jpeg)$/i, '');
-        const encoded = encodeURIComponent(cleanColorId);
-        
-        img.src = GH + `clr/${encoded}.webp`;
-        
         img.onerror = function () {
           if (this.dataset.fallbackTried === 'true') {
             colorCard.remove();
@@ -1945,13 +1947,17 @@ function rDiv() {
       el.className = "div-card" + (S.div && S.div.id === d.id ? " selected" : "");
       el.dataset.id = d.id;
       el.classList.remove("disabled");
-      
-      const imgContainer = mkImg(d.id, el);
+
+      const cleanId = String(d.id).replace(/\.(png|webp|jpg|jpeg)$/i, '');
+      const encodedId = encodeURIComponent(cleanId);
+      const imgContainer = mkImg(
+        d.id,
+        el,
+        GH + `${encodedId}.webp`,
+        GH + `${encodedId}.png`
+      );
       const img = imgContainer.querySelector('img');
       if (img) {
-        const cleanId = String(d.id).replace(/\.(png|webp|jpg|jpeg)$/i, '');
-        const encoded = encodeURIComponent(cleanId);
-        img.src = GH + `${encoded}.webp`;
         img.onerror = function () {
           if (this.src.endsWith('.webp')) {
             this.src = GH + `${encoded}.png`;
@@ -2244,13 +2250,16 @@ function rHnd() {
       const shapeCard = document.createElement('div');
       shapeCard.className = 'handle-card handle-shape-card';
 
-      const imgContainer = mkImg(shapeId, shapeCard);
+      const encodedShapeId = encodeURIComponent(shapeId);
+      const imgContainer = mkImg(
+        shapeId,
+        shapeCard,
+        GH + `hnd/${encodedShapeId}.webp`,
+        GH + `hnd/${encodedShapeId}.png`
+      );
       const img = imgContainer.querySelector('img');
 
       if (img) {
-        const encoded = encodeURIComponent(shapeId);
-        img.src = GH + `hnd/${encoded}.webp`;
-
         img.onerror = function () {
           if (this.dataset.fallbackTried === 'true') {
             shapeCard.remove();
@@ -2258,7 +2267,7 @@ function rHnd() {
             return;
           }
           this.dataset.fallbackTried = 'true';
-          this.src = GH + `hnd/${encodeURIComponent(shapeId)}.png`;
+          this.src = GH + `hnd/${encodedShapeId}.png`;
         };
       }
 
@@ -3638,6 +3647,26 @@ function drValidateStep(stepNum) {
   return true;
 }
 
+function getOrderSummaryTemplate() {
+  if (!window.drOrderSummaryTemplatePromise) {
+    window.drOrderSummaryTemplatePromise = fetch(
+      'product-order-summary.html',
+      { cache: 'no-store' }
+    ).then(response => {
+      if (!response.ok) {
+        throw new Error(`Failed to load invoice template: ${response.status}`);
+      }
+
+      return response.text();
+    }).catch(error => {
+      window.drOrderSummaryTemplatePromise = null;
+      throw error;
+    });
+  }
+
+  return window.drOrderSummaryTemplatePromise;
+}
+
 function drNextStep() {
   const activeStep = document.querySelector('#dr-stepper .stepper-item.active');
   if (!activeStep) return;
@@ -3741,20 +3770,13 @@ async function drRenderPreview() {
   frame.appendChild(zoomControls);
 
   // Load template
-  let response;
+  let html;
   try {
-    response = await fetch('product-order-summary.html', { cache: 'no-store' });
+    html = await getOrderSummaryTemplate();
   } catch (error) {
     console.error('Failed to load product-order-summary.html:', error);
     return;
   }
-
-  if (!response.ok) {
-    console.error('Failed to load product-order-summary.html:', response.status);
-    return;
-  }
-
-  const html = await response.text();
   const parser = new DOMParser();
   const parsedDoc = parser.parseFromString(html, 'text/html');
 
@@ -4673,7 +4695,7 @@ function drGetLocation() {
 window.drGetLocation = drGetLocation;
 
 async function compressBase64Image(base64, maxWidth, quality) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement('canvas');
@@ -4689,10 +4711,15 @@ async function compressBase64Image(base64, maxWidth, quality) {
       canvas.height = height;
 
       const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        reject(new Error('Canvas is not supported'));
+        return;
+      }
       ctx.drawImage(img, 0, 0, width, height);
 
       resolve(canvas.toDataURL('image/jpeg', quality));
     };
+    img.onerror = () => reject(new Error('Unable to decode image'));
     img.src = base64;
   });
 }
@@ -4714,19 +4741,38 @@ async function uploadImageToCloudinary(base64Image, fileName) {
   formData.append('upload_preset', 'wodi_orders');
   formData.append('folder', 'wodi-orders');
 
-  const res = await fetch(
-    'https://api.cloudinary.com/v1_1/fpz05btz/image/upload',
-    {
-      method: 'POST',
-      body: formData
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30000);
+  let res;
+  try {
+    res = await fetch(
+      'https://api.cloudinary.com/v1_1/fpz05btz/image/upload',
+      {
+        method: 'POST',
+        body: formData,
+        signal: controller.signal
+      }
+    );
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      throw new Error('Cloudinary upload timed out');
     }
-  );
-
-  if (!res.ok) {
-    throw new Error(`Cloudinary upload failed: ${res.status}`);
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
   }
 
-  const data = await res.json();
+  if (!res.ok) {
+    const errorText = await res.text().catch(() => '');
+    throw new Error(`Cloudinary upload failed: ${res.status} ${errorText.slice(0, 200)}`);
+  }
+
+  let data;
+  try {
+    data = await res.json();
+  } catch {
+    throw new Error('Cloudinary returned an invalid response');
+  }
 
   if (!data.secure_url) {
     throw new Error('Cloudinary returned no secure URL');
@@ -4957,7 +5003,12 @@ async function drSubmitOrder() {
     `;
   }
 
-  const orderNum = await submitOrderToSheet();
+  let orderNum = null;
+  try {
+    orderNum = await submitOrderToSheet();
+  } catch (error) {
+    console.warn('Order submission preparation failed:', error);
+  }
 
   // لو فشل الإرسال: لا نقفل المودال ولا نصفر أي بيانات
   if (!orderNum) {
@@ -5090,24 +5141,17 @@ async function drViewSummary(orderNum, button) {
 
     const orderPromise = fetch(
       `/api/get-config?action=getOrder&orderNum=${encodeURIComponent(orderNum)}&email=${encodeURIComponent(currentUser.email)}`
-    ).then(response => response.json());
+    ).then(async response => {
+      if (!response.ok) {
+        throw new Error(`Failed to load order summary: ${response.status}`);
+      }
 
-    if (!window.drOrderSummaryTemplatePromise) {
-      window.drOrderSummaryTemplatePromise =
-        fetch('product-order-summary.html', {
-          cache: 'no-store'
-        }).then(response => {
-          if (!response.ok) {
-            throw new Error('Failed to load invoice template');
-          }
-
-          return response.text();
-        });
-    }
+      return response.json();
+    });
 
     const [data, html] = await Promise.all([
       orderPromise,
-      window.drOrderSummaryTemplatePromise
+      getOrderSummaryTemplate()
     ]);
 
     if (!data.success || !data.order) {
@@ -5133,59 +5177,6 @@ async function drViewSummary(orderNum, button) {
     content.innerHTML =
       parsedDoc.body.innerHTML;
   
-async function uploadImageToCloudinary(base64Image, fileName) {
-  if (!base64Image) return '';
-
-  // ضغط الصورة
-  const compressed = await compressBase64Image(base64Image, 800, 0.7);
-
-  // تحويل base64 لـ Blob
-  const response = await fetch(compressed);
-  const blob = await response.blob();
-
-  const formData = new FormData();
-  formData.append('file', blob, fileName);
-  formData.append('upload_preset', 'wodi_orders');
-  formData.append('folder', 'wodi-orders');
-
-  const res = await fetch(
-    'https://api.cloudinary.com/v1_1/fpz05btz/image/upload',
-    {
-      method: 'POST',
-      body: formData
-    }
-  );
-
-  const data = await res.json();
-  return data.secure_url || '';
-}
-
-async function compressBase64Image(base64, maxWidth, quality) {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      let width = img.width;
-      let height = img.height;
-
-      if (width > maxWidth) {
-        height = (height * maxWidth) / width;
-        width = maxWidth;
-      }
-
-      canvas.width = width;
-      canvas.height = height;
-
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, width, height);
-
-      resolve(canvas.toDataURL('image/jpeg', quality));
-    };
-    img.src = base64;
-  });
-}
-
-
     // =========================================================
     // Helpers
     // =========================================================
