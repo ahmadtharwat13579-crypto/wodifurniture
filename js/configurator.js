@@ -4808,6 +4808,8 @@ async function drSubmitOrder() {
   window.drCurrentOrderNum = orderNum;
   localStorage.setItem('wodi_order_submitted', orderNum);
 
+  localStorage.removeItem('pendingOrder');
+  localStorage.removeItem('reopenOrderModal');
   localStorage.removeItem('wodi_pending_submission_id');
 
   // مسح اختيارات الكونفيجوريتور والداتا
@@ -6045,11 +6047,8 @@ function resetAll() {
 
     localStorage.removeItem('wodi_configurator_state');
     localStorage.removeItem('wodi-config');
-    localStorage.clear();
+    localStorage.removeItem(DR_STORAGE_KEY);
 
-    // ارجع الـ values المهمة
-    if (pendingOrder) localStorage.setItem('pendingOrder', pendingOrder);
-    if (reopenModal) localStorage.setItem('reopenOrderModal', reopenModal);
     if (scrollPosition) localStorage.setItem('scrollPosition', scrollPosition);
     if (redirectAfterLogin) localStorage.setItem('redirectAfterLogin', redirectAfterLogin);
   } catch(e) {}

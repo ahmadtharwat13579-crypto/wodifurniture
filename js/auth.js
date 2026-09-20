@@ -182,9 +182,6 @@ onAuthStateChanged(auth, (user) => {
     const reopenModal = localStorage.getItem('reopenOrderModal');
 
     if (reopenModal && pendingOrder) {
-        localStorage.removeItem('reopenOrderModal');
-        localStorage.removeItem('pendingOrder');
-
         const savedScroll = parseInt(localStorage.getItem('scrollPosition') || '0');
         localStorage.removeItem('scrollPosition');
         window.scrollTo(0, savedScroll);
