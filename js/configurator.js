@@ -4674,6 +4674,13 @@ async function submitOrderToSheet() {
   const locationAddress = window.userLocationAddress || {};
   const currentUser = window.currentUser || null;
 
+  let draft = {};
+  try {
+    draft = JSON.parse(localStorage.getItem(DR_STORAGE_KEY) || '{}');
+  } catch (error) {
+    console.warn('Failed to parse saved order draft:', error);
+  }
+
   if (!currentUser) {
     throw new Error('Authenticated user is required');
   }
@@ -4720,14 +4727,18 @@ async function submitOrderToSheet() {
     email: currentUser.email || null,
     uid: currentUser.uid || null,
 
-    name: document.getElementById('dr-customer-name')?.value || '',
-    phone: document.getElementById('dr-customer-phone')?.value || '',
+    name: document.getElementById('dr-customer-name')?.value || draft.name || '',
+    phone: document.getElementById('dr-customer-phone')?.value || draft.phone || '',
 
-    brand: document.getElementById('dr-sink-brand')?.value || '',
-    sinkWidth: document.getElementById('dr-sink-width')?.value || '',
-    sinkCode: document.getElementById('dr-sink-code')?.value || '',
+    brand: document.getElementById('dr-sink-brand')?.value || draft.brand || '',
+    sinkWidth: document.getElementById('dr-sink-width')?.value || draft.width || '',
+    sinkCode: document.getElementById('dr-sink-code')?.value || draft.code || '',
+    manualAddress:
+      document.getElementById('dr-manual-address')?.value ||
+      draft.manualAddress ||
+      '',
 
-    locationAddress,
+    locationAddress: locationAddress || draft.locationAddress || {},
     locationMethod: window.drIsManualLocation === true ? 'يدوي' : 'تلقائي',
     lat: window.drIsManualLocation === true ? '' : (window.userLat || ''),
     lng: window.drIsManualLocation === true ? '' : (window.userLng || ''),
