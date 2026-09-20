@@ -1,5 +1,5 @@
-const { cert, getApps, initializeApp } = require('firebase-admin/app');
-const { getAuth } = require('firebase-admin/auth');
+import { cert, getApps, initializeApp } from 'firebase-admin/app';
+import { getAuth } from 'firebase-admin/auth';
 
 const firebaseAdminApp = getApps().length
   ? getApps()[0]
@@ -9,7 +9,7 @@ const firebaseAdminApp = getApps().length
 
 const firebaseAdminAuth = getAuth(firebaseAdminApp);
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
 
   try {
     const sa = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON || '{}');
