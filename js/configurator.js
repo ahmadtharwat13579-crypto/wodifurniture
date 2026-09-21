@@ -9,9 +9,7 @@ const WA = '201556840368';
 const GH = 'https://raw.githubusercontent.com/ahmadtharwat13579-crypto/wodifurniture/main/images/conf/';
 const SHEET = '/api/get-config';
 const GEOAPIFY_API_KEY = '5d919ff1fd3f4004a73ceb1fb508e805';
-const cur = 'ج.م.';
 const DR_STORAGE_KEY = 'dr_form_draft';
-const ORDER_POPUP_KEY = 'wodi_user_profile';
 
 /*
 ================================================================================
@@ -55,18 +53,6 @@ Utility Helpers
 ================================================================================
 */
 
-const toAr = n => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ',').replace(/[0-9]/g, d => '٠١٢٣٤٥٦٧٨٩'[d]).replace(',', '،');
-
-function escapeHtmlSafe(str) {
-  if (typeof str !== 'string') return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
-}
-
 window.showToast = function(msg, duration = 3500) {
   const t = document.getElementById('toast');
   if (!t) return;
@@ -95,45 +81,10 @@ window.drStopOrdersPolling = drStopOrdersPolling;
 
 window.drCancelOrder = drCancelOrder;
 
-// تحديد الكلاس الملون بناءً على الحالة من الشيت
-function getStatusClass(status) {
-  switch (status) {
-    case 'تم تأكيد الطلب':
-      return 'status-accepted';
-
-    case 'قيد التنفيذ':
-      return 'status-assembly';
-
-    case 'جاهز للتسليم':
-      return 'status-transit';
-
-    case 'تم التسليم':
-      return 'status-completed';
-
-    case 'ملغي':
-      return 'status-cancelled';
-
-    case 'بانتظار المراجعة':
-    default:
-      return 'status-review';
-  }
-}
-
 // تصدير الدوال للنطاق العام
 window.drOpenOrdersDrawer = drOpenOrdersDrawer;
 window.drCloseOrdersDrawer = drCloseOrdersDrawer;
 window.drLoadUserOrders = drLoadUserOrders;
-
-function parseCSV(t) {
-  const ls = t.trim().split('\n');
-  const hs = ls[0].split(',').map(h => h.trim().replace(/^\uFEFF/, '').replace(/^"|"$/g, ''));
-  return ls.slice(1).map(l => {
-    const v = l.split(',').map(x => x.trim().replace(/^"|"$/g, ''));
-    const o = {};
-    hs.forEach((h, i) => o[h] = v[i] || '');
-    return o;
-  });
-}
 
 function pulsePrice(el, newPriceText) {
   if (!el) return;
@@ -147,18 +98,6 @@ function pulsePrice(el, newPriceText) {
     el.classList.add('price-updated');
   }
 }
-
-/*
-================================================================================
-Data Loading & Processing
-================================================================================
-*/
-
-/*
-================================================================================
-State Persistence
-================================================================================
-*/
 
 // loadConfiguratorState() removed — replaced by applyStateIfReady()
 
@@ -184,19 +123,6 @@ let updateTimeout = null;
 window.buildDesignConfig = buildDesignConfig;
 
 function upd() {
-  const colorSecs = document.querySelectorAll('.colors-section, .color-section, .clr-section, #clr, #clr-wrap, #sc-section');
-  if (!S || !S.sinkType) {
-    colorSecs.forEach(sec => {
-      sec.classList.add('hidden');
-      sec.style.setProperty('display', 'none', 'important');
-    });
-  } else {
-    colorSecs.forEach(sec => {
-      sec.classList.remove('hidden');
-      sec.style.removeProperty('display');
-    });
-  }
-
   clearTimeout(updateTimeout);
   updateTimeout = setTimeout(() => {
     saveConfiguratorState();
@@ -333,18 +259,6 @@ function upd() {
     updateStickyValue();
   }, 100);
 }
-
-/*
-================================================================================
-Stepper & Progress
-================================================================================
-*/
-
-/*
-================================================================================
-Scroll & Sticky UI
-================================================================================
-*/
 
 /*
 ================================================================================
@@ -579,17 +493,6 @@ function requestLocation() {
   getLocation(btn, res, mapContainer, mapImage);
 }
 
-/*
-================================================================================
-Design Request Modal
-================================================================================
-*/
-
-
-window.customWA = customWA;
-
-window.outOfRangeWA = outOfRangeWA;
-
 function resetAll() {
   S.sinkType = null;
   S.design = null;
@@ -640,24 +543,13 @@ function resetAll() {
 
   showPlaceholders();
   
-  const clrContainer = document.getElementById('clr') || document.getElementById('clr-wrap') || document.querySelector('.colors-section');
-  if (clrContainer) {
-    clrContainer.classList.add('hidden');
-    clrContainer.style.setProperty('display', 'none', 'important');
-  }
-
-  ['sz', 'dc', 'vc-wall', 'vc-floor', 'hc', 'vc-wall-wrap', 'vc-floor-wrap', 'floor-wrap', 'clr', 'clr-wrap', 'clr-section', 'color-section', 'sc-section', 'colors-section'].forEach(id => {
+  ['sz', 'dc', 'vc-wall', 'vc-floor', 'hc', 'vc-wall-wrap', 'vc-floor-wrap', 'floor-wrap'].forEach(id => {
     const el = document.getElementById(id);
     if (el) {
       el.classList.add('hidden');
       el.style.display = 'none';
       el.style.removeProperty('display');
     }
-  });
-
-  document.querySelectorAll('.colors-section, .color-section, .clr-section, #clr, #clr-wrap').forEach(sec => {
-    sec.classList.add('hidden');
-    sec.style.display = 'none';
   });
 
   rDes(); 
@@ -680,8 +572,6 @@ function resetAll() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 }
-
-window.resetAll = resetAll;
 
 /*
 ================================================================================

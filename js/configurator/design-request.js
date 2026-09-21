@@ -58,7 +58,7 @@ function openDesignRequestModal() {
     } else if (isDesignIncomplete) {
       const target = (!S.design) 
         ? (document.getElementById('dc') || document.getElementById('design-cards') || document.getElementById('design-group-title') || document.querySelector('[data-group="design"]')) 
-        : (document.getElementById('unit-color-section') || document.getElementById('unit-colors-row'));
+        : document.getElementById('unit-color-section');
       target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     } else if (!S.div) {
       const divTarget = 
