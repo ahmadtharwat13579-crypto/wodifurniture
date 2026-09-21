@@ -3056,36 +3056,6 @@ select.dr-input {
 /* Location Section */
 
 
-.loc-hint {
-  width: 22px;
-  height: 22px;
-  border-radius: var(--radius-full);
-  background: rgba(51, 48, 40, 0.15);
-  border: 1.5px solid rgba(51, 48, 40, 0.3);
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  font-family: var(--font-family-main);
-  transition: background 0.2s;
-}
-
-.loc-hint:hover {
-  background: rgba(51, 48, 40, 0.25);
-}
-
-.loc-desc {
-  font-size: 12px;
-  color: rgba(51, 48, 40, 0.6);
-  margin-top: 5px;
-  margin-bottom: 12px;
-  line-height: 1.6;
-}
-
 /* Locate Button */
 .btn-locate {
   display: flex;
@@ -3186,14 +3156,3 @@ select.dr-input {
 }
 
 /* Map Wrapper */
-.map-wrap {
-  display: none;
-  margin-top: 12px;
-  border-radius: var(--radius-xs);
-  overflow: hidden;
-  border: 1px solid rgba(51, 48, 40, 0.12);
-}
-
-.map-wrap.show {
-  display: block;
-}
