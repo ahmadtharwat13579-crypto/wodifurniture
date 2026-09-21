@@ -1647,54 +1647,7 @@
    Inquire Section Styling 
 ========================================= */
 
-.inquire-section {
-  margin: 35px 0 60px;
-  padding: var(--space-4) 5px var(--space-4);
-  background: var(--color-bg-light);
-  border-top: 1px solid var(--color-border);
-  border-bottom: 1px solid var(--color-border);
-}
-
-.inquire-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-xs);
-  padding: 28px var(--space-6);
-  text-align: center;
-  transition: border-color var(--transition-fast);
-}
-
-.inquire-icon {
-  width: 52px;
-  height: 52px;
-  margin: 0 auto 14px;
-  border-radius: var(--radius-full);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(156, 175, 136, 0.12);
-  color: var(--color-primary);
-}
-
-.inquire-icon svg {
-  width: 24px;
-  height: 24px;
-}
-
-.inquire-card h2 {
-  margin: 0;
-  font-size: var(--font-size-title);
-  color: var(--color-text-main);
-  font-weight: 700;
-}
-
-.inquire-card p {
-  margin: 10px auto 20px;
-  max-width: 520px;
-  font-size: var(--font-size-md);
-  line-height: 1.7;
-  color: var(--color-text-main);
-}
+/* inquire-section, inquire-card, inquire-icon removed — dead CSS in configurator (not used in configurator.html) */
 
 .inquire-btn {
   display: inline-flex;
@@ -1729,7 +1682,7 @@
 
 
 /* scroll wrap & arrows — show arrows only when needed */
-.cards-row > * { scroll-snap-align: center; flex: 0 0 220px; } /* card width */
+/* .cards-row > * removed — duplicate of style.css */
 .scroll-arrow { position:absolute; top:50%; transform:translateY(-50%); width:34px; height:34px; display:flex; align-items:center; justify-content:center; border-radius: var(--radius-xs); background: var(--color-bg-white); box-shadow: var(--shadow-scroll-arrow); border:1px solid rgba(0,0,0,0.04); cursor:pointer; z-index: 10; }
 .scroll-arrow.hidden { opacity:0; pointer-events:none; transform:translateY(-50%) scale(.95); }
 .scroll-arrow.arr-start { right:6px; } /* RTL: start is right */
