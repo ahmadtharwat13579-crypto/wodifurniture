@@ -72,7 +72,15 @@ function loadConfiguratorData() {
 
   async function attempt(retry = 0) {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+    // Watchdog: abort the in-flight request after TIMEOUT_MS so it can be retried.
+    // `timedOut` marks aborts raised by this watchdog so the catch below reports
+    // the real cause (a timeout) instead of the generic browser abort message
+    // ("signal is aborted without reason").
+    let timedOut = false;
+    const timer = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, TIMEOUT_MS);
     try {
       const resp = await fetch(SHEET, { signal: controller.signal });
       clearTimeout(timer);
@@ -137,7 +145,11 @@ function loadConfiguratorData() {
 
       if (!isCurrentRequest()) return;
 
-      console.warn('loadConfiguratorData attempt failed', retry, err && err.message ? err.message : err);
+      if (timedOut) {
+        console.warn('loadConfiguratorData attempt timed out after ' + TIMEOUT_MS + 'ms (retrying)', retry, err && err.name ? err.name : err);
+      } else {
+        console.warn('loadConfiguratorData attempt failed', retry, err && err.message ? err.message : err);
+      }
 
       if (retry < MAX_RETRIES - 1) {
         const delay = BASE_DELAY * Math.pow(2, retry);
