@@ -1681,19 +1681,8 @@
 }
 
 
-/* scroll wrap & arrows — show arrows only when needed */
-/* .cards-row > * removed — duplicate of style.css */
-.scroll-arrow { position:absolute; top:50%; transform:translateY(-50%); width:34px; height:34px; display:flex; align-items:center; justify-content:center; border-radius: var(--radius-xs); background: var(--color-bg-white); box-shadow: var(--shadow-scroll-arrow); border:1px solid rgba(0,0,0,0.04); cursor:pointer; z-index: 10; }
-.scroll-arrow.hidden { opacity:0; pointer-events:none; transform:translateY(-50%) scale(.95); }
-.scroll-arrow.arr-start { right:6px; } /* RTL: start is right */
-.scroll-arrow.arr-end { left:6px; }
-.scroll-arrow svg { width:18px; height:18px; stroke: var(--color-text-main); }
-.scroll-arrow:hover {
-  background: var(--color-text-main);
-}
-.scroll-arrow:hover svg {
-  stroke: var(--color-bg-white);
-}
+/* scroll-arrow base styles removed — duplicate of style.css */
+/* mobile display:none rule in @media (max-width:768px) kept */
 
 /* small helpers */
 .sub-category-title {
