@@ -13,7 +13,7 @@ Dependencies resolved from the shared global scope at call time:
   - js/configurator.js       : configuratorRequestId, LOC (written), D (written),
                                dataLoaded (written), stateRestorePending, S, SHEET,
                                hideConfiguratorLoading, showConfiguratorLoading,
-                               renderDesigns, showToast
+                               rDes, showToast
 Global exposure remains in js/configurator.js:
   - window.loadConfiguratorData = loadConfiguratorData;
 ================================================================================
@@ -46,7 +46,7 @@ function loadConfiguratorData() {
           if (stateRestorePending) {
             applyStateIfReady();
           } else if (S.sinkType) {
-            renderDesigns();
+            rDes();
           }
           return;
         }
@@ -54,7 +54,7 @@ function loadConfiguratorData() {
         if (stateRestorePending) {
           applyStateIfReady();
         } else if (S.sinkType) {
-          renderDesigns();
+          rDes();
         }
       } catch (e) {
         console.warn('Failed to parse cached configurator', e);

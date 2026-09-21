@@ -19,9 +19,10 @@ Dependencies resolved from the shared global scope at call time:
                                    initConfigurator in js/configurator.js)
   - js/configurator/state.js     : hidePlaceholders
   - js/configurator/data.js      : loadConfiguratorData
+  - js/configurator/design-request.js : openDesignRequestModal (sticky button),
   - js/configurator.js           : S, dataLoaded, upd, resetAll,
-                                   openSinkOrderModal, initConfigurator
-                                   (call sites), stateRestorePending,
+                                   initConfigurator (call sites),
+                                   stateRestorePending,
                                    updateStepperProgress (typeof-guarded)
 Global exposure remains in js/configurator.js:
   - window.openLB = openLB;
@@ -196,7 +197,7 @@ function setupStickyPriceBar() {
     const stickyBtn = document.querySelector('.mobile-checkout-cta-btn');
     if (stickyBtn) {
       stickyBtn.textContent = 'طلب التصميم والمعاينة';
-      stickyBtn.onclick = () => openSinkOrderModal();
+      stickyBtn.onclick = () => openDesignRequestModal();
     }
   }
   window.updateStickyValue = updateStickyValue;
