@@ -1683,18 +1683,9 @@
 
 /* scroll-arrow base styles removed — duplicate of style.css */
 /* mobile display:none rule in @media (max-width:768px) kept */
+/* sub-category-title removed — unused selector */
 
 /* small helpers */
-.sub-category-title {
-  font-size: var(--font-size-xl);
-  font-weight: 600;
-  color: var(--color-primary); /* لون متناسق مع هوية الموقع */
-  background: #f9fbf8;
-  padding: 8px 16px;
-  border-radius: var(--radius-xs);
-  display: inline-block;
-  margin-bottom: 20px;
-}
 .conf-header {
   border-right: 4px solid var(--color-primary);
   background: #fafaf9;
@@ -3063,17 +3054,7 @@ select.dr-input {
 }
 
 /* Location Section */
-.loc-section {
-  padding: 0;
-  margin-bottom: 22px;
-}
 
-.loc-header {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 10px;
-}
 
 .loc-hint {
   width: 22px;
