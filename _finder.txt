@@ -1,0 +1,8 @@
+58: const r5 = n => Math.round(n / 5) * 5;
+62: const base = id => (id && typeof id.toString === 'function') ? id.toString().replace(/_\d+[\-\.]?\d*cm$/i, '') : '';
+4625:   const baseUrl = window.location.href.replace(/\/[^\/]*$/, '/');
+5175:     const baseUrl =
+988: function divisionBase(id) {
+998: function haversine(lat1, lng1, lat2, lng2) {
+1898: function sgr(s) {
+1908: function dvp(div, sg) {

@@ -226,7 +226,7 @@ window.initLogoutSystem = function () {
             const backdrop = document.getElementById('sideNavBackdrop');
             if (sideNav) sideNav.classList.remove('active');
             if (backdrop) backdrop.classList.remove('active');
-            document.body.classList.remove('side-nav-open');
+            if (typeof window.updatePageScrollLock === 'function') window.updatePageScrollLock();
             logoutModal.classList.add('active');
         }
     };

@@ -7,8 +7,8 @@
     background: var(--color-bg-white);
     border:1px solid #f0f0f0;
     border-radius: var(--radius-md);
-    margin-right: 2px;
-    margin-left: 2px;
+    margin-right: 5px;
+    margin-left: 5px;
     margin-bottom: 60px;
     padding:2px;
     box-shadow: var(--shadow-sm);
@@ -1444,7 +1444,7 @@
   flex-direction: row;
   align-items: center;
   gap: 10px;
-  width: 100%;
+  width: 95%;
   margin-top: 22px;
   margin-bottom: 12px;
 }
@@ -1788,9 +1788,10 @@
 
 .design-request-box {
   background: var(--color-bg-white);
-  max-width: 900px;
+  max-width: 700px;
   width: 95%;
-  height: 85vh;
+  height: 80vh;
+  border-radius: var(--radius-lg);
   overflow-y: auto;
   box-shadow: 0 10px 40px rgba(0,0,0,0.2);
   display: flex;
@@ -2956,6 +2957,47 @@ select.dr-input {
   }
 }
 
+/* Keep the modal chrome fixed; only the active step content may scroll. */
+.design-request-overlay {
+  overflow: hidden;
+}
+
+.design-request-box {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.design-request-box > .dr-header,
+.design-request-box > #dr-stepper,
+.design-request-box > .dr-footer {
+  flex: 0 0 auto;
+}
+
+.design-request-box > .dr-step-content {
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+}
+
+.design-request-box > .dr-footer {
+  position: static;
+}
+
+.design-request-box > .dr-footer > #dr-btn-next,
+.design-request-box > .dr-footer > #dr-btn-whatsapp {
+  flex: 0 0 clamp(118px, 28vw, 150px);
+  width: clamp(118px, 28vw, 150px);
+  justify-content: center;
+}
+
+.design-request-box > .dr-footer > #dr-btn-close,
+.design-request-box > .dr-footer > #dr-btn-prev {
+  flex: 0 0 78px;
+  width: 78px;
+  justify-content: center;
+}
+
 /* الشريط الجانبي المثبت دائماً */
 .dr-sidebar-tab {
   position: fixed;
@@ -2964,13 +3006,13 @@ select.dr-input {
   z-index: 999;
   background-color: #9caf88;
   color: #ffffff;
-  padding: 25px 5px;
+  padding: 20px 5px;
   border-radius: 0;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   box-shadow: 2px 0 8px rgba(0,0,0,0.15);
   transition: transform 0.2s ease, background-color 0.2s;
 }
@@ -2980,7 +3022,6 @@ select.dr-input {
   text-orientation: mixed;
   font-weight: 700;
   font-size: 16px;
-  letter-spacing: 3px;
 }
 
 .dr-tab-icon {

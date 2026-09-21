@@ -263,10 +263,9 @@ body.home-page .navbar .nav-right div {
     transform: translateX(0);
 }
 
-body.side-nav-open {
+html.page-scroll-locked,
+body.page-scroll-locked {
     overflow: hidden;
-    position: fixed;
-    width: 100%;
 }
 
 

@@ -1,3 +1,18 @@
+window.updatePageScrollLock = function () {
+  const sideNavOpen = document.getElementById('sideNav')?.classList.contains('active');
+  const designModal = document.getElementById('design-request-modal');
+  const designModalOpen = Boolean(
+    designModal &&
+    designModal.getAttribute('aria-hidden') !== 'true' &&
+    getComputedStyle(designModal).display !== 'none'
+  );
+  const ordersDrawerOpen = document.getElementById('drOrdersDrawer')?.classList.contains('open');
+  const shouldLock = sideNavOpen || designModalOpen || ordersDrawerOpen;
+
+  document.documentElement.classList.toggle('page-scroll-locked', shouldLock);
+  document.body.classList.toggle('page-scroll-locked', shouldLock);
+};
+
 function initNavbar() {
   // --- 1. سلوك إخفاء/إظهار الـ Nav عند السكرول ---
   (function () {
@@ -51,7 +66,7 @@ function initNavbar() {
 
     const isOpen = sideNav.classList.toggle('active');
     backdrop.classList.toggle('active', isOpen);
-    document.body.classList.toggle('side-nav-open', isOpen);
+    updatePageScrollLock();
 
     if (isOpen) openProductsDropdown();
   };
@@ -70,7 +85,7 @@ function initNavbar() {
     if (sideNav) sideNav.classList.remove('active');
     if (backdrop) backdrop.classList.remove('active');
 
-    document.body.classList.remove('side-nav-open');
+    updatePageScrollLock();
 
     logoutModal.classList.add('is-visible');
   };
