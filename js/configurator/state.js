@@ -99,12 +99,19 @@ function applyStateIfReady() {
       document.getElementById("placeholder-hc")?.classList.add("hidden");
     }
 
+    if (S.sinkType) {
+      document.getElementById("placeholder-sz")?.classList.add("hidden");
+      document.getElementById("placeholder-dc")?.classList.add("hidden");
+      document.getElementById("placeholder-div")?.classList.add("hidden");
+      document.getElementById("placeholder-hc")?.classList.add("hidden");
+    }
+
     stateRestorePending = false;
-    setTimeout(() => hideConfigLoaderOverlay(), 600);
+    hideConfigLoaderOverlay();
   } catch (e) {
     console.warn('Failed to apply saved state:', e);
     stateRestorePending = false;
-    setTimeout(() => hideConfigLoaderOverlay(), 600);
+    hideConfigLoaderOverlay();
   }
 }
 

@@ -325,6 +325,13 @@ function setupStepperSticky() {
         stepperEl.classList.remove('is-sticky');
       }
     }, { passive: true });
+
+    // Set initial sticky state immediately — don't wait for first scroll event
+    if (window.scrollY > 20) {
+      stepperEl.classList.add('is-sticky');
+    } else {
+      stepperEl.classList.remove('is-sticky');
+    }
   }
 
   if (document.readyState === 'complete') setup();
