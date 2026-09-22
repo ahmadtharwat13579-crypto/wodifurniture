@@ -114,7 +114,7 @@ fetch('nav.html')
                 </li>
 
                 <!-- النقل (مخفي مؤقتاً) -->
-                <li class="stepper-item" data-step="location" id="st-location" style="display: none;">
+                <li class="stepper-item" data-step="location" id="st-location">
                   <div class="stepper-icon">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="1"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
                   </div>
@@ -411,7 +411,7 @@ fetch('nav.html')
 <!-- 3. Handle cards -->
 <div class="grid-item">
 
-  <div class="step" style="margin-bottom:0;">
+  <div class="step">
 
     <div class="step-header">
       <span class="step-title">خطوة 5: نوع المقبض</span>
@@ -481,9 +481,9 @@ fetch('nav.html')
 
 <!-- 4. Location (separate card - مخفي مؤقتاً) -->
   <div class="grid-item" id="location-section" style="display: none;">
-    <div class="step" style="margin-bottom: 0;">
+    <div class="step">
 
-      <div class="step-header" style="align-items:center;gap:8px;">
+      <div class="step-header">
         <span class="step-title">خطوة 6: النقل والتوصيل</span>
       </div>
       <!-- Subtitle -->
@@ -493,15 +493,15 @@ fetch('nav.html')
 
           <div class="loc-desc" >نستخدم موقعك لتقدير تكلفة التوصيل والتحقق من تغطية منطقتك فقط. لا يتم تخزين موقعك أو استخدامه لأي غرض آخر.</div>
 
-          <button class="btn-locate" id="btn-locate" aria-label="حدد موقعي الحالي" style="margin-top:8px;">
+          <button class="btn-locate" id="btn-locate" aria-label="حدد موقعي الحالي">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="9" stroke-dasharray="4 2"/></svg>
             تحديد موقعي الحالي
           </button>
 
-          <div class="loc-result" id="loc-result" role="status" aria-live="polite" style="margin-top:10px;"></div>
+          <div class="loc-result" id="loc-result" role="status" aria-live="polite"></div>
 
           <div id="mapContainer" class="map-container" hidden style="margin-top:12px;">
-            <iframe id="staticMap" data-src="" width="100%" height="200" loading="lazy" title="خريطة الموقع" style="border:1px solid #ccc;border-radius:2px;"></iframe>
+            <iframe id="staticMap" data-src="" width="100%" height="200" loading="lazy" title="خريطة الموقع"></iframe>
           </div>
         </div>
       </div>
@@ -550,25 +550,25 @@ fetch('nav.html')
           <span class="sval-price" id="sh-price">—</span>
         </div>
         <div class="sum-rows">
-          <div class="srow" style="display: none;" id="si-install-row">
+          <div class="srow" id="si-install-row">
             <span class="slbl">المعاينة والتركيب</span>
             <span class="sval" id="si-install-label">تكلفة ثابتة</span>
             <span class="sval-price" id="si-install-price">200 EGP</span>
           </div>
-          <div class="srow" style="display: none;">
+          <div class="srow">
             <span class="slbl">النقل والتوصيل</span>
             <span class="sval" id="si-label">—</span>
             <span class="sval-price" id="si-price">—</span>
           </div>
         </div>
-        <div class="install-warning" id="install-warning" style="display: none;">* السعر يشمل الوحدة فقط — تكلفة النقل والتوصيل لم تُحسب بعد</div>
+        <div class="install-warning" id="install-warning">* السعر يشمل الوحدة فقط — تكلفة النقل والتوصيل لم تُحسب بعد</div>
       </div>
 
-      <div class="actions" style="display: flex; gap: 10px; align-items: center;">
+      <div class="actions">
         <button class="btn-reset" onclick="resetAll()" aria-label="إعادة التعيين" title="إعادة التعيين">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
         </button>
-        <button id="add-to-cart-btn" class="btn-order" onclick="openDesignRequestModal()" aria-label="طلب التصميم والمعاينة" style="flex: 1;">
+        <button id="add-to-cart-btn" class="btn-order" onclick="openDesignRequestModal()" aria-label="طلب التصميم والمعاينة">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
           طلب التصميم والمعاينة
         </button>
@@ -654,16 +654,16 @@ fetch('nav.html')
 
   <details class="faq-item">
     <summary>ماذا أفعل إذا حدثت مشكلة في الوحدة بعد التركيب؟</summary>
-    <p style="margin-bottom: 10px;">  نحن نقدم ضماناً لمدة سنة على كل وحداتنا. في حال واجهت أي مشكلة أو كان لديك أي استفسار بعد التركيب، الدعم الفني لدينا متاح دائماً عبر واتساب، وسنحرص على حل أي مشكلة في أسرع وقت ممكن.</p>
+    <p >  نحن نقدم ضماناً لمدة سنة على كل وحداتنا. في حال واجهت أي مشكلة أو كان لديك أي استفسار بعد التركيب، الدعم الفني لدينا متاح دائماً عبر واتساب، وسنحرص على حل أي مشكلة في أسرع وقت ممكن.</p>
         
-        <strong style="display:block; margin-top:15px;">الضمان يشمل:</strong>
-        <ul style="list-style-type: disc; padding-right: 20px; line-height: 1.8;">
+        <strong>الضمان يشمل:</strong>
+        <ul>
             <li><strong>المفصلات والمقابض:</strong> أي تلف أو خلل في الأداء لا ينتج عن سوء الاستخدام.</li>
             <li><strong>هيكل الوحدة:</strong> أي عيوب في التجميع أو ثبات الخشب.</li>
             <li><strong>مقاومة الرطوبة:</strong> في حال ظهور أي تأثر غير طبيعي للوحدة.</li>
         </ul>
 
-        <p style="background: #ffffff; padding: 10px; border-right: 3px solid #9caf88; margin-top: 15px; line-height: 1.6;">
+        <p>
             <strong>ملاحظة هامة:</strong> الضمان يغطي عيوب الصناعة فقط، ولا يشمل الأضرار الناتجة عن سوء الاستخدام (مثل الخبطات، تعريض الوحدة لدرجات حرارة عالية، أو لتدفق مياه مباشر بشكل مستمر).
         </p>
   </details>
@@ -725,7 +725,7 @@ fetch('nav.html')
 
 
 <!-- ===== DESIGN REQUEST MODAL (3-STEP WORKFLOW) ===== -->
-<div id="design-request-modal" class="design-request-overlay" aria-hidden="true" style="display: none;">
+<div id="design-request-modal" class="design-request-overlay" aria-hidden="true">
   <div class="design-request-box" role="dialog" aria-modal="true">
     
     <!-- HEADER -->
@@ -746,21 +746,21 @@ fetch('nav.html')
       <ol>
         <li class="stepper-item active" data-step="1" id="dr-st-1">
           <div class="stepper-icon">
-            <span style="font-weight: 700; font-size: 16px;">1</span>
+            <span>1</span>
           </div>
           <span class="stepper-title">بيانات<br>العميل</span>
         </li>
 
         <li class="stepper-item" data-step="2" id="dr-st-2">
           <div class="stepper-icon">
-            <span style="font-weight: 700; font-size: 16px;">2</span>
+            <span>2</span>
           </div>
           <span class="stepper-title">مواصفات<br>الحوض</span>
         </li>
 
         <li class="stepper-item" data-step="3" id="dr-st-3">
           <div class="stepper-icon">
-            <span style="font-weight: 700; font-size: 16px;">3</span>
+            <span>3</span>
           </div>
           <span class="stepper-title">مراجعة<br>وإرسال</span>
         </li>
@@ -871,7 +871,7 @@ fetch('nav.html')
   </div>
 
     <!-- Manual Address Fallback Field (Dropdowns) -->
-    <div id="dr-manual-address-group" style="display: none; margin-top: 12px;">
+    <div id="dr-manual-address-group">
       
       <div class="dr-form-group">
         <label for="dr-select-gov" class="dr-label"> 
@@ -884,7 +884,7 @@ fetch('nav.html')
         </select>
       </div>
 
-      <div class="dr-form-group" style="margin-top: 10px;">
+      <div class="dr-form-group">
       <label for="dr-select-district" class="dr-label"> 
         الحي
       </label>
@@ -894,11 +894,10 @@ fetch('nav.html')
       </p>
 
         <!-- يغلف الـ select للحفاظ على التقاط الضغطة وإظهار التوست عندما يكون القائمة معطلة -->
-        <div id="dr-district-wrapper" style="position: relative; display: block; width: 100%;">
+        <div id="dr-district-wrapper">
           <select
             id="dr-select-district"
             class="dr-input"
-            style="width: 100%;"
             disabled
             onchange="drOnDistrictChange()"
           >
@@ -918,7 +917,7 @@ fetch('nav.html')
       <h3 class="dr-step-heading">مواصفات الحوض</h3>
       <div class="dr-form-group">
         <label for="dr-sink-type" class="dr-label">نوع الحوض <span class="required">*</span></label>
-        <input type="text" id="dr-sink-type" class="dr-input" readonly style="background-color: #f0f0f0; cursor: not-allowed;" />
+        <input type="text" id="dr-sink-type" class="dr-input" readonly />
       </div>
       <div class="dr-form-group">
         <label for="dr-sink-brand" class="dr-label">ماركة الحوض <span class="required">*</span></label>
@@ -985,7 +984,7 @@ fetch('nav.html')
     <!-- STEP 3: REVIEW & SUBMIT -->
     <div class="dr-step-content" data-step="3" style="display: none;">
       <h3 class="dr-step-heading">مراجعة وإرسال</h3>
-     <p style="font-size: 12px; color: var(--color-text-muted, #666); margin-bottom: 14px; margin-right: 6px;">
+     <p>
         راجع بيانات طلبك جيداً قبل الإرسال — بعد الضغط على تأكيد الطلب سيتم إرسال طلبك وفتح صفحة متابعة الطلب تلقائيًا.
       </p>
       <div id="dr-invoice-preview" class="dr-invoice-frame"></div>
@@ -994,13 +993,12 @@ fetch('nav.html')
     <!-- FOOTER -->
     <div class="dr-footer">
       <button id="dr-btn-close" class="dr-btn-secondary" onclick="closeDesignRequestModal()">إغلاق</button>
-      <button id="dr-btn-prev" class="dr-btn-secondary" onclick="drPrevStep()" style="display: none;">السابق</button>
+      <button id="dr-btn-prev" class="dr-btn-secondary" onclick="drPrevStep()">السابق</button>
       <button id="dr-btn-next" class="dr-btn-primary" onclick="drNextStep()">التالي</button>
       <button
         id="dr-btn-whatsapp"
         class="dr-btn-primary"
         onclick="drSubmitOrder()"
-        style="display: none;"
       >
         تأكيد الطلب
       </button>
@@ -1008,7 +1006,7 @@ fetch('nav.html')
   </div>
 </div>
 
-<div id="config-loader-overlay" class="config-loader-overlay" style="display:none;">
+<div id="config-loader-overlay" class="config-loader-overlay">
   <div class="config-loader-card">
     <div class="loader-top">
       <svg class="hourglass-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">

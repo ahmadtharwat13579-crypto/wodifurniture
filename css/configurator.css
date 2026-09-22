@@ -297,6 +297,11 @@
     font-size: clamp(20px, 8vw, 24px);
   }
 }
+/* خطوة "النقل والتوصيل" في الشريط العلوي مخفية مؤقتاً (نُقلت من inline style) */
+#st-location {
+  display: none;
+}
+
 
 #dr-stepper {
   width: 100%;
@@ -316,6 +321,12 @@
   padding: 0;
   box-sizing: border-box;
   transform: scale(0.8);
+}
+
+/* أرقام خطوات الـ Design Request (نُقلت من inline styles) */
+#dr-stepper .stepper-icon span {
+  font-weight: 700;
+  font-size: 16px;
 }
 
 /* إلغاء التثبيت وتثبيت الـ Stepper كـ Block داخل الـ Design Request حصرياً */
@@ -512,6 +523,11 @@
 #location-section{
   border-bottom: none;
   padding-bottom: 20px; /* أو القيمة اللي تناسبك */
+}
+
+#location-section .step-header {
+  align-items: center;
+  gap: 8px;
 }
 
 /* Step cards */
@@ -1183,6 +1199,11 @@
   justify-content: center;
 }
 
+/* مخفي افتراضياً؛ JS يعرضه عبر style.display = 'flex' عند وجود حالة محفوظة */
+#config-loader-overlay {
+  display: none;
+}
+
 /* النافذة المستطيلة: بدون حدود وبدون ظل ثقيل */
 .config-loader-card {
   background: #ffffff;
@@ -1400,6 +1421,11 @@
 .price-warning.show {
   display: block;
 }
+
+/* تحذير تكلفة النقل/التركيب — مخفي افتراضياً (نُقل من inline style) */
+#install-warning {
+  display: none;
+}
 .price-divider-bottom {
   height: 1px;
   background: var(--color-border);
@@ -1424,6 +1450,12 @@
   background: transparent;
   margin-bottom: 0;
 }
+
+/* صفّا المعاينة/التركيب والنقل في ملخص السعر — مخفيان افتراضياً (نُقلا من inline styles) */
+#si-install-row,
+#si-install-row + .srow {
+  display: none;
+}
 .slbl {
   color: rgba(51,48,40,0.65);
   font-size: var(--font-size-sm);
@@ -1447,6 +1479,11 @@
   width: 95%;
   margin-top: 22px;
   margin-bottom: 12px;
+}
+
+/* زر الطلب يتمدد ليملأ صف الأزرار (نُقل من inline style) */
+#add-to-cart-btn {
+  flex: 1;
 }
 
 /* Primary Order Button */
@@ -1719,6 +1756,11 @@
   padding: 20px;
 }
 
+/* المودال مخفي افتراضياً؛ JS يفتحه عبر style.display = 'flex' ويغلقه عبر style.display = 'none' */
+#design-request-modal {
+  display: none;
+}
+
 .design-request-box {
   background: var(--color-bg-white);
   max-width: 700px;
@@ -1818,6 +1860,14 @@
   flex: 1;
 }
 
+/* فقرة التعليمات في الخطوة 3 (نُقلت من inline style) */
+.dr-step-content[data-step="3"] > p {
+  font-size: 12px;
+  color: var(--color-text-muted, #666);
+  margin-bottom: 14px;
+  margin-right: 6px;
+}
+
 .dr-step-heading {
   font-size: 14px;
   font-weight: 700;
@@ -1891,6 +1941,13 @@
 
 #dr-manual-address-group {
   width: 100%;
+  display: none; /* مخفي افتراضياً؛ يظهر عبر onclick في HTML (style.display = 'block') */
+  margin-top: 12px;
+}
+
+/* المسافة بين مجموعة المحافظة ومجموعة الحي (نُقلت من inline style) */
+#dr-manual-address-group .dr-form-group + .dr-form-group {
+  margin-top: 10px;
 }
 
 #dr-manual-address {
@@ -2004,9 +2061,14 @@ select.dr-input {
   pointer-events: none;
 }
 
+#dr-select-district {
+  width: 100%;
+}
+
 /* اجعل الـ wrapper جاهزاً لاستقبال الضغطات ويكون مؤشر الماوس واضحاً */
 #dr-district-wrapper {
   cursor: pointer;
+  position: relative;
   display: block;
   width: 100%;
 }
@@ -2138,35 +2200,6 @@ select.dr-input {
   flex-shrink: 0;
 }
 
-.dr-zoom-controls {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  display: flex;
-  gap: 6px;
-  z-index: 10;
-  direction: ltr;
-}
-
-.dr-zoom-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-xs);
-  background: var(--color-bg-white);
-  border: 1px solid var(--color-border);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--color-text-main);
-}
-
-.dr-zoom-btn:hover {
-  background: var(--color-border);
-}
-
 .dr-footer {
   display: flex;
   position: sticky;
@@ -2220,23 +2253,6 @@ select.dr-input {
 
 .dr-btn-secondary:hover {
   background: var(--color-border);
-}
-
-.dr-btn-whatsapp {
-  background: var(--color-primary);
-  color: var(--color-bg-white);
-}
-
-.dr-btn-whatsapp:hover {
-  background: #20ba5a;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.28);
-}
-
-.dr-btn-whatsapp:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-  transform: none;
 }
 
 /* =========================================
@@ -2931,6 +2947,12 @@ select.dr-input {
   justify-content: center;
 }
 
+/* زرا "السابق" و"تأكيد الطلب" مخفيان افتراضياً؛ JS يتحكم فيهما عبر style.display (inline-flex/none) */
+#dr-btn-prev,
+#dr-btn-whatsapp {
+  display: none;
+}
+
 /* الشريط الجانبي المثبت دائماً */
 .dr-sidebar-tab {
   position: fixed;
@@ -3156,3 +3178,36 @@ select.dr-input {
 }
 
 /* Map Wrapper */
+
+/* إطار خريطة الموقع الثابتة (نُقل من inline style) */
+#staticMap {
+  border: 1px solid #ccc;
+  border-radius: 2px;
+}
+
+/* =========================================
+   FAQ — كتلة الضمان (آخر عنصر faq-item)
+   (نُقلت من inline styles)
+========================================= */
+.faq-section .faq-item:last-child > p:first-of-type {
+  margin-bottom: 10px;
+}
+
+.faq-section .faq-item:last-child > strong {
+  display: block;
+  margin-top: 15px;
+}
+
+.faq-section .faq-item:last-child > ul {
+  list-style-type: disc;
+  padding-right: 20px;
+  line-height: 1.8;
+}
+
+.faq-section .faq-item:last-child > p:last-of-type {
+  background: #ffffff;
+  padding: 10px;
+  border-right: 3px solid #9caf88;
+  margin-top: 15px;
+  line-height: 1.6;
+}
