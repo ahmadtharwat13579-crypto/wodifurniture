@@ -1,0 +1,557 @@
+/* ====================================================
+   DESIGN REQUEST MODAL (3-STEP WORKFLOW)
+   Extracted from css/configurator.css - styles kept as-is.
+   Loaded by configurator.html right after configurator.css.
+   ==================================================== */
+
+#dr-stepper {
+  width: 100%;
+  min-width: 300px; /* Set a minimum width to ensure the stepper doesn't get too narrow */
+  max-width: 400px;
+  margin: 15px auto 2px !important;
+  padding: 5px 20px;
+  border: none;
+  box-sizing: border-box;
+  transform-origin: center center;
+}
+
+#dr-stepper ol {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0;
+  box-sizing: border-box;
+  transform: scale(0.8);
+}
+
+#dr-stepper .stepper-icon span {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+#dr-stepper,
+#dr-stepper.is-sticky {
+  position: static !important;
+  top: auto !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* =========================================
+   DESIGN REQUEST MODAL STYLES (3-STEP)
+========================================= */
+
+.design-request-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--modal-bg-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+  padding: 20px;
+}
+
+#design-request-modal {
+  display: none;
+}
+
+.design-request-box {
+  background: var(--color-bg-white);
+  max-width: 700px;
+  width: 95%;
+  height: 80vh;
+  border-radius: var(--radius-lg);
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+}
+
+.dr-header {
+  position: relative;
+  flex-direction: column;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: var(--space-4) var(--space-5);
+  background-color: var(--color-primary);
+}
+
+.dr-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--color-bg-white);
+  margin: 0;
+  text-align: center;
+  gap: 8px;
+}
+
+.dr-title-icon {
+  color: var(--color-bg-white);
+  flex-shrink: 0;
+}
+
+.dr-step-content {
+  padding: 22px 22px;
+  flex: 1;
+}
+
+.dr-step-content[data-step="3"] > p {
+  font-size: 12px;
+  color: var(--color-text-muted, #666);
+  margin-bottom: 14px;
+  margin-right: 6px;
+}
+
+.dr-step-heading {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--color-text-main);
+}
+
+.dr-form-group {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.dr-label {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--color-text-main);
+  padding-right: 4px;
+}
+
+.required {
+  color: var(--color-error);
+}
+
+.dr-input {
+  padding: 8px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xs);
+  font-size: 12px;
+  font-family: var(--font-family-main);
+  background: #ffffff;
+  color: var(--color-text-main);
+  transition: background 0.2s ease;
+}
+
+.dr-input:not(:placeholder-shown) {
+  background: #fcfcfc;
+}
+
+.dr-input:focus {
+  outline: none;
+  border-color: rgba(145, 163, 127, 0.6);
+  box-shadow: 0 0 0 2px rgba(145, 163, 127, 0.08);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dr-input[readonly] {
+  background-color: #f0f0f0;
+  cursor: not-allowed;
+  color: var(--color-text-muted);
+}
+
+.dr-input::placeholder {
+  color: var(--color-text-muted, #9ca3af);
+  opacity: 0.6;
+  font-size: 12px;
+}
+
+.dr-input-phone {
+  direction: ltr;
+  text-align: right;
+}
+
+.dr-input-phone::placeholder {
+  text-align: right;
+  direction: ltr;
+  opacity: 0.6;
+}
+
+#dr-manual-address-group {
+  width: 100%;
+  display: none;
+  margin-top: 12px;
+}
+
+#dr-manual-address-group .dr-form-group + .dr-form-group {
+  margin-top: 10px;
+}
+
+#dr-manual-address {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+select.dr-input:has(option[value=""]:checked) {
+  color: var(--color-text-muted, #9ca3af);
+  opacity: 0.6;
+  font-size: 12px;
+}
+
+select.dr-input option {
+  color: var(--color-text-main, #222222);
+  opacity: 1;
+  font-size: 14px;
+}
+
+select.dr-input {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg fill='%23666666' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: left 10px center;
+  padding-left: 35px;
+  cursor: pointer;
+}
+
+/* Design Request Modal - Manual Address Link */
+.dr-manual-link {
+  display: block;
+  text-align: right;
+  margin-top: 8px;
+  margin-bottom: 14px;
+  margin-right: 6px;
+  font-size: 11px;
+  color: var(--color-text-muted, #666);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  text-decoration-skip-ink: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dr-manual-link:hover {
+  color: var(--color-text-main, #222);
+}
+
+.dr-select-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.dr-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 100%;
+  cursor: pointer;
+  background-color: #FCFCFC;
+  padding-left: 36px !important;
+  padding-right: 12px;
+}
+
+.dr-select-wrapper::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  transform: translateY(-50%);
+  width: 10px;
+  height: 6px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath fill='none' stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M1 1l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  pointer-events: none;
+  transition: transform 0.2s ease;
+}
+
+.dr-select:invalid,
+.dr-select option[value=""] {
+  color: #9ca3af;
+}
+
+.dr-select optgroup {
+  font-weight: 700;
+  color: #374151;
+  background-color: #f3f4f6;
+  padding: 6px 4px;
+}
+
+.dr-select option {
+  font-weight: 400;
+  color: #1f2937;
+  background-color: #ffffff;
+  padding: 8px 10px;
+}
+
+#dr-select-district:disabled {
+  pointer-events: none;
+}
+
+#dr-select-district {
+  width: 100%;
+}
+
+#dr-district-wrapper {
+  cursor: pointer;
+  position: relative;
+  display: block;
+  width: 100%;
+}
+
+.dr-file-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed #d1d5db;
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+  cursor: pointer;
+  background-color: #f9fafb;
+  min-height: 80px;
+  transition: all 0.2s ease;
+}
+
+.dr-file-wrapper input[type="file"] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.dr-file-preview-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.dr-file-preview-box img {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+}
+
+.dr-file-preview-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-size: 13px;
+  color: var(--color-text-main, #374151);
+}
+
+.dr-file-preview-info small {
+  color: #6b7280;
+  font-size: 11px;
+}
+
+.dr-hint {
+  font-size: 12px;
+  color: var(--color-text-main);
+  margin-top: 2px;
+  margin-right: 8px;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.dr-location-section {
+  margin-top: 16px;
+  padding: 0;
+  background: transparent;
+}
+
+.dr-location-title {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--color-text-main);
+  padding-right: 4px;
+}
+
+.dr-invoice-frame {
+  direction: rtl;
+  width: 100%;
+  height: 500px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xs);
+  overflow: auto;
+  background: #f9f9f9;
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.dr-preview-document {
+  direction: rtl;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: visible;
+  box-sizing: border-box;
+}
+
+.dr-preview-document .page {
+  flex-shrink: 0;
+}
+
+.dr-footer {
+  display: flex;
+  position: sticky;
+  bottom: 0;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--color-border);
+  flex-direction: row-reverse;
+  flex-wrap: wrap;
+  background: var(--color-bg-white);
+  z-index: 10;
+  pointer-events: auto;
+}
+
+.dr-btn-primary,
+.dr-btn-secondary,
+.dr-btn-whatsapp {
+  padding: 8px 12px;
+  border-radius: var(--radius-xs);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.3s;
+  display: inline-flex;
+  height: 38px;
+  min-height: 38px;
+  max-height: 38px;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-family-main);
+}
+
+.dr-btn-primary {
+  background: var(--color-primary);
+  color: var(--color-bg-white);
+}
+
+.dr-btn-primary:hover {
+  background: var(--color-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(156, 175, 136, 0.28);
+}
+
+.dr-btn-secondary {
+  background: var(--color-bg-white);
+  color: var(--color-text-main);
+  border: 1px solid var(--color-border);
+}
+
+.dr-btn-secondary:hover {
+  background: var(--color-border);
+}
+
+.dr-btn-primary:disabled {
+  cursor: wait;
+  opacity: 0.75;
+}
+
+.dr-btn-primary.is-loading {
+  pointer-events: none;
+}
+
+.dr-btn-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: drButtonSpin 0.7s linear infinite;
+  vertical-align: middle;
+  margin-inline-end: 6px;
+}
+
+@keyframes drButtonSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Keep the modal chrome fixed; only the active step content may scroll. */
+.design-request-overlay {
+  overflow: hidden;
+}
+
+.design-request-box {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.design-request-box > .dr-header,
+.design-request-box > #dr-stepper,
+.design-request-box > .dr-footer {
+  flex: 0 0 auto;
+}
+
+.design-request-box > .dr-step-content {
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+}
+
+.design-request-box > .dr-footer {
+  position: static;
+}
+
+.design-request-box > .dr-footer > #dr-btn-next,
+.design-request-box > .dr-footer > #dr-btn-whatsapp {
+  flex: 0 0 clamp(118px, 28vw, 150px);
+  width: clamp(118px, 28vw, 150px);
+  justify-content: center;
+}
+
+.design-request-box > .dr-footer > #dr-btn-close,
+.design-request-box > .dr-footer > #dr-btn-prev {
+  flex: 0 0 78px;
+  width: 78px;
+  justify-content: center;
+}
+
+/* زرا "السابق" و"تأكيد الطلب" مخفيان افتراضياً؛ JS يتحكم فيهما عبر style.display (inline-flex/none) */
+#dr-btn-prev,
+#dr-btn-whatsapp {
+  display: none;
+}
+
+/* MAPS (Design Request Modal) */
+#dr-mapContainer {
+  margin-top: 12px;
+}
+
+#dr-staticMap {
+  width: 100%;
+  height: 160px;
+  display: block;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  object-fit: cover;
+}

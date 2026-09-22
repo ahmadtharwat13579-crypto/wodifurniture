@@ -1,0 +1,101 @@
+/* =========================================
+   Configurator Sticky Price Bar
+   (extracted from css/configurator.css)
+   ========================================= */
+
+.price-sticky {
+  display: flex;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1200;
+  background: #ffffff;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 -8px 18px rgba(0, 0, 0, 0.08);
+  padding: 10px 16px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 56px;
+  box-sizing: border-box;
+}
+
+/* Price Display Section */
+.price-sticky .total {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  direction: rtl;
+}
+
+.price-sticky .total .lbl {
+  font-size: 14px;
+  color: #666;
+}
+
+.price-sticky .total .val {
+  font-size: 18px;
+  font-weight: 800;
+  color: #9caf88;
+}
+
+/* Actions Group */
+.price-sticky .sticky-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px; /* مسافة مخصصة بين زر التفاصيل والإعادة */
+}
+
+/* Action Buttons Common Styles */
+.price-sticky .sticky-order,
+.price-sticky .sticky-reset {
+  font-family: "Cairo", sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  min-height: 40px;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+/* Reset Button */
+.price-sticky .sticky-reset {
+  background: transparent;
+  color: #333;
+  border-radius: 4px;
+  padding: 8px 10px;
+}
+
+/* Order / View Details Button */
+.sticky-order {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  direction: rtl;
+  background: #9caf88;
+  color: #fff;
+  border: none;
+  border-radius: var(--border-radius-z);
+  padding: 8px 12px;
+}
+
+.sticky-order svg {
+  display: block;
+  flex-shrink: 0;
+}
+
+/* Sidebar Price Column (Desktop) */
+.price-column {
+  width: 320px;
+  position: sticky;
+  top: 100px;
+  box-sizing: border-box;
+}
+
+/* Responsiveness for Ultra-Small Screens */
+@media (max-width: 340px) {
+  .sticky-order span {
+    display: none;
+  }
+}

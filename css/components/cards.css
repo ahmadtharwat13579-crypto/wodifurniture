@@ -1,0 +1,456 @@
+/* =========================================
+   Configurator Option Cards
+   (extracted from css/configurator.css)
+   ========================================= */
+
+/* Cards row */
+.cards-row {
+  display: flex;
+  gap: 15px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  padding: 4px 10px 8px;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+.cards-row > div,
+.cards-row > a,
+.cards-row .card {
+  flex: 0 0 39vw;
+  max-width: 280px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+}
+.cards-row .selected,
+.cards-row [class*="active"] {
+  border-color: #657c59;
+  box-shadow: 0 0 0 2px rgba(101, 124, 89, 0.15);
+}
+.cards-row .card-img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+  background-color: transparent;
+  padding: 0px;
+}
+.cards-row img { max-width: 100%; height: auto; display: block; object-fit: cover; }
+
+
+/* Scroll arrows & cards container */
+.design-card {
+  flex: 0 0 170px;
+  border: 1px solid rgba(51,48,40,0.12);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  position:relative;
+  cursor: pointer;
+  background: var(--color-bg-white);
+}
+
+/* 1. التنسيق الأساسي للكروت وحركة الانتقال */
+.color-shape-card,
+.div-card {
+  position: relative;
+}
+
+/* 2. التأثيرات البصرية للكارت المختار (بروز وظل) */
+.selected {
+  border: 2px solid var(--main-color, #9caf88) !important;
+  transform: scale(1.03) !important;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12) !important;
+  opacity: 1 !important;
+}
+
+/* 3. إنشاء أيقونة الصح على الشمال باقتباس تنسيق الـ handle-priority-badge */
+/* استثناء أزرار المقاسات وكروت المقابض والأنواع للحفاظ على وضوح التصميم */
+.selected:not(.size-btn):not(.handle-card):not(.sink-type-card)::after {
+  content: '✓';
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 20px;
+  height: 20px;
+  background-color: var(--main-color, #9caf88);
+  color: #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: bold;
+  z-index: 2;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* 4. تخفيف إضاءة باقي الكروت لتركيز العين (باستثناء سكشن عرض الحوض) */
+#sz:has(.selected) .size-btn:not(.selected),
+#des:has(.selected) .color-shape-card:not(.selected) {
+  opacity: 1;
+}
+
+
+/* 1. التعتيم الطبيعي لكروت التقسيم ونوع المقبض الأساسية */
+.cards-row:has(.div-card.selected) .div-card:not(.selected),
+#hc:has(.handle-card.selected) .handle-card:not(.selected) {
+  opacity: 0.8;
+}
+
+/* 2. التعتيم لكروت أشكال المقبض: يطبق فقط عندما يحتوي الصف على كلاس has-max-shapes */
+#handle-shapes-row.has-max-shapes .handle-shape-card:not(.selected) {
+  opacity: 0.6;
+}
+
+
+.design-card.disabled,
+.design-card.dis,
+.div-card.disabled,
+.div-card.dis,
+.division-card.disabled,
+.handle-card.disabled,
+.handle-card.dis {
+  opacity: 0.5 !important;
+  pointer-events: auto !important;
+  cursor: not-allowed !important;
+  filter: grayscale(50%) !important;
+  user-select: none;
+}
+
+.design-card.loading-lock,
+.div-card.loading-lock,
+.handle-card.loading-lock {
+  opacity: 0.5;
+  pointer-events: none !important;
+  cursor: wait;
+  filter: grayscale(40%);
+}
+
+/* Color Card Custom Dimensions */
+.color-shape-card {
+  width: 140px;
+  min-width: 140px;
+  flex: 0 0 140px !important;
+  position: relative;
+  background-color: #ffffff !important;
+  border-radius: var(--radius-xs);
+}
+
+/* Color Priority Badge Overlay (Top Left Green Circle) */
+.color-priority-badge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 28px;
+  height: 28px;
+  background-color: var(--main-color, #9caf88);
+  color: #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  z-index: 2;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+
+/* ضبط عرض صورة لون الوحدة لتعرض كاملة بدون قص أو زوم */
+.color-shape-card .cimg img,
+.color-shape-card img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  box-sizing: border-box;
+  border-radius: var(--radius-md);
+}
+
+.color-shape-card .cimg {
+  background-color: #ffffff !important;
+}
+
+.div-card {
+  flex: 0 0 145px;
+  border: 2px solid rgba(51,48,40,0.12);
+  border-radius: var(--radius-xs);
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--color-bg-white);
+  transition: border-color 0.15s;
+}
+.div-card.selected {
+  border: 2px solid var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(156,175,136,0.25);
+}
+.division-card.disabled {
+  opacity: 0.5;          /* جعل الكارت مغيماً وباهتاً */
+  pointer-events: none;  /* منع النقر أو التفاعل معه تماماً */
+  cursor: not-allowed;   /* تغيير شكل المؤشر */
+  filter: grayscale(50%); /* (اختياري) إعطاء مسحة رمادية خفيفة */
+}
+.div-card.loading-lock {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+  filter: grayscale(0.4);
+}
+.handle-card {
+  flex: 0 0 145px;
+  border: 2px solid rgba(51,48,40,0.12);
+  border-radius: var(--radius-xs);
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--color-bg-white);
+  transition: border-color 0.15s;
+}
+.handle-card.selected {
+  border: 2px solid var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(156,175,136,0.25);
+}
+.handle-card.dis {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.handle-card.loading-lock {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+  filter: grayscale(0.4);
+}
+/* Checkmark icon for selected handle type cards (excluding handle shape cards) */
+.handle-card.selected:not(.handle-shape-card)::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 22px;
+  height: 22px;
+  background-color: var(--color-primary, #9caf88);
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
+  background-size: 14px;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 50%;
+  z-index: 3;
+}
+
+.handle-card:not(.handle-shape-card) {
+  position: relative;
+}
+
+/* Handle Shape Card Custom Dimensions */
+.handle-shape-card {
+  width: 160px !important;
+  min-width: 160px !important;
+  flex: 0 0 160px !important;
+  position: relative;
+}
+
+/* Priority Badge Overlay (Top Left Green Circle) */
+.handle-priority-badge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 28px;
+  height: 28px;
+  background-color: var(--main-color, #9caf88);
+  color: #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  z-index: 2;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+
+/* ضبط عرض صورة المقبض لتعرض كاملة بدون قص أو زوم */
+.handle-shape-card .cimg img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  padding: 2px;
+  box-sizing: border-box;
+}
+
+.handle-shape-card,
+.handle-shape-card .cimg {
+  background-color: #ffffff !important;
+}
+
+#handle-shapes-row {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex-wrap: nowrap;
+}
+
+.card-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.card-sizes{
+    margin-top:6px;
+    font-size: var(--font-size-sm);
+    line-height:1.2;
+    color: var(--color-text-muted);
+    text-align:right !important;
+}
+
+.card-sizes .value{
+    color: var(--color-text-main);
+    font-weight:550;
+}
+
+.size-warning {
+  font-size: var(--font-size-xs);
+  color: var(--color-warning);
+  margin-top: 8px;
+  display: none;
+}
+
+.size-warning.show {
+  display: block;
+}
+
+.cimg {
+  width: 100%;
+  padding-top: 100%;
+  overflow: auto;
+  background: rgba(51,48,40,0.04);
+  position: relative;
+}
+.cimg img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.cimg svg.placeholder {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  width: 36px;
+  height: 36px;
+  opacity: 0.35;
+  stroke: var(--color-text-main);
+  stroke-width: 1px;
+}
+
+.zoom-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 24px;
+  height: 24px;
+  background: rgba(0,0,0,0.5);
+  border: 1px solid rgba(51,48,40,0.2);
+  border-radius: var(--radius-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+  z-index: 1;
+}
+.zoom-btn:hover {
+  opacity: 1;
+}
+.zoom-btn svg {
+  width: 14px;
+  height: 14px;
+  stroke: var(--color-bg-white);
+}
+.cinfo {
+  padding: 8px;
+  font-size: var(--font-size-sm);
+}
+.csize {
+  font-size: var(--font-size-xs);
+  color: #888;
+  margin-top: 4px;
+  margin-right: 1px;
+  line-height: 1.46;
+}
+.cname {
+  font-size: var(--font-size-sm);
+  font-weight: 650;
+  color: var(--color-text-main);
+  line-height: 1.3;
+  margin-bottom: 2px;
+  font-family: var(--font-family-main);
+}
+.cprice {
+  font-size: var(--font-size-xs);
+  color: rgba(51,48,40,0.6);
+  font-family: var(--font-family-main);
+  white-space: nowrap;
+  margin-top: 3px;
+}
+.cprice.loading::after {
+  content: '—';
+}
+.sizes-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-start; /* محاذاة الزراير لليمين */
+}
+/* 1. ضبط الحاوية الأب لتجبر كل الأزرار تكون في صف واحد متناسق */
+#sz {
+  display: flex !important;
+  flex-wrap: nowrap !important; /* يمنع نزول أي زرار للسطر الثاني */
+  gap: 8px !important; /* مسافة متناسقة صغيرة بين الأزرار */
+  justify-content: flex-start;
+  align-items: center;
+  overflow-x: auto; /* سكرول أفقي ناعم للموبايل إذا زادت الأزرار */
+  padding-bottom: 4px;
+}
+
+/* 2. توحيد عرض الأزرار وضغط المساحات الجانبية */
+.size-btn {
+  flex: 1 1 110px; 
+  max-width: 120px;
+  min-width: 72px;
+  padding: 6px 4px;
+  text-align: center;
+  border: 1px solid rgba(51,48,40,0.15);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+  background: var(--color-bg-white);
+  color: var(--color-text-main);
+  font-family: var(--font-family-main);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+}
+
+.size-btn.selected {
+  background: var(--color-primary);
+  color: var(--color-bg-white);
+  border-color: var(--color-primary);
+}
