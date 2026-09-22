@@ -1,10 +1,3 @@
-/* منتجات - products.js (مُحدّث)
-   - يقرأ حقل availability من بيانات الشيت
-   - يعرض مؤشر الحالة (متاح/غير متاح) مع دائرة ملونة
-   - يضيف روابط wishlist.html و cart.html للأيقونات
-   - يستخدم DOM-safe rendering عبر createElement
-*/
-
 (function () {
   'use strict';
 
@@ -12,7 +5,7 @@
      Configuration & Constants
      =========================== */
   const CONFIG = {
-    API_URL: "https://script.google.com/macros/s/AKfycbz3xuCuZ6sU9QVo2nTRaItWFLplEhG7bKuzeZSQpk4DseShYrzycpRhyO2u2kuwPVkY/exec?pwd=double-protection-password",
+    API_URL: "/api/get-config",
     WA_NUMBER: '201556840368',
     GH_IMAGES_BASE: 'https://raw.githubusercontent.com/ahmadtharwat13579-crypto/wodifurniture/main/images/products/',
     CACHE_KEY: 'wodi_products_cache',

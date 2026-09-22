@@ -1,7 +1,3 @@
-/* ===========================
-   Wishlist Page - wishlist.js
-   =========================== */
-
 (function () {
   'use strict';
 
@@ -594,10 +590,9 @@
     }
 
     try {
-      const response = await fetch(
-        'https://script.google.com/macros/s/AKfycbz3xuCuZ6sU9QVo2nTRaItWFLplEhG7bKuzeZSQpk4DseShYrzycpRhyO2u2kuwPVkY/exec?pwd=double-protection-password',
-        { cache: 'no-cache' }
-      );
+      const response = await fetch('/api/get-config', {
+        cache: 'no-cache'
+      });
 
       if (!response.ok) throw new Error(`Failed: ${response.status}`);
 

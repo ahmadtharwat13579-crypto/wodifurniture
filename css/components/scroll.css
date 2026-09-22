@@ -130,3 +130,74 @@
     left: clamp(5px, 1vw, 5px);
   }
 }
+
+/* ==========================================
+   Products / Wishlist scroll arrows
+   Moved verbatim from css/products.css — do NOT unify with the
+   index arrows above yet (separate later phase).
+   Scoped to the products/wishlist wrappers
+   (.categories-grid-wrapper / .related-products-wrapper) so the
+   index.html arrow rules above are completely unaffected.
+   Lines marked NEUTRALIZER cancel index-only properties
+   (transition / hover color / hover border-color) that the
+   products/wishlist arrows never had before the move.
+   ========================================== */
+
+.categories-grid-wrapper .scroll-arrow,
+.related-products-wrapper .scroll-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
+  background: #fff;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  z-index: 10;
+  transition: none; /* NEUTRALIZER: index rule adds a hover transition these arrows never had */
+}
+
+.categories-grid-wrapper .scroll-arrow.hidden,
+.related-products-wrapper .scroll-arrow.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-50%) scale(.95);
+}
+
+.categories-grid-wrapper .scroll-arrow.arr-start,
+.related-products-wrapper .scroll-arrow.arr-start {
+  right: 6px;
+}
+
+.categories-grid-wrapper .scroll-arrow.arr-end,
+.related-products-wrapper .scroll-arrow.arr-end {
+  left: 6px;
+}
+
+.categories-grid-wrapper .scroll-arrow svg,
+.related-products-wrapper .scroll-arrow svg {
+  width: 18px;
+  height: 18px;
+  stroke: #333028;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transform: rotate(180deg);
+}
+
+.categories-grid-wrapper .scroll-arrow:hover,
+.related-products-wrapper .scroll-arrow:hover {
+  background: #333028;
+  color: var(--color-text-main, #333028); /* NEUTRALIZER */
+  border-color: rgba(0, 0, 0, 0.04); /* NEUTRALIZER: keep the original non-hover border color */
+}
+
+.categories-grid-wrapper .scroll-arrow:hover svg,
+.related-products-wrapper .scroll-arrow:hover svg {
+  stroke: #fff;
+}
