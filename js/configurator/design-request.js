@@ -193,12 +193,12 @@ function drShowStep(stepNum) {
     el.style.opacity = '0.6';
   });
 
-  document.querySelectorAll('.dr-step-content').forEach(el => {
+  document.querySelectorAll('.modal-content').forEach(el => {
     el.style.display = 'none';
   });
 
   const currentStep = document.querySelector(
-    `.dr-step-content[data-step="${stepNum}"]`
+    `.modal-content[data-step="${stepNum}"]`
   );
 
   if (currentStep) {

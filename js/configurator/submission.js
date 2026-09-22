@@ -494,7 +494,7 @@ window.drSubmitOrder = drSubmitOrder;
 
 function drShowConfirmation(orderNum) {
   const modal = document.getElementById('design-request-modal');
-  const box = modal?.querySelector('.design-request-box');
+  const box = modal?.querySelector('.modal-box');
   if (!box) return;
 
   box.innerHTML = `

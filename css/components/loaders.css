@@ -1,0 +1,264 @@
+/* Skeleton Cards (extracted from css/configurator.css) */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* تحديد أبعاد الكروت الوهمية لجميع الأقسام */
+.design-card.skeleton,
+.div-card.skeleton,
+.handle-card.skeleton {
+  display: flex;
+  flex-direction: column;
+  min-height: 220px;
+  width: 100%;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: var(--radius-md);
+}
+
+.skeleton .skel-img,
+.skeleton .skel-line {
+  position: relative;
+  overflow: hidden;
+  background: #ececec;
+}
+
+.skeleton .cimg {
+  aspect-ratio: 1 / 1;
+}
+
+.skeleton .skel-img {
+  width: 100%;
+  height: 100%;
+}
+
+.skeleton .cinfo {
+  padding: 12px;
+}
+
+.skeleton .skel-line {
+  height: 12px;
+  border-radius: 2px;
+  margin-top: 10px;
+}
+
+/* تعديل أسماء الكلاسات لتتطابق مع الـ JavaScript */
+.skeleton .skel-line.w-80 {
+  width: 80%;
+}
+
+.skeleton .skel-line.w-40 {
+  width: 40%;
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.65),
+    transparent
+  );
+  animation: skeletonShimmer 1.2s infinite;
+}
+
+@keyframes skeletonShimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* التأكد من أن حاوية الصورة تأخذ ارتفاعاً محدداً داخل الـ Skeleton */
+.skeleton .cimg {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  min-height: 140px; 
+  flex-shrink: 0;
+}
+
+.section-loading{
+  display:none;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  padding:8px 0 14px;
+  color:#666;
+  font-size:14px;
+}
+
+.section-loading.show{
+  display:flex;
+}
+
+.size-btn.skeleton{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    pointer-events:none;
+    color:transparent;
+}
+
+.size-btn.skeleton .skel-text{
+    display:block;
+    width:70px;
+    height:14px;
+    border-radius:4px;
+    background:#ececec;
+    position:relative;
+    overflow:hidden;
+    margin:0;
+}
+
+.size-btn.skeleton .skel-text::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    transform:translateX(-100%);
+    background:linear-gradient(
+        90deg,
+        transparent,
+        rgba(255,255,255,.65),
+        transparent
+    );
+    animation:skeletonShimmer 1.2s infinite;
+}
+
+/* =========================================
+   Loader Screen (extracted from css/configurator.css)
+ ========================================= */
+
+.config-loader-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.15); /* خلفية معتمة بنسبة خفيفة جداً */
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* مخفي افتراضياً؛ JS يعرضه عبر style.display = 'flex' عند وجود حالة محفوظة */
+#config-loader-overlay {
+  display: none;
+}
+
+/* النافذة المستطيلة: بدون حدود وبدون ظل ثقيل */
+.config-loader-card {
+  background: #ffffff;
+  padding: 20px 24px;
+  width: 300px;
+  border-radius: 0; /* مستطيل حاد الزوايا */
+  border: none; /* بدون أي بوردر */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* ظل ناعم جداً شبه غير ملحوظ */
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* الجزء العلوي (الأيقونة والعنوان) */
+.loader-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* أيقونة الساعة الرملية */
+.hourglass-icon {
+  width: 16px;
+  height: 16px;
+  color: #1e293b;
+  flex-shrink: 0;
+  animation: rotateHourglass 2.5s infinite ease-in-out;
+}
+
+/* حركة دوران الساعة الرملية */
+@keyframes rotateHourglass {
+  0% { transform: rotate(0deg); }
+  35% { transform: rotate(180deg); }
+  50% { transform: rotate(180deg); }
+  85% { transform: rotate(360deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* العنوان */
+.loader-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+/* حاوي شريط التحميل المستطيل */
+.loader-bar-container {
+  width: 100%;
+  height: 3px;
+  background-color: #f1f5f9;
+  border-radius: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+/* شريط التحميل باللون الرئيسي (من الشمال لليمين) */
+.loader-bar-fill {
+  height: 100%;
+  width: 40%;
+  background-color: var(--color-primary, #000000);
+  border-radius: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  animation: loadProgress 1.4s infinite ease-in-out;
+}
+
+@keyframes loadProgress {
+  0% {
+    left: -40%;
+    width: 30%;
+  }
+  50% {
+    width: 60%;
+  }
+  100% {
+    left: 100%;
+    width: 30%;
+  }
+}
+
+
+/* =========================================
+   Loader Skip
+ ========================================= */
+
+.config-loader-skip {
+  margin: 6px 0 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #333028;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  align-self: flex-start;
+  text-align: right;
+}
+
+.config-loader-skip:hover {
+  opacity: 0.7;
+}
+
+.config-loader-skip:focus-visible {
+  outline: 2px solid #9caf88;
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+

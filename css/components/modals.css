@@ -1,8 +1,158 @@
 /* ====================================================
-   DESIGN REQUEST MODAL (3-STEP WORKFLOW)
-   Extracted from css/configurator.css - styles kept as-is.
+   MODAL STYLESHEET
+   1. GLOBAL MODAL SYSTEM (generalized modal classes)
+   2. DESIGN REQUEST MODAL (3-step workflow, specific styles)
    Loaded by configurator.html right after configurator.css.
    ==================================================== */
+
+/* =========================================
+   1. GLOBAL MODAL SYSTEM
+   ========================================= */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--modal-bg-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+  padding: 20px;
+}
+
+.modal {
+  background: var(--color-bg-white);
+  max-width: 700px;
+  width: 95%;
+  height: 80vh;
+  border-radius: var(--radius-lg);
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  position: relative;
+  flex-direction: column;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: var(--space-4) var(--space-5);
+  background-color: var(--color-primary);
+}
+
+.modal-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--color-bg-white);
+  margin: 0;
+  text-align: center;
+  gap: 8px;
+}
+
+.modal-title-icon {
+  color: var(--color-bg-white);
+  flex-shrink: 0;
+}
+
+.modal-content {
+  padding: 22px 22px;
+  flex: 1;
+}
+
+.modal-footer {
+  display: flex;
+  position: sticky;
+  bottom: 0;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--color-border);
+  flex-direction: row-reverse;
+  flex-wrap: wrap;
+  background: var(--color-bg-white);
+  z-index: 10;
+  pointer-events: auto;
+}
+
+.modal-close {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  right: 20px; /* نقل الزر للناحية اليمنى */
+  left: auto;
+  top: 50% !important;
+  transform: translateY(-45%);
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  color: var(--color-bg-white);
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px;
+  transition: color 0.2s;
+}
+
+.modal-close:hover {
+  color: #111827;
+}
+
+/* Keep the modal chrome fixed; only the active step content may scroll. */
+.modal-overlay {
+  overflow: hidden;
+}
+
+.modal {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.modal > .modal-header,
+.modal > #dr-stepper,
+.modal > .modal-footer {
+  flex: 0 0 auto;
+}
+
+.modal > .modal-content {
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+}
+
+.modal > .modal-footer {
+  position: static;
+}
+
+.modal > .modal-footer > #dr-btn-next,
+.modal > .modal-footer > #dr-btn-whatsapp {
+  flex: 0 0 clamp(118px, 28vw, 150px);
+  width: clamp(118px, 28vw, 150px);
+  justify-content: center;
+}
+
+.modal > .modal-footer > #dr-btn-close,
+.modal > .modal-footer > #dr-btn-prev {
+  flex: 0 0 78px;
+  width: 78px;
+  justify-content: center;
+}
+
+/* =========================================
+   2. DESIGN REQUEST MODAL (3-STEP WORKFLOW)
+   ========================================= */
+
+#design-request-modal {
+  display: none;
+}
 
 #dr-stepper {
   width: 100%;
@@ -41,69 +191,7 @@
    DESIGN REQUEST MODAL STYLES (3-STEP)
 ========================================= */
 
-.design-request-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: var(--modal-bg-overlay);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: var(--z-modal);
-  padding: 20px;
-}
-
-#design-request-modal {
-  display: none;
-}
-
-.design-request-box {
-  background: var(--color-bg-white);
-  max-width: 700px;
-  width: 95%;
-  height: 80vh;
-  border-radius: var(--radius-lg);
-  overflow-y: auto;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-  display: flex;
-  flex-direction: column;
-}
-
-.dr-header {
-  position: relative;
-  flex-direction: column;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: var(--space-4) var(--space-5);
-  background-color: var(--color-primary);
-}
-
-.dr-title {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: var(--font-size-lg);
-  font-weight: 700;
-  color: var(--color-bg-white);
-  margin: 0;
-  text-align: center;
-  gap: 8px;
-}
-
-.dr-title-icon {
-  color: var(--color-bg-white);
-  flex-shrink: 0;
-}
-
-.dr-step-content {
-  padding: 22px 22px;
-  flex: 1;
-}
-
-.dr-step-content[data-step="3"] > p {
+.modal-content[data-step="3"] > p {
   font-size: 12px;
   color: var(--color-text-muted, #666);
   margin-bottom: 14px;
@@ -413,21 +501,6 @@ select.dr-input {
   flex-shrink: 0;
 }
 
-.dr-footer {
-  display: flex;
-  position: sticky;
-  bottom: 0;
-  justify-content: flex-end;
-  gap: 8px;
-  padding: 10px 16px;
-  border-top: 1px solid var(--color-border);
-  flex-direction: row-reverse;
-  flex-wrap: wrap;
-  background: var(--color-bg-white);
-  z-index: 10;
-  pointer-events: auto;
-}
-
 .dr-btn-primary,
 .dr-btn-secondary,
 .dr-btn-whatsapp {
@@ -493,47 +566,6 @@ select.dr-input {
   to {
     transform: rotate(360deg);
   }
-}
-
-/* Keep the modal chrome fixed; only the active step content may scroll. */
-.design-request-overlay {
-  overflow: hidden;
-}
-
-.design-request-box {
-  min-height: 0;
-  overflow: hidden;
-}
-
-.design-request-box > .dr-header,
-.design-request-box > #dr-stepper,
-.design-request-box > .dr-footer {
-  flex: 0 0 auto;
-}
-
-.design-request-box > .dr-step-content {
-  min-height: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
-  overscroll-behavior: contain;
-}
-
-.design-request-box > .dr-footer {
-  position: static;
-}
-
-.design-request-box > .dr-footer > #dr-btn-next,
-.design-request-box > .dr-footer > #dr-btn-whatsapp {
-  flex: 0 0 clamp(118px, 28vw, 150px);
-  width: clamp(118px, 28vw, 150px);
-  justify-content: center;
-}
-
-.design-request-box > .dr-footer > #dr-btn-close,
-.design-request-box > .dr-footer > #dr-btn-prev {
-  flex: 0 0 78px;
-  width: 78px;
-  justify-content: center;
 }
 
 /* زرا "السابق" و"تأكيد الطلب" مخفيان افتراضياً؛ JS يتحكم فيهما عبر style.display (inline-flex/none) */

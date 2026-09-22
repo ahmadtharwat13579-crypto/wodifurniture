@@ -12,6 +12,8 @@
   <link rel="stylesheet" href="css/layout/page.css">
   <link rel="stylesheet" href="css/components/price-bar.css">
   <link rel="stylesheet" href="css/configurator.css">
+<link rel="stylesheet" href="css/components/loaders.css">
+<link rel="stylesheet" href="css/components/location.css">
   <link rel="stylesheet" href="css/components/cards.css">
   <link rel="stylesheet" href="css/components/stepper.css">
   <link rel="stylesheet" href="css/components/drawers.css">
@@ -698,14 +700,14 @@ fetch('nav.html')
 
 
 <!-- ===== DESIGN REQUEST MODAL (3-STEP WORKFLOW) ===== -->
-<div id="design-request-modal" class="design-request-overlay" aria-hidden="true">
-  <div class="design-request-box" role="dialog" aria-modal="true">
+<div id="design-request-modal" class="modal-overlay" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true">
     
     <!-- HEADER -->
-  <div class="dr-header">
-    <button class="dr-close-btn" onclick="closeDesignRequestModal()" aria-label="إغلاق">&times;</button>
-    <h2 class="dr-title">
-<svg class="dr-title-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <div class="modal-header">
+    <button class="modal-close" onclick="closeDesignRequestModal()" aria-label="إغلاق">&times;</button>
+    <h2 class="modal-title">
+<svg class="modal-title-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
   <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
   <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
   <path d="m9 14 2 2 4-4"></path>
@@ -741,7 +743,7 @@ fetch('nav.html')
     </nav>
 
     <!-- STEP 1: CUSTOMER INFO -->
-    <div class="dr-step-content" data-step="1" style="display: block;">
+    <div class="modal-content" data-step="1" style="display: block;">
 
       <h3 class="dr-step-heading">بيانات العميل</h3>
 
@@ -886,7 +888,7 @@ fetch('nav.html')
     </div>
 
 <!-- STEP 2: SINK SPECS -->
-    <div class="dr-step-content" data-step="2" style="display: none;">
+    <div class="modal-content" data-step="2" style="display: none;">
       <h3 class="dr-step-heading">مواصفات الحوض</h3>
       <div class="dr-form-group">
         <label for="dr-sink-type" class="dr-label">نوع الحوض <span class="required">*</span></label>
@@ -955,7 +957,7 @@ fetch('nav.html')
     </div>
 
     <!-- STEP 3: REVIEW & SUBMIT -->
-    <div class="dr-step-content" data-step="3" style="display: none;">
+    <div class="modal-content" data-step="3" style="display: none;">
       <h3 class="dr-step-heading">مراجعة وإرسال</h3>
      <p>
         راجع بيانات طلبك جيداً قبل الإرسال — بعد الضغط على تأكيد الطلب سيتم إرسال طلبك وفتح صفحة متابعة الطلب تلقائيًا.
@@ -964,7 +966,7 @@ fetch('nav.html')
     </div>
 
     <!-- FOOTER -->
-    <div class="dr-footer">
+    <div class="modal-footer">
       <button id="dr-btn-close" class="dr-btn-secondary" onclick="closeDesignRequestModal()">إغلاق</button>
       <button id="dr-btn-prev" class="dr-btn-secondary" onclick="drPrevStep()">السابق</button>
       <button id="dr-btn-next" class="dr-btn-primary" onclick="drNextStep()">التالي</button>
@@ -1017,7 +1019,7 @@ fetch('nav.html')
  
 <div id="drOrdersDrawer" class="dr-orders-drawer">
   <div class="dr-drawer-header"> 
-    <button type="button" class="dr-close-btn" onclick="drCloseOrdersDrawer()"> 
+    <button type="button" class="modal-close" onclick="drCloseOrdersDrawer()"> 
       <span class="dr-close-arrow">❯</span> 
     </button> 
  
