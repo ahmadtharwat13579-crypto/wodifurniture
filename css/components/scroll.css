@@ -1,0 +1,69 @@
+.cards-row > * {
+    scroll-snap-align: center;
+    flex: 0 0 220px;
+} 
+.scroll-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 2px;
+    background: #fff;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+    border: 1px solid rgba(0,0,0,0.04);
+    cursor: pointer;
+    z-index: 10;
+}
+
+.scroll-arrow.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-50%) scale(.95);
+}
+
+.scroll-arrow.arr-start {
+    right: 6px;
+}
+
+.scroll-arrow.arr-end {
+    left: 6px;
+}
+
+.scroll-arrow svg {
+    width: 18px;
+    height: 18px;
+    stroke: #333028;
+}
+
+.scroll-arrow:hover {
+    background: #333028;
+}
+
+.scroll-arrow:hover svg {
+    stroke: #ffffff;
+}
+
+.scroll-x-styled {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-primary, #9caf88) var(--color-bg-light, #f4f4f4);
+}
+
+.scroll-x-styled::-webkit-scrollbar {
+  height: 5px;
+}
+
+.scroll-x-styled::-webkit-scrollbar-track {
+  background: var(--color-bg-light, #f4f4f4);
+  border-radius: 10px;
+}
+
+.scroll-x-styled::-webkit-scrollbar-thumb {
+  background: var(--color-primary, #9caf88);
+  border-radius: 10px;
+}
+

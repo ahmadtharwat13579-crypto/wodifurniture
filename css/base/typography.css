@@ -1,0 +1,11 @@
+body {
+  font-family: 'Cairo', sans-serif;
+  background-color: #FFFFFF;
+  color: #333028;
+  direction: rtl;
+  min-height: 100vh;
+  overflow-x: visible;
+  margin-bottom: 0 !important;
+  padding-bottom: var(--safe-area-inset-bottom);
+}
+

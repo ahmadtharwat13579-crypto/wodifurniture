@@ -1,0 +1,38 @@
+body {
+  font-family: 'Cairo', sans-serif;
+  background-color: #FFFFFF;
+  color: #333028;
+  direction: rtl;
+  min-height: 100vh;
+  overflow-x: visible;
+  margin-bottom: 0 !important;
+  padding-bottom: var(--safe-area-inset-bottom);
+}
+
+.hidden {
+  display: none !important;
+}
+
+.grecaptcha-badge {
+  visibility: hidden !important;
+}
+
+
+.main-column,
+.cards-row,
+.conf {
+  min-width: 0 !important;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.cards-row {
+  padding-inline: 6px;
+  gap: 12px;
+}
+
+.scroll-wrap {
+  position: relative;
+  width: 100%;
+}
+
