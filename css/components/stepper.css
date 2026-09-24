@@ -23,14 +23,13 @@
   will-change: transform;
 }
 
-/* الحالة الـ Sticky: خلفية بيضاء مستطيلة ظل خفيف عند التمرير */
 .compact-stepper.is-sticky {
   background: var(--color-bg-white);
   padding: 12px 12px;
   border-radius: var(--radius-xl);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   border: 1px solid #f3f4f6;
-  top: var(--stepper-top, 10px); /* استخدام متغير يتم حسابه ديناميكياً */
+  top: var(--stepper-top, 10px);
   transition: top 0.3s ease, transform 0.3s ease;
   max-width: 800px;
   margin-left: auto;
@@ -47,7 +46,6 @@
   position: relative;
 }
 
-/* الخط الرابط الخلفي المتصل */
 .compact-stepper ol::before {
   content: '';
   position: absolute;
@@ -71,7 +69,6 @@
   align-self: flex-start;
 }
 
-/* شكل الأيقونة والـ SVG بداخله */
 .compact-stepper .stepper-icon {
   width: 32px;
   height: 32px;
@@ -97,11 +94,9 @@
   font-weight: 600;
   line-height: 1.4;
   color: #6b7280;
-  white-space: nowrap; /* منع تقسيم النص إلى أسطر */
+  white-space: nowrap;
 }
 
-
-/* Completed step */
 .compact-stepper .stepper-item.completed .stepper-icon {
   position: relative;
   background: var(--color-primary);
@@ -109,13 +104,11 @@
   border-color: var(--color-primary);
 }
 
-/* Hide the original icon/number when completed */
 .compact-stepper .stepper-item.completed .stepper-icon svg,
 .compact-stepper .stepper-item.completed .stepper-icon > span {
   display: none;
 }
 
-/* Center the checkmark inside the circle */
 .compact-stepper .stepper-item.completed .stepper-icon::after {
   content: '✓';
   position: absolute;
@@ -133,20 +126,18 @@
   pointer-events: none;
 }
 
-/* حالة فشل تحديد الموقع أو خارج النطاق (برتقالي / أصفر) */
 .compact-stepper .stepper-item.out-of-range .stepper-icon {
   background: #f59e0b;
   color: var(--color-bg-white);
   border-color: #f59e0b;
 }
 
-/* --- المثال الأول: توهج ونبض هادئ --- */
 .compact-stepper .stepper-item.active .stepper-icon {
   background: var(--color-bg-white);
   color: var(--color-primary);
   border-color: var(--color-primary);
   transform: scale(1.12);
-  box-shadow: 0 0 0 5px rgba(156, 175, 136, 0.25); /* توهج متناسق مع لون البراند */
+  box-shadow: 0 0 0 5px rgba(156, 175, 136, 0.25);
 }
 
 .compact-stepper .stepper-item.active .stepper-title {
@@ -155,12 +146,17 @@
   transform: scale(1.02);
 }
 
+.stepper-icon span {
+  font-weight: 700;
+  font-size: 16px;
+}
+
 /* ==========================================
    Half-Completed Stepper Icon (Fixed Sticky-Safe)
    ========================================== */
 
 .stepper-item.half-completed .stepper-icon {
-  width: 32px; /* حدد الارتفاع والعرض الفعلي لأيقونتك لضمان ثبات المساحة */
+  width: 32px;
   height: 32px;
   border-radius: 50% !important;
   background: #ffffff !important;
@@ -175,10 +171,8 @@
   background-clip: padding-box, border-box !important;
   position: relative;
   box-sizing: border-box;
-  /* تم إزالة box-shadow لمنع مشاكل الـ Render Layer التي تكسر الـ Sticky */
 }
 
-/* الأيقونة تظل واضحة في المنتصف */
 .stepper-item.half-completed .stepper-icon svg,
 .stepper-item.half-completed .stepper-icon i,
 .stepper-item.half-completed .stepper-icon span {
@@ -187,7 +181,6 @@
   color: var(--main-color, #9caf88);
 }
 
-/* نقطة صغيرة في المركز لإعطاء إحساس بالـ progress */
 .stepper-item.half-completed .stepper-icon::after {
   content: '';
   position: absolute;
@@ -201,7 +194,6 @@
   z-index: 1;
 }
 
-/* Responsive adjustments for icon and title */
 @media (min-width: 550px) {
   .compact-stepper .stepper-icon {
     width: clamp(32px, 10vw, 40px);
@@ -221,7 +213,7 @@
     font-size: clamp(20px, 8vw, 24px);
   }
 }
-/* خطوة "النقل والتوصيل" في الشريط العلوي مخفية مؤقتاً (نُقلت من inline style) */
+
 #st-location {
   display: none;
 }

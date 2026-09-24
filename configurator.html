@@ -19,6 +19,7 @@
   <link rel="stylesheet" href="css/components/drawers.css">
   <link rel="stylesheet" href="css/components/modals.css">
   <link rel="stylesheet" href="css/components/toast.css">
+  <link rel="stylesheet" href="css/components/lightbox.css">
   <link rel="stylesheet" href="css/faq.css">
   <link rel="stylesheet" href="css/layout/footer.css">
   <link rel="stylesheet" href="css/layout/nav.css">
@@ -588,10 +589,11 @@ fetch('nav.html')
   </div>
 </main>
 
-<!-- Lightbox -->
-<div class="lb" id="lb" onclick="closeLB()">
-  <button class="lb-close" onclick="closeLB()">×</button>
-  <img id="lb-img" src="" alt="" />
+<div class="lightbox" id="lightbox" onclick="closeLB()">
+  <div class="lightbox-content" onclick="event.stopPropagation()">
+    <span class="lightbox-close" onclick="closeLB()">&times;</span>
+    <img id="lightbox-img" src="" alt="" />
+  </div>
 </div>
 
 <!-- Toast -->
@@ -745,43 +747,43 @@ fetch('nav.html')
     <!-- STEP 1: CUSTOMER INFO -->
     <div class="modal-content" data-step="1" style="display: block;">
 
-      <h3 class="dr-step-heading">بيانات العميل</h3>
+      <h3 class="modal-step-heading">بيانات العميل</h3>
 
-      <div class="dr-form-group">
-        <label for="dr-customer-name" class="dr-label">
+      <div class="modal-form-group">
+        <label for="dr-customer-name" class="modal-label">
           الاسم <span class="required">*</span>
         </label>
 
         <input
           type="text"
           id="dr-customer-name"
-          class="dr-input"
+          class="modal-input"
           placeholder="اسمك الكامل"
         />
       </div>
 
-      <div class="dr-form-group">
-        <label for="dr-customer-phone" class="dr-label">
+      <div class="modal-form-group">
+        <label for="dr-customer-phone" class="modal-label">
           رقم الهاتف <span class="required">*</span>
         </label>
 
         <input
           type="tel"
           id="dr-customer-phone"
-          class="dr-input dr-input-phone"
+          class="modal-input modal-input-phone"
           placeholder="01X XXXX XXXX"
           maxlength="14"
         />
       </div>
 
-      <div class="dr-location-section">
+      <div class="modal-location-section">
 
-      <h4 class="dr-location-title">
+      <h4 class="modal-location-title">
         العنوان
         <span class="required">*</span>
       </h4>
 
-      <p class="dr-hint">
+      <p class="modal-hint">
         يتم تحديد موقعك لدقة حساب تكلفة الانتقالات (المعاينة والنقل) بدقة. يمكنك اختيار المحافظة والمنطقة يدويًا إذا كنت ترغب، لكن التكلفة ستكون تقديرية.
       </p>
 
@@ -816,7 +818,7 @@ fetch('nav.html')
         <a 
           href="javascript:void(0)" 
           id="dr-toggle-manual-address" 
-          class="dr-manual-link" 
+          class="modal-manual-link" 
           style="display: block; margin-top: 8px;"
           onclick="
             document.getElementById('dr-manual-address-group').style.display='block';
@@ -848,23 +850,23 @@ fetch('nav.html')
     <!-- Manual Address Fallback Field (Dropdowns) -->
     <div id="dr-manual-address-group">
       
-      <div class="dr-form-group">
-        <label for="dr-select-gov" class="dr-label"> 
+      <div class="modal-form-group">
+        <label for="dr-select-gov" class="modal-label"> 
           المحافظة
         </label>
-        <select id="dr-select-gov" class="dr-input" onchange="drOnGovChange()">
+        <select id="dr-select-gov" class="modal-input" onchange="drOnGovChange()">
           <option value="" selected>اختر المحافظة...</option>
           <option value="Cairo">القاهرة</option>
           <option value="Giza">الجيزة</option>
         </select>
       </div>
 
-      <div class="dr-form-group">
-      <label for="dr-select-district" class="dr-label"> 
+      <div class="modal-form-group">
+      <label for="dr-select-district" class="modal-label"> 
         الحي
       </label>
 
-      <p class="dr-hint">
+      <p class="modal-hint">
        يمكنك اختيار أقرب حيّ لك إذا لم تجد حيّك بالتحديد.
       </p>
 
@@ -872,7 +874,7 @@ fetch('nav.html')
         <div id="dr-district-wrapper">
           <select
             id="dr-select-district"
-            class="dr-input"
+            class="modal-input"
             disabled
             onchange="drOnDistrictChange()"
           >
@@ -889,15 +891,15 @@ fetch('nav.html')
 
 <!-- STEP 2: SINK SPECS -->
     <div class="modal-content" data-step="2" style="display: none;">
-      <h3 class="dr-step-heading">مواصفات الحوض</h3>
-      <div class="dr-form-group">
-        <label for="dr-sink-type" class="dr-label">نوع الحوض <span class="required">*</span></label>
-        <input type="text" id="dr-sink-type" class="dr-input" readonly />
+      <h3 class="modal-step-heading">مواصفات الحوض</h3>
+      <div class="modal-form-group">
+        <label for="dr-sink-type" class="modal-label">نوع الحوض <span class="required">*</span></label>
+        <input type="text" id="dr-sink-type" class="modal-input" readonly />
       </div>
-      <div class="dr-form-group">
-        <label for="dr-sink-brand" class="dr-label">ماركة الحوض <span class="required">*</span></label>
-        <div class="dr-select-wrapper">
-          <select id="dr-sink-brand" class="dr-input dr-select">
+      <div class="modal-form-group">
+        <label for="dr-sink-brand" class="modal-label">ماركة الحوض <span class="required">*</span></label>
+        <div class="modal-select-wrapper">
+          <select id="dr-sink-brand" class="modal-input modal-select">
             <option value="" disabled selected hidden>اختر ماركة الحوض...</option>
             
             <optgroup label="الأكثر انتشاراً في مصر">
@@ -923,12 +925,12 @@ fetch('nav.html')
           </select>
         </div>
       </div>
-      <div class="dr-form-group">
-        <label for="dr-sink-width" class="dr-label">عرض الحوض (سم) <span class="required">*</span></label>
+      <div class="modal-form-group">
+        <label for="dr-sink-width" class="modal-label">عرض الحوض (سم) <span class="required">*</span></label>
         <input 
           type="text" 
           id="dr-sink-width" 
-          class="dr-input" 
+          class="modal-input" 
           inputmode="numeric" 
           pattern="[0-9]*" 
           placeholder="مثال: 80" 
@@ -936,43 +938,43 @@ fetch('nav.html')
           required 
         />
       </div>
-      <div class="dr-form-group">
-        <label for="dr-sink-code" class="dr-label">كود موديل الحوض</label>
-        <input type="text" id="dr-sink-code" class="dr-input" placeholder="الكود المكتوب على الحوض أو الكرتونة" />
+      <div class="modal-form-group">
+        <label for="dr-sink-code" class="modal-label">كود موديل الحوض</label>
+        <input type="text" id="dr-sink-code" class="modal-input" placeholder="الكود المكتوب على الحوض أو الكرتونة" />
       </div>
-      <div class="dr-form-group">
-        <label for="dr-sink-image" class="dr-label">صورة الحائط المطلوب <span class="required">*</span></label>
-        <input type="file" id="dr-sink-image" class="dr-input" accept="image/*" />
-        <small class="dr-hint">ارفع <strong>صورة واسعة وواضحة</strong> للجدار المطلوب من <strong>مسافة بعيدة قليلًا</strong>.</small>
+      <div class="modal-form-group">
+        <label for="dr-sink-image" class="modal-label">صورة الحائط المطلوب <span class="required">*</span></label>
+        <input type="file" id="dr-sink-image" class="modal-input" accept="image/*" />
+        <small class="modal-hint">ارفع <strong>صورة واسعة وواضحة</strong> للجدار المطلوب من <strong>مسافة بعيدة قليلًا</strong>.</small>
       </div>
-      <div class="dr-form-group">
-        <label for="dr-sink-photo" class="dr-label">صورة الحوض</label>
-        <input type="file" id="dr-sink-photo" class="dr-input" accept="image/*" />
+      <div class="modal-form-group">
+        <label for="dr-sink-photo" class="modal-label">صورة الحوض</label>
+        <input type="file" id="dr-sink-photo" class="modal-input" accept="image/*" />
       </div>
-      <div class="dr-form-group">
-        <label for="dr-sink-sticker" class="dr-label">صورة ملصق الحوض</label>
-        <input type="file" id="dr-sink-sticker" class="dr-input" accept="image/*" />
-        <small class="dr-hint">صورة الملصق المطبوع على الكرتونة أو أسفل/ظهر الحوض</small>
+      <div class="modal-form-group">
+        <label for="dr-sink-sticker" class="modal-label">صورة ملصق الحوض</label>
+        <input type="file" id="dr-sink-sticker" class="modal-input" accept="image/*" />
+        <small class="modal-hint">صورة الملصق المطبوع على الكرتونة أو أسفل/ظهر الحوض</small>
       </div>
     </div>
 
     <!-- STEP 3: REVIEW & SUBMIT -->
     <div class="modal-content" data-step="3" style="display: none;">
-      <h3 class="dr-step-heading">مراجعة وإرسال</h3>
+      <h3 class="modal-step-heading">مراجعة وإرسال</h3>
      <p>
         راجع بيانات طلبك جيداً قبل الإرسال — بعد الضغط على تأكيد الطلب سيتم إرسال طلبك وفتح صفحة متابعة الطلب تلقائيًا.
       </p>
-      <div id="dr-invoice-preview" class="dr-invoice-frame"></div>
+      <div id="dr-invoice-preview" class="modal-invoice-frame"></div>
     </div>
 
     <!-- FOOTER -->
     <div class="modal-footer">
-      <button id="dr-btn-close" class="dr-btn-secondary" onclick="closeDesignRequestModal()">إغلاق</button>
-      <button id="dr-btn-prev" class="dr-btn-secondary" onclick="drPrevStep()">السابق</button>
-      <button id="dr-btn-next" class="dr-btn-primary" onclick="drNextStep()">التالي</button>
+      <button id="dr-btn-close" class="modal-btn-secondary" onclick="closeDesignRequestModal()">إغلاق</button>
+      <button id="dr-btn-prev" class="modal-btn-secondary" onclick="drPrevStep()">السابق</button>
+      <button id="dr-btn-next" class="modal-btn-primary" onclick="drNextStep()">التالي</button>
       <button
         id="dr-btn-whatsapp"
-        class="dr-btn-primary"
+        class="modal-btn-primary"
         onclick="drSubmitOrder()"
       >
         تأكيد الطلب

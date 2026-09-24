@@ -71,7 +71,6 @@ function initNavbar() {
     if (isOpen) openProductsDropdown();
   };
 
-  // --- 3. مودال تسجيل الخروج (معدل ومتاح عالمياً وضمن initNavbar) ---
   window.openLogoutModal = function () {
     const logoutModal = document.getElementById('logoutModal');
     if (!logoutModal) {

@@ -97,6 +97,7 @@
 
 .dr-orders-drawer.open {
   transform: translateY(-50%) translateX(0);
+  border-top-right-radius: var(--radius-lg);
 }
 
 .dr-drawer-backdrop {
@@ -687,7 +688,24 @@
   align-items: center;
   gap: 10px;
   box-shadow: 2px 0 8px rgba(0,0,0,0.15);
+  border-top-right-radius: var(--radius-md);
   transition: transform 0.2s ease, background-color 0.2s;
+  animation: drTabAttention 0.6s ease-out 1s;
+}
+
+@keyframes drTabAttention {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  30% {
+    transform: translateX(10px);
+  }
+
+  60% {
+    transform: translateX(-4px);
+  }
 }
 
 .dr-tab-text {

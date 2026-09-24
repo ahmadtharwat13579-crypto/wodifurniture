@@ -184,11 +184,11 @@ function drShowStep(stepNum) {
   const savedDraft = JSON.parse(localStorage.getItem(DR_STORAGE_KEY) || '{}');
   savedDraft.currentStep = stepNum;
   try { localStorage.setItem(DR_STORAGE_KEY, JSON.stringify(savedDraft)); } catch(e) {}
-  document.querySelectorAll('.dr-label').forEach(el => {
+  document.querySelectorAll('.modal-label').forEach(el => {
     el.style.color = 'var(--color-text-main)';
   });
 
-  document.querySelectorAll('.dr-hint').forEach(el => {
+  document.querySelectorAll('.modal-hint').forEach(el => {
     el.style.color = 'var(--color-text-main)';
     el.style.opacity = '0.6';
   });
@@ -376,7 +376,7 @@ window.drPrevStep = drPrevStep;
 
 function fitPreviewToWidth() {
   const frame = document.getElementById('dr-invoice-preview');
-  const content = frame?.querySelector('.dr-preview-document');
+  const content = frame?.querySelector('.modal-preview-document');
   const pages = content?.querySelectorAll('.page');
 
   if (!frame || !content || !pages || pages.length === 0) return;
@@ -470,7 +470,7 @@ async function drRenderPreview() {
 
   // Content
   const content = document.createElement('div');
-  content.className = 'dr-preview-document';
+  content.className = 'modal-preview-document';
   content.innerHTML = parsedDoc.body.innerHTML;
   Object.assign(content.style, {
     width: '100%',

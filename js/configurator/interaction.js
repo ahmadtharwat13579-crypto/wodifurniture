@@ -298,21 +298,26 @@ function setupStepperSticky() {
     
     if (!stepperEl || !targetSection) return;
 
+    stepperEl.style.transition =
+    'transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease';
+
     if (navbar) {
       document.documentElement.style.setProperty('--nav-height', `${navbar.offsetHeight}px`);
     }
 
     let io = new IntersectionObserver(function (entries) {
       entries.forEach(function (ent) {
-        if (ent.isIntersecting || ent.boundingClientRect.top <= 60) {
-          stepperEl.style.opacity = '0';
-          stepperEl.style.visibility = 'hidden';
-          stepperEl.style.pointerEvents = 'none';
-        } else {
-          stepperEl.style.opacity = '1';
-          stepperEl.style.visibility = 'visible';
-          stepperEl.style.pointerEvents = 'auto';
-        }
+      if (ent.isIntersecting || ent.boundingClientRect.top <= 60) {
+        stepperEl.style.transform = 'translateY(-100%)';
+        stepperEl.style.opacity = '0';
+        stepperEl.style.visibility = 'hidden';
+        stepperEl.style.pointerEvents = 'none';
+      } else {
+        stepperEl.style.transform = 'translateY(0)';
+        stepperEl.style.opacity = '1';
+        stepperEl.style.visibility = 'visible';
+        stepperEl.style.pointerEvents = 'auto';
+      }
       });
     }, { root: null, threshold: 0 });
 
@@ -340,11 +345,31 @@ function setupStepperSticky() {
   window.addEventListener('resize', setup);
 }
 
-function openLB(s) { 
-  document.getElementById('lb-img').src = s; 
-  document.getElementById('lb').classList.add('open'); 
+function openLB(src, alt, fallbackSrc) {
+  const lb = document.getElementById('lightbox');
+  const img = document.getElementById('lightbox-img');
+  if (!lb || !img) return;
+
+  img.alt = alt || '';
+  img.style.display = '';
+
+  // One-shot PNG fallback: a failed fallback must not trigger another fallback.
+  let fallbackTried = false;
+  img.onerror = function () {
+    if (fallbackSrc && !fallbackTried) {
+      fallbackTried = true;
+      this.src = fallbackSrc;
+      return;
+    }
+    this.onerror = null;
+    this.style.display = 'none';
+  };
+
+  img.src = src || '';
+  lb.classList.add('open');
 }
 
-function closeLB() { 
-  document.getElementById('lb').classList.remove('open'); 
+function closeLB() {
+  const lb = document.getElementById('lightbox');
+  if (lb) lb.classList.remove('open');
 }

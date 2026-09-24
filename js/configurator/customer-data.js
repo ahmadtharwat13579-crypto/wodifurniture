@@ -381,10 +381,10 @@ function updateCustomFileUI(inputId, imageBase64, defaultText = 'اضغط لرف
   const inputEl = document.getElementById(inputId);
   if (!inputEl) return;
 
-  let wrapper = inputEl.closest('.dr-file-wrapper');
+  let wrapper = inputEl.closest('.modal-file-wrapper');
   if (!wrapper) {
     wrapper = document.createElement('div');
-    wrapper.className = 'dr-file-wrapper';
+    wrapper.className = 'modal-file-wrapper';
     inputEl.parentNode.insertBefore(wrapper, inputEl);
     wrapper.appendChild(inputEl);
   }
@@ -398,9 +398,9 @@ function updateCustomFileUI(inputId, imageBase64, defaultText = 'اضغط لرف
 
   if (imageBase64) {
     contentBox.innerHTML = `
-      <div class="dr-file-preview-box">
+      <div class="modal-file-preview-box">
         <img src="${imageBase64}" alt="معاينة" />
-        <div class="dr-file-preview-info">
+        <div class="modal-file-preview-info">
           <span>✓ تم حفظ الصورة بنجاح</span>
           <small>اضغط هنا لتغيير الصورة</small>
         </div>

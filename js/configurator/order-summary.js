@@ -53,7 +53,7 @@ async function drViewSummary(orderNum, button) {
     button.disabled = true;
     button.classList.add('is-loading');
     button.innerHTML = `
-      <span class="dr-btn-spinner"></span>
+      <span class="modal-btn-spinner"></span>
       جاري تحميل الملخص...
     `;
 
@@ -108,7 +108,7 @@ async function drViewSummary(orderNum, button) {
       document.createElement('div');
 
     content.className =
-      'dr-preview-document';
+      'modal-preview-document';
 
     content.innerHTML =
       parsedDoc.body.innerHTML;

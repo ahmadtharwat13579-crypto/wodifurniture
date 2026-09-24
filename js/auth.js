@@ -227,12 +227,12 @@ window.initLogoutSystem = function () {
             if (sideNav) sideNav.classList.remove('active');
             if (backdrop) backdrop.classList.remove('active');
             if (typeof window.updatePageScrollLock === 'function') window.updatePageScrollLock();
-            logoutModal.classList.add('active');
+            logoutModal.classList.add('is-visible');
         }
     };
 
     window.closeLogoutConfirmation = function () {
-        if (logoutModal) logoutModal.classList.remove('active');
+        if (logoutModal) logoutModal.classList.remove('is-visible');
     };
 
     if (cancelLogoutBtn && !cancelLogoutBtn.dataset.listenerAttached) {

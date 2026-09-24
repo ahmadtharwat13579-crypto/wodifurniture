@@ -44,7 +44,7 @@ Global exposure preserved from js/configurator.js:
 
 function drDownloadPdf() {
   const previewEl = document.getElementById('dr-invoice-preview');
-  const content = previewEl?.querySelector('.dr-preview-document');
+  const content = previewEl?.querySelector('.modal-preview-document');
   if (!content) {
     showToast('يرجى مراجعة المعاينة أولاً');
     return;
@@ -435,7 +435,7 @@ async function drSubmitOrder() {
     button.disabled = true;
     button.classList.add('is-loading');
     button.innerHTML = `
-      <span class="dr-btn-spinner"></span>
+      <span class="modal-btn-spinner"></span>
       جاري إرسال الطلب...
     `;
   }

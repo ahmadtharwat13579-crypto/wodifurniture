@@ -899,7 +899,11 @@ function rHnd() {
       if (zoomBtn) {
         zoomBtn.onclick = (e) => {
           e.stopPropagation();
-          openShapeModal(`images/conf/hnd/${encodeURIComponent(shapeId)}.webp`, `images/conf/hnd/${encodeURIComponent(shapeId)}.png`);
+          openLB(
+            `images/conf/hnd/${encodeURIComponent(shapeId)}.webp`,
+            'Handle Shape',
+            `images/conf/hnd/${encodeURIComponent(shapeId)}.png`
+          );
         };
       }
 
@@ -967,24 +971,6 @@ function rHnd() {
     c.parentNode.appendChild(shapeContainer);
 
     setTimeout(() => updateArrows('handle-shapes-row'), 100);
-  }
-
-  function openShapeModal(webpSrc, pngSrc) {
-    let modal = document.getElementById('shape-lightbox-modal');
-    if (!modal) {
-      modal = document.createElement('div');
-      modal.id = 'shape-lightbox-modal';
-      modal.className = 'shape-lightbox-modal';
-      modal.onclick = () => modal.remove();
-      document.body.appendChild(modal);
-    }
-    
-    modal.innerHTML = `
-      <div class="shape-lightbox-content" onclick="event.stopPropagation()">
-        <span class="shape-lightbox-close" onclick="document.getElementById('shape-lightbox-modal').remove()">&times;</span>
-        <img src="${webpSrc}" onerror="this.src='${pngSrc}'" alt="Handle Shape" />
-      </div>
-    `;
   }
 
   setTimeout(() => updateArrows('hc'), 50);

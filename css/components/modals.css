@@ -1,7 +1,11 @@
 /* ====================================================
    MODAL STYLESHEET
-   1. GLOBAL MODAL SYSTEM (generalized modal classes)
-   2. DESIGN REQUEST MODAL (3-step workflow, specific styles)
+   1. GLOBAL MODAL SYSTEM - core modal chrome classes
+   2. GLOBAL MODAL CONTENT COMPONENTS - reusable form/content classes
+   3. GLOBAL MODAL BUTTONS - reusable button classes
+   4. DESIGN REQUEST MODAL-SPECIFIC STYLES - #dr-* workflow rules
+   5. DESIGN REQUEST MAP / PREVIEW - #dr-* map & preview rules
+   6. RESPONSIVE RULES
    Loaded by configurator.html right after configurator.css.
    ==================================================== */
 
@@ -16,11 +20,16 @@
   right: 0;
   bottom: 0;
   background-color: var(--modal-bg-overlay);
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   z-index: var(--z-modal);
   padding: 20px;
+  overflow: hidden;
+}
+
+.modal-overlay.is-visible {
+  display: flex;
 }
 
 .modal {
@@ -105,11 +114,6 @@
   color: #111827;
 }
 
-/* Keep the modal chrome fixed; only the active step content may scroll. */
-.modal-overlay {
-  overflow: hidden;
-}
-
 .modal {
   min-height: 0;
   overflow: hidden;
@@ -147,7 +151,356 @@
 }
 
 /* =========================================
-   2. DESIGN REQUEST MODAL (3-STEP WORKFLOW)
+   2. GLOBAL MODAL CONTENT COMPONENTS
+   ========================================= */
+
+.modal-step-heading {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--color-text-main);
+}
+
+.modal-form-group {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-label {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--color-text-main);
+  padding-right: 4px;
+}
+
+.required {
+  color: var(--color-error);
+}
+
+.modal-input {
+  padding: 8px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xs);
+  font-size: 12px;
+  font-family: var(--font-family-main);
+  background: #ffffff;
+  color: var(--color-text-main);
+  transition: background 0.2s ease;
+}
+
+.modal-input:not(:placeholder-shown) {
+  background: #fcfcfc;
+}
+
+.modal-input:focus {
+  outline: none;
+  border-color: rgba(145, 163, 127, 0.6);
+  box-shadow: 0 0 0 2px rgba(145, 163, 127, 0.08);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.modal-input[readonly] {
+  background-color: #f0f0f0;
+  cursor: not-allowed;
+  color: var(--color-text-muted);
+}
+
+.modal-input::placeholder {
+  color: var(--color-text-muted, #9ca3af);
+  opacity: 0.6;
+  font-size: 12px;
+}
+
+.modal-input-phone {
+  direction: ltr;
+  text-align: right;
+}
+
+.modal-input-phone::placeholder {
+  text-align: right;
+  direction: ltr;
+  opacity: 0.6;
+}
+
+select.modal-input:has(option[value=""]:checked) {
+  color: var(--color-text-muted, #9ca3af);
+  opacity: 0.6;
+  font-size: 12px;
+}
+
+select.modal-input option {
+  color: var(--color-text-main, #222222);
+  opacity: 1;
+  font-size: 14px;
+}
+
+select.modal-input {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg fill='%23666666' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: left 10px center;
+  padding-left: 35px;
+  cursor: pointer;
+}
+
+/* Design Request Modal - Manual Address Link */
+.modal-manual-link {
+  display: block;
+  text-align: right;
+  margin-top: 8px;
+  margin-bottom: 14px;
+  margin-right: 6px;
+  font-size: 11px;
+  color: var(--color-text-muted, #666);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  text-decoration-skip-ink: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal-manual-link:hover {
+  color: var(--color-text-main, #222);
+}
+
+.modal-select-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.modal-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 100%;
+  cursor: pointer;
+  background-color: #FCFCFC;
+  padding-left: 36px !important;
+  padding-right: 12px;
+}
+
+.modal-select-wrapper::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  transform: translateY(-50%);
+  width: 10px;
+  height: 6px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath fill='none' stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M1 1l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  pointer-events: none;
+  transition: transform 0.2s ease;
+}
+
+.modal-select:invalid,
+.modal-select option[value=""] {
+  color: #9ca3af;
+}
+
+.modal-select optgroup {
+  font-weight: 700;
+  color: #374151;
+  background-color: #f3f4f6;
+  padding: 6px 4px;
+}
+
+.modal-select option {
+  font-weight: 400;
+  color: #1f2937;
+  background-color: #ffffff;
+  padding: 8px 10px;
+}
+
+.modal-file-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed #d1d5db;
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+  cursor: pointer;
+  background-color: #f9fafb;
+  min-height: 80px;
+  transition: all 0.2s ease;
+}
+
+.modal-file-wrapper input[type="file"] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.modal-file-preview-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.modal-file-preview-box img {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+}
+
+.modal-file-preview-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-size: 13px;
+  color: var(--color-text-main, #374151);
+}
+
+.modal-file-preview-info small {
+  color: #6b7280;
+  font-size: 11px;
+}
+
+.modal-hint {
+  font-size: 12px;
+  color: var(--color-text-main);
+  margin-top: 2px;
+  margin-right: 8px;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.modal-location-section {
+  margin-top: 16px;
+  padding: 0;
+  background: transparent;
+}
+
+.modal-location-title {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--color-text-main);
+  padding-right: 4px;
+}
+
+.modal-invoice-frame {
+  direction: rtl;
+  width: 100%;
+  height: 500px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xs);
+  overflow: auto;
+  background: #f9f9f9;
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.modal-preview-document {
+  direction: rtl;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: visible;
+  box-sizing: border-box;
+}
+
+.modal-preview-document .page {
+  flex-shrink: 0;
+}
+
+/* =========================================
+   3. GLOBAL MODAL BUTTONS
+   ========================================= */
+
+.modal-btn-primary,
+.modal-btn-secondary,
+.modal-btn-whatsapp {
+  padding: 8px 12px;
+  border-radius: var(--radius-xs);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.3s;
+  display: inline-flex;
+  height: 38px;
+  min-height: 38px;
+  max-height: 38px;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-family-main);
+}
+
+.modal-btn-primary {
+  background: var(--color-primary);
+  color: var(--color-bg-white);
+}
+
+.modal-btn-primary:hover {
+  background: var(--color-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(156, 175, 136, 0.28);
+}
+
+.modal-btn-secondary {
+  background: var(--color-bg-white);
+  color: var(--color-text-main);
+  border: 1px solid var(--color-border);
+}
+
+.modal-btn-secondary:hover {
+  background: var(--color-border);
+}
+
+.modal-btn-primary:disabled {
+  cursor: wait;
+  opacity: 0.75;
+}
+
+.modal-btn-primary.is-loading {
+  pointer-events: none;
+}
+
+.modal-btn-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: modalButtonSpin 0.7s linear infinite;
+  vertical-align: middle;
+  margin-inline-end: 6px;
+}
+
+@keyframes modalButtonSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* =========================================
+   4. DESIGN REQUEST MODAL-SPECIFIC STYLES
+   (tied to the #dr-* workflow; IDs are used by JS)
    ========================================= */
 
 #design-request-modal {
@@ -187,85 +540,11 @@
   box-shadow: none !important;
 }
 
-/* =========================================
-   DESIGN REQUEST MODAL STYLES (3-STEP)
-========================================= */
-
 .modal-content[data-step="3"] > p {
   font-size: 12px;
   color: var(--color-text-muted, #666);
   margin-bottom: 14px;
   margin-right: 6px;
-}
-
-.dr-step-heading {
-  font-size: 14px;
-  font-weight: 700;
-  margin-bottom: 8px;
-  color: var(--color-text-main);
-}
-
-.dr-form-group {
-  margin-bottom: 16px;
-  display: flex;
-  flex-direction: column;
-}
-
-.dr-label {
-  font-size: 12px;
-  font-weight: 600;
-  margin-bottom: 6px;
-  color: var(--color-text-main);
-  padding-right: 4px;
-}
-
-.required {
-  color: var(--color-error);
-}
-
-.dr-input {
-  padding: 8px 16px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-xs);
-  font-size: 12px;
-  font-family: var(--font-family-main);
-  background: #ffffff;
-  color: var(--color-text-main);
-  transition: background 0.2s ease;
-}
-
-.dr-input:not(:placeholder-shown) {
-  background: #fcfcfc;
-}
-
-.dr-input:focus {
-  outline: none;
-  border-color: rgba(145, 163, 127, 0.6);
-  box-shadow: 0 0 0 2px rgba(145, 163, 127, 0.08);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.dr-input[readonly] {
-  background-color: #f0f0f0;
-  cursor: not-allowed;
-  color: var(--color-text-muted);
-}
-
-.dr-input::placeholder {
-  color: var(--color-text-muted, #9ca3af);
-  opacity: 0.6;
-  font-size: 12px;
-}
-
-.dr-input-phone {
-  direction: ltr;
-  text-align: right;
-}
-
-.dr-input-phone::placeholder {
-  text-align: right;
-  direction: ltr;
-  opacity: 0.6;
 }
 
 #dr-manual-address-group {
@@ -274,107 +553,13 @@
   margin-top: 12px;
 }
 
-#dr-manual-address-group .dr-form-group + .dr-form-group {
+#dr-manual-address-group .modal-form-group + .modal-form-group {
   margin-top: 10px;
 }
 
 #dr-manual-address {
   width: 100%;
   box-sizing: border-box;
-}
-
-select.dr-input:has(option[value=""]:checked) {
-  color: var(--color-text-muted, #9ca3af);
-  opacity: 0.6;
-  font-size: 12px;
-}
-
-select.dr-input option {
-  color: var(--color-text-main, #222222);
-  opacity: 1;
-  font-size: 14px;
-}
-
-select.dr-input {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  background-image: url("data:image/svg+xml;utf8,<svg fill='%23666666' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
-  background-repeat: no-repeat;
-  background-position: left 10px center;
-  padding-left: 35px;
-  cursor: pointer;
-}
-
-/* Design Request Modal - Manual Address Link */
-.dr-manual-link {
-  display: block;
-  text-align: right;
-  margin-top: 8px;
-  margin-bottom: 14px;
-  margin-right: 6px;
-  font-size: 11px;
-  color: var(--color-text-muted, #666);
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 3px;
-  text-decoration-skip-ink: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.dr-manual-link:hover {
-  color: var(--color-text-main, #222);
-}
-
-.dr-select-wrapper {
-  position: relative;
-  width: 100%;
-}
-
-.dr-select {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  width: 100%;
-  cursor: pointer;
-  background-color: #FCFCFC;
-  padding-left: 36px !important;
-  padding-right: 12px;
-}
-
-.dr-select-wrapper::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 14px;
-  transform: translateY(-50%);
-  width: 10px;
-  height: 6px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath fill='none' stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M1 1l4 4 4-4'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: center;
-  pointer-events: none;
-  transition: transform 0.2s ease;
-}
-
-.dr-select:invalid,
-.dr-select option[value=""] {
-  color: #9ca3af;
-}
-
-.dr-select optgroup {
-  font-weight: 700;
-  color: #374151;
-  background-color: #f3f4f6;
-  padding: 6px 4px;
-}
-
-.dr-select option {
-  font-weight: 400;
-  color: #1f2937;
-  background-color: #ffffff;
-  padding: 8px 10px;
 }
 
 #dr-select-district:disabled {
@@ -392,187 +577,15 @@ select.dr-input {
   width: 100%;
 }
 
-.dr-file-wrapper {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  border: 2px dashed #d1d5db;
-  border-radius: 8px;
-  padding: 12px;
-  text-align: center;
-  cursor: pointer;
-  background-color: #f9fafb;
-  min-height: 80px;
-  transition: all 0.2s ease;
-}
-
-.dr-file-wrapper input[type="file"] {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  cursor: pointer;
-  z-index: 2;
-}
-
-.dr-file-preview-box {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-}
-
-.dr-file-preview-box img {
-  width: 50px;
-  height: 50px;
-  object-fit: cover;
-  border-radius: 6px;
-  border: 1px solid #e5e7eb;
-}
-
-.dr-file-preview-info {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  font-size: 13px;
-  color: var(--color-text-main, #374151);
-}
-
-.dr-file-preview-info small {
-  color: #6b7280;
-  font-size: 11px;
-}
-
-.dr-hint {
-  font-size: 12px;
-  color: var(--color-text-main);
-  margin-top: 2px;
-  margin-right: 8px;
-  margin-bottom: 8px;
-  display: block;
-}
-
-.dr-location-section {
-  margin-top: 16px;
-  padding: 0;
-  background: transparent;
-}
-
-.dr-location-title {
-  font-size: 12px;
-  font-weight: 600;
-  margin-bottom: 4px;
-  color: var(--color-text-main);
-  padding-right: 4px;
-}
-
-.dr-invoice-frame {
-  direction: rtl;
-  width: 100%;
-  height: 500px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-xs);
-  overflow: auto;
-  background: #f9f9f9;
-  position: relative;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.dr-preview-document {
-  direction: rtl;
-  width: 100%;
-  min-width: 0;
-  max-width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  overflow: visible;
-  box-sizing: border-box;
-}
-
-.dr-preview-document .page {
-  flex-shrink: 0;
-}
-
-.dr-btn-primary,
-.dr-btn-secondary,
-.dr-btn-whatsapp {
-  padding: 8px 12px;
-  border-radius: var(--radius-xs);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  border: none;
-  transition: all 0.3s;
-  display: inline-flex;
-  height: 38px;
-  min-height: 38px;
-  max-height: 38px;
-  align-items: center;
-  gap: 6px;
-  font-family: var(--font-family-main);
-}
-
-.dr-btn-primary {
-  background: var(--color-primary);
-  color: var(--color-bg-white);
-}
-
-.dr-btn-primary:hover {
-  background: var(--color-primary-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(156, 175, 136, 0.28);
-}
-
-.dr-btn-secondary {
-  background: var(--color-bg-white);
-  color: var(--color-text-main);
-  border: 1px solid var(--color-border);
-}
-
-.dr-btn-secondary:hover {
-  background: var(--color-border);
-}
-
-.dr-btn-primary:disabled {
-  cursor: wait;
-  opacity: 0.75;
-}
-
-.dr-btn-primary.is-loading {
-  pointer-events: none;
-}
-
-.dr-btn-spinner {
-  display: inline-block;
-  width: 14px;
-  height: 14px;
-  border: 2px solid currentColor;
-  border-right-color: transparent;
-  border-radius: 50%;
-  animation: drButtonSpin 0.7s linear infinite;
-  vertical-align: middle;
-  margin-inline-end: 6px;
-}
-
-@keyframes drButtonSpin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 /* زرا "السابق" و"تأكيد الطلب" مخفيان افتراضياً؛ JS يتحكم فيهما عبر style.display (inline-flex/none) */
 #dr-btn-prev,
 #dr-btn-whatsapp {
   display: none;
 }
+
+/* =========================================
+   5. DESIGN REQUEST MAP / PREVIEW
+   ========================================= */
 
 /* MAPS (Design Request Modal) */
 #dr-mapContainer {
@@ -587,3 +600,9 @@ select.dr-input {
   border-radius: 8px;
   object-fit: cover;
 }
+
+/* =========================================
+   6. RESPONSIVE RULES
+   (No modal-specific responsive rules currently;
+      add future breakpoints here.)
+   ========================================= */

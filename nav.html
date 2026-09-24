@@ -205,28 +205,59 @@
     </div>
 </aside>
 
-<!-- مودال تسجيل الخروج -->
 <div
     id="logoutModal"
-    class="logout-modal"
+    class="modal-overlay"
     role="dialog"
     aria-modal="true"
     aria-labelledby="logoutModalTitle"
 >
-    <div class="logout-modal-box">
-        <button id="closeLogoutModal" class="close-logout-modal" type="button" onclick="closeLogoutModal()">&times;</button>
-        <div class="modal-brand-icon">
-            <img src="images/logos/logo-white.png" alt="WODI">
-        </div>
-        <h3 id="logoutModalTitle">تأكيد تسجيل الخروج</h3>
-        <p>يمكنك تسجيل الدخول مرة أخرى في أي وقت.</p>
-        <div class="modal-actions">
-            <button id="confirmLogout" class="btn-confirm-logout" type="button">
-                تسجيل الخروج
+    <div class="modal logout-modal">
+
+        <div class="modal-header">
+            <button
+                id="closeLogoutModal"
+                class="modal-close"
+                type="button"
+                onclick="closeLogoutModal()"
+                aria-label="Close"
+            >
+                &times;
             </button>
-            <button id="cancelLogout" class="btn-cancel-logout" type="button" onclick="closeLogoutModal()">
+
+            <h3 id="logoutModalTitle" class="modal-title">
+                تأكيد تسجيل الخروج
+            </h3>
+        </div>
+
+        <div class="modal-content">
+
+            <div class="modal-brand-icon">
+                <img src="images/logos/logo-nobg.png" alt="WODI">
+            </div>
+
+            <p>يمكنك تسجيل الدخول مرة أخرى في أي وقت.</p>
+
+        </div>
+
+        <div class="modal-footer">
+            <button
+                id="cancelLogout"
+                class="modal-btn-secondary"
+                type="button"
+                onclick="closeLogoutModal()"
+            >
                 إلغاء
             </button>
+
+            <button
+                id="confirmLogout"
+                class="modal-btn-primary"
+                type="button"
+            >
+                تسجيل الخروج
+            </button>
         </div>
+
     </div>
 </div>

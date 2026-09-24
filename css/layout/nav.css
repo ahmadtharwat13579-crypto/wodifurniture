@@ -19,7 +19,6 @@
     transition: transform 0.35s ease, background 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* استخدام الكلاس بدلاً من الـ inline style في JS */
 .navbar.nav-hidden {
     transform: translateY(-100%) !important;
 }
@@ -35,7 +34,6 @@ body.home-page .navbar .nav-right div {
     color: #222222 !important;
 }
 
-/* الشمال (اللوجو) */
 .nav-left {
     display: flex;
     align-items: center;
@@ -51,7 +49,6 @@ body.home-page .navbar .nav-right div {
     margin: 0;
 }
 
-/* اليمين (الأيقونات وزر القائمة) */
 .nav-right {
     display: flex;
     align-items: center;
@@ -59,7 +56,6 @@ body.home-page .navbar .nav-right div {
     order: 2;
 }
 
-/* تنسيق أزرار الأيقونات */
 .menu-toggle-btn,
 .nav-icon-btn,
 .cart-icon-container {
@@ -661,120 +657,43 @@ body.page-scroll-locked {
 
 /* =========================================
    LOGOUT MODAL
-========================================= */
+   ========================================= */
 
 .logout-modal {
-    position: fixed;
-    inset: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 10500;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
+  width: 90%;
+  max-width: 360px;
+  height: auto;
+  min-height: 0;
 }
 
-.logout-modal.active {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-}
-
-.logout-modal-box {
-    background: var(--color-bg-white);
-    width: 90%;
-    max-width: 360px;
-    padding: 30px 24px;
-    border-radius: var(--radius-xl);
-    text-align: center;
-    position: relative;
-    box-shadow: var(--shadow-modal);
-    transform: translateY(20px);
-    transition: transform 0.3s ease;
-}
-
-.logout-modal.active .logout-modal-box {
-    transform: translateY(0);
-}
-
-.close-logout-modal {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    background: none;
-    border: none;
-    font-size: 22px;
-    color: #a0aec0;
-    cursor: pointer;
+.logout-modal .modal-content {
+  text-align: center;
 }
 
 .modal-brand-icon {
-    width: 50px;
-    height: 50px;
-    background: var(--color-footer-bg);
-    border-radius: var(--radius-full);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 16px;
+  width: 60px;
+  height: 60px;
+  background: var(--color-footer-bg);
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
 }
 
 .modal-brand-icon img {
-    width: 28px;
-    height: 28px;
-    object-fit: contain;
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
 }
 
-.logout-modal-box h3 {
-    font-size: var(--font-size-xl);
-    font-weight: 700;
-    color: #1a202c;
-    margin-bottom: 8px;
+.logout-modal .modal-content p {
+  font-size: var(--font-size-md);
+  color: var(--color-text-muted);
+  margin-top: 8px;
 }
 
-.logout-modal-box p {
-    font-size: var(--font-size-md);
-    color: var(--color-text-muted);
-    margin-bottom: 24px;
-}
-
-.modal-actions {
-    display: flex;
-    gap: 10px;
-}
-
-.btn-confirm-logout,
-.btn-cancel-logout {
-    flex: 2;
-    padding: 10px;
-    border-radius: var(--radius-md);
-    font-size: var(--font-size-md);
-    font-weight: 600;
-    cursor: pointer;
-    border: none;
-    transition: background-color 0.2s;
-    font-family: inherit;
-}
-
-.btn-confirm-logout {
-    background-color: #fff5f5;
-    color: #e53e3e;
-    border: 1px solid #fed7d7;
-}
-
-.btn-confirm-logout:hover {
-    background-color: #fed7d7;
-}
-
-.btn-cancel-logout {
-    background-color: var(--color-bg-alt);
-    color: #4a5568;
-    border: 1px solid #edf2f7;
-}
-
-.btn-cancel-logout:hover {
-    background-color: #edf2f7;
+.logout-modal .modal-btn-primary {
+  background: var(--color-error) !important;
+  color: var(--color-bg-white);
 }

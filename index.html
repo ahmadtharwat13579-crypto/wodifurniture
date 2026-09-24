@@ -12,6 +12,7 @@
 <link rel="stylesheet" href="css/layout/page.css">
   <link rel="stylesheet" href="css/pages/home.css">
   <link rel="stylesheet" href="css/components/buttons.css">
+  <link rel="stylesheet" href="css/components/modals.css">
   <link rel="stylesheet" href="css/components/scroll.css">
   <link rel="stylesheet" href="css/layout/footer.css">
   <link rel="stylesheet" href="css/layout/nav.css">
@@ -31,6 +32,18 @@ fetch('nav.html')
         document.getElementById('nav-placeholder').innerHTML = html;
         // بعد تحميل الـ HTML
         initNavbar();
+
+        // دالة آمنة تنتظر تحميل auth.js بدون أي تحذيرات مزعجة أو سباق زمني
+        const waitForLogoutSystem = (retries = 20) => {
+            if (typeof window.initLogoutSystem === 'function') {
+                window.initLogoutSystem();
+            } else if (retries > 0) {
+                setTimeout(() => waitForLogoutSystem(retries - 1), 50);
+            } else {
+                console.warn('فشل تحميل نظام تسجيل الخروج بعد عدة محاولات.');
+            }
+        };
+        waitForLogoutSystem();
     })
     .catch(err => {
         console.error('Failed to load navbar:', err);
